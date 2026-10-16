@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "tsx test/policyEngine.test.ts && tsx test/env.test.ts && tsx test/checkout.test.ts && tsx test/geminiService.test.ts && tsx test/persistence.test.ts && tsx test/spendGuard.test.ts"
+    "test": "tsx test/policyEngine.test.ts && tsx test/env.test.ts && tsx test/checkout.test.ts && tsx test/geminiService.test.ts && tsx test/persistence.test.ts && tsx test/spendGuard.test.ts && tsx test/securityAudit.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.29.1",

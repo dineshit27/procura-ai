@@ -7,6 +7,7 @@ import {
   resetPolicyToDefault,
   procurementPolicySchema,
 } from '../config/policySettings.js';
+import { requireAdminRole } from '../middleware/adminAuth.js';
 
 export const policiesRouter = Router();
 
@@ -51,7 +52,7 @@ policiesRouter.post(
 
 /**
  * GET /api/policies/current
- * Returns the active server-side policy settings.
+ * Returns the active server-side policy settings (readable by any role).
  */
 policiesRouter.get('/current', (_req: Request, res: Response): void => {
   const policy = getActivePolicy();
@@ -70,68 +71,60 @@ policiesRouter.get('/current', (_req: Request, res: Response): void => {
 /**
  * PUT /api/policies/current
  * Updates the active procurement spending policies.
- * Strictly checks administrator authorization and validates schema.
+ *
+ * Access control: requireAdminRole middleware — see middleware/adminAuth.ts for
+ * a full security notice explaining that x-user-role header authorization is
+ * NOT cryptographically verified and must be replaced before production.
  */
-policiesRouter.put('/current', (req: Request, res: Response): void => {
-  // Authorization check: ordinary users cannot change policy limits
-  const userRole = (req.headers['x-user-role'] as string || '').toLowerCase();
-  if (userRole === 'employee' || userRole === 'requester' || userRole === 'guest') {
-    res.status(403).json({
-      status: 'error',
-      error: 'FORBIDDEN',
-      message: 'Unauthorized: Only designated Procurement or Finance Administrators may update spending policies.',
-    });
-    return;
-  }
+policiesRouter.put(
+  '/current',
+  requireAdminRole,
+  (req: Request, res: Response): void => {
+    const updateSchema = procurementPolicySchema.partial();
+    const parseResult = updateSchema.safeParse(req.body);
 
-  const updateSchema = procurementPolicySchema.partial();
-  const parseResult = updateSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({
+        status: 'error',
+        error: 'INVALID_POLICY_PAYLOAD',
+        message: 'Invalid policy configuration options',
+        details: parseResult.error.flatten().fieldErrors,
+      });
+      return;
+    }
 
-  if (!parseResult.success) {
-    res.status(400).json({
-      status: 'error',
-      error: 'INVALID_POLICY_PAYLOAD',
-      message: 'Invalid policy configuration options',
-      details: parseResult.error.flatten().fieldErrors,
-    });
-    return;
+    try {
+      const updated = updateActivePolicy(parseResult.data);
+      res.status(200).json({
+        status: 'success',
+        data: updated,
+        message: 'Procurement spending policy updated and saved to authoritative server store.',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      res.status(400).json({
+        status: 'error',
+        message: err instanceof Error ? err.message : 'Failed to update policy',
+      });
+    }
   }
-
-  try {
-    const updated = updateActivePolicy(parseResult.data);
-    res.status(200).json({
-      status: 'success',
-      data: updated,
-      message: 'Procurement spending policy updated and saved to authoritative server store.',
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'error',
-      message: err instanceof Error ? err.message : 'Failed to update policy',
-    });
-  }
-});
+);
 
 /**
  * POST /api/policies/reset
  * Resets procurement policies back to default settings.
+ *
+ * Access control: requireAdminRole middleware — see middleware/adminAuth.ts.
  */
-policiesRouter.post('/reset', (req: Request, res: Response): void => {
-  const userRole = (req.headers['x-user-role'] as string || '').toLowerCase();
-  if (userRole === 'employee' || userRole === 'requester') {
-    res.status(403).json({
-      status: 'error',
-      message: 'Unauthorized: Administrator privileges required to reset policies.',
+policiesRouter.post(
+  '/reset',
+  requireAdminRole,
+  (_req: Request, res: Response): void => {
+    resetPolicyToDefault();
+    res.status(200).json({
+      status: 'success',
+      data: getActivePolicy(),
+      message: 'Policy settings successfully reset to factory defaults.',
     });
-    return;
   }
-
-  resetPolicyToDefault();
-  res.status(200).json({
-    status: 'success',
-    data: getActivePolicy(),
-    message: 'Policy settings successfully reset to factory defaults.',
-  });
-});
-
+);

@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { runRulesEngineAnalysis } from '../src/services/geminiService.js';
 import { CATALOG_ITEMS } from '../src/data/catalog.js';
 import type { AnalysisResponsePayload } from '../src/types/catalog.js';
@@ -159,6 +159,15 @@ async function runAllTests(): Promise<void> {
       'Fallback summary must not claim Gemini generated the result: ' + r.summary);
   });
 
+  // Helper: returns true for any network error that indicates the server isn't listening.
+  // Node's built-in fetch wraps connection failures as TypeError('fetch failed') in some
+  // versions rather than attaching code=ECONNREFUSED, so we must check both.
+  function isServerNotRunning(err: unknown): boolean {
+    if (err instanceof TypeError && err.message.toLowerCase().includes('fetch failed')) return true;
+    const code = (err as NodeJS.ErrnoException).code;
+    return code === 'ECONNREFUSED' || code === 'ENOTFOUND';
+  }
+
   // 14. HTTP route: invalid body rejected with 400
   await runTest('Test 14: POST /api/ai/analyze-purchase rejects invalid body with 400', async () => {
     try {
@@ -172,7 +181,7 @@ async function runAllTests(): Promise<void> {
       assert.equal(json.status, 'error', 'status field must be error');
       assert.ok(json.details, 'Response must include field-level validation details');
     } catch (err: unknown) {
-      if ((err as NodeJS.ErrnoException).code === 'ECONNREFUSED') {
+      if (isServerNotRunning(err)) {
         console.log('    [SKIP] Dev server not running — HTTP test skipped');
         return;
       }
@@ -201,7 +210,7 @@ async function runAllTests(): Promise<void> {
         assert.ok(CATALOG_IDS.has(opt.catalogItem.id), 'Hallucinated ID in response: ' + opt.catalogItem.id);
       }
     } catch (err: unknown) {
-      if ((err as NodeJS.ErrnoException).code === 'ECONNREFUSED') {
+      if (isServerNotRunning(err)) {
         console.log('    [SKIP] Dev server not running — HTTP test skipped');
         return;
       }
@@ -228,7 +237,7 @@ async function runAllTests(): Promise<void> {
           'A rules-engine response must use local-deterministic-v1');
       }
     } catch (err: unknown) {
-      if ((err as NodeJS.ErrnoException).code === 'ECONNREFUSED') {
+      if (isServerNotRunning(err)) {
         console.log('    [SKIP] Dev server not running — HTTP test skipped');
         return;
       }

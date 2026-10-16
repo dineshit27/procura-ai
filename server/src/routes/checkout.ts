@@ -128,6 +128,21 @@ checkoutRouter.post('/create-order', async (req: Request, res: Response, next: N
       return;
     }
 
+    // Guard: reject if a live PayPal order has already been created for this request.
+    // This prevents stale order ID reuse and duplicate order creation on retries.
+    if (purchase.paypalOrderId) {
+      res.status(409).json({
+        success: false,
+        error: 'ORDER_ALREADY_EXISTS',
+        message:
+          `Purchase request "${purchaseRequestId}" already has a PayPal order in progress ` +
+          `(orderId: "${purchase.paypalOrderId}"). Use the existing order or cancel checkout first.`,
+        orderId: purchase.paypalOrderId,
+        purchaseRequestId: purchase.id,
+      });
+      return;
+    }
+
     // Authoritative Catalog Product & Policy Re-evaluation
     const catalogItem = CATALOG_ITEMS.find((c) => c.id === purchase.catalogItemId);
     if (!catalogItem) {
@@ -363,7 +378,32 @@ checkoutRouter.post('/capture-order', async (req: Request, res: Response, next: 
       return;
     }
 
-    // Verify capture currency and amount
+    // Verify captured currency matches the authoritative purchase currency
+    const capturedCurrency = captureResult.currency;
+    const authoritativeCurrency = (purchase.currency || 'USD').toUpperCase();
+    if (!capturedCurrency || capturedCurrency.toUpperCase() !== authoritativeCurrency) {
+      updatePurchaseRequestStatus(purchase.id, purchase.status, {
+        paymentDetails: {
+          paypalOrderId: orderId,
+          status: 'FAILED',
+          amount: captureResult.capturedAmount ?? 0,
+          currency: capturedCurrency || 'UNKNOWN',
+          isSandbox: true,
+          notes: `Currency mismatch. Captured: ${capturedCurrency ?? 'none'}, Authoritative: ${authoritativeCurrency}.`,
+        },
+      });
+
+      res.status(422).json({
+        success: false,
+        error: 'CURRENCY_MISMATCH',
+        message:
+          `Captured currency ("${capturedCurrency ?? 'none'}") does not match the authoritative ` +
+          `purchase currency ("${authoritativeCurrency}"). Payment rejected to prevent cross-currency accounting errors.`,
+      });
+      return;
+    }
+
+    // Verify captured amount matches authoritative total
     const capturedAmount = captureResult.capturedAmount;
     if (capturedAmount === undefined || Math.abs(capturedAmount - purchase.authoritativeTotal) > 0.01) {
       updatePurchaseRequestStatus(purchase.id, purchase.status, {
@@ -371,7 +411,7 @@ checkoutRouter.post('/capture-order', async (req: Request, res: Response, next: 
           paypalOrderId: orderId,
           status: 'FAILED',
           amount: capturedAmount ?? 0,
-          currency: captureResult.currency || purchase.currency,
+          currency: authoritativeCurrency,
           isSandbox: true,
           notes: `Amount mismatch. Captured: $${capturedAmount}, Authoritative Total: $${purchase.authoritativeTotal}`,
         },

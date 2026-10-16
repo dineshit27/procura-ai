@@ -519,5 +519,18 @@ export async function resetPolicySettings(): Promise<any> {
   return json.data;
 }
 
+/**
+ * Fetches the authoritative product catalog items from the backend API.
+ */
+export async function fetchCatalogItems(): Promise<import('../types').CatalogItem[]> {
+  const response = await fetch('/api/catalog', {
+    headers: { Accept: 'application/json' },
+  });
 
+  if (!response.ok) {
+    throw new Error(`Failed to fetch product catalog (${response.status})`);
+  }
 
+  const json = await response.json();
+  return json.data || [];
+}

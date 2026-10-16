@@ -222,8 +222,9 @@ export function updatePurchaseRequestStatus(
   return updated;
 }
 
-export function resetPurchaseRequests(): void {
-  purchaseRequestsStore = new Map(buildInitialRequests().map((r) => [r.id, r]));
+export function resetPurchaseRequests(customRequests?: ServerPurchaseRequest[]): void {
+  const requests = customRequests ?? buildInitialRequests();
+  purchaseRequestsStore = new Map(requests.map((r) => [r.id, r]));
   if (process.env.NODE_ENV !== 'test') {
     saveToDisk(purchaseRequestsStore);
   }

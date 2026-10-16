@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavigationTab, PurchaseRequest, CatalogItem, RequestStatus, ProcurementSettings } from './types';
 import {
-  INITIAL_CATALOG_ITEMS,
   INITIAL_PURCHASE_REQUESTS,
   INITIAL_ACTIVITY_ITEMS,
   INITIAL_SETTINGS,
@@ -21,8 +20,9 @@ export const App: React.FC = () => {
   const [mobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
 
   // Core Data State (authoritatively synchronized with backend)
-  const [requests, setRequests] = useState<PurchaseRequest[]>(INITIAL_PURCHASE_REQUESTS);
-  const [catalogItems] = useState<CatalogItem[]>(INITIAL_CATALOG_ITEMS);
+  const [requests, setRequests] = useState<PurchaseRequest[]>([]);
+  const [, setRequestsLoading] = useState<boolean>(true);
+  const [isUsingDemoFallback, setIsUsingDemoFallback] = useState<boolean>(false);
   const [activity, setActivity] = useState(INITIAL_ACTIVITY_ITEMS);
   const [settings, setSettings] = useState<ProcurementSettings>(INITIAL_SETTINGS);
 
@@ -32,14 +32,22 @@ export const App: React.FC = () => {
 
   // Synchronize purchase requests from authoritative backend store
   const refreshRequests = useCallback(async () => {
+    setRequestsLoading(true);
     try {
       const live = await fetchPurchaseRequests();
-      if (live && live.length > 0) {
+      if (Array.isArray(live)) {
+        // Authoritative API response (even if empty []) replaces list cleanly
         setRequests(live);
+        setIsUsingDemoFallback(false);
         return live;
       }
     } catch (err) {
-      console.debug('[App] Backend requests sync failed, using fallback state:', err);
+      console.warn('[App] Backend requests sync failed. Explicit demo fallback activated:', err);
+      // Demo data used ONLY when an actual network/API connection failure occurs
+      setRequests((prev) => (prev.length === 0 ? INITIAL_PURCHASE_REQUESTS : prev));
+      setIsUsingDemoFallback(true);
+    } finally {
+      setRequestsLoading(false);
     }
     return requests;
   }, [requests]);
@@ -261,6 +269,26 @@ export const App: React.FC = () => {
         />
 
         <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+          {/* Explicit Offline Demo Fallback Banner */}
+          {isUsingDemoFallback && (
+            <div className="mb-6 bg-amber-50 border-2 border-amber-600 p-4 text-xs font-mono text-amber-950 shadow-brutal-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 bg-amber-200 border border-amber-600 font-bold uppercase text-[10px]">
+                  Offline Demo Fallback
+                </span>
+                <span>
+                  Backend API (/api/requests) was unreachable. Showing simulated sample records.
+                </span>
+              </div>
+              <button
+                onClick={() => refreshRequests()}
+                className="self-start sm:self-auto px-3 py-1 bg-white border-2 border-neutral-900 text-neutral-900 font-bold text-xs hover:bg-neutral-100 shadow-brutal-xs"
+              >
+                Retry Connection
+              </button>
+            </div>
+          )}
+
           {activeTab === 'overview' && (
             <OverviewView
               requests={requests}
@@ -281,7 +309,6 @@ export const App: React.FC = () => {
 
           {activeTab === 'catalog' && (
             <CatalogView
-              catalogItems={catalogItems}
               onSelectForRequest={handleSelectCatalogItemForRequest}
             />
           )}

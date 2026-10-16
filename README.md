@@ -343,13 +343,15 @@ Procura AI uses the **PayPal JavaScript SDK** (buyer-side) + **PayPal REST API v
 ## 🔒 Security & Known Limitations
 
 ### Policy Authorization
-The `PUT /api/policies/current` and `POST /api/policies/reset` endpoints are protected by the `requireAdminRole` middleware (`server/src/middleware/adminAuth.ts`), which reads the `x-user-role` HTTP request header and checks it against an **allowlist** of privileged role strings.
+The `PUT /api/policies/current` and `POST /api/policies/reset` endpoints are protected by the `requireAdminRole` middleware (`server/src/middleware/adminAuth.ts`). In development and test environments, the middleware reads the `x-user-role` HTTP request header and checks it against an **allowlist** of privileged role strings so the hackathon demo flow continues to work.
 
 > ⚠ **SECURITY LIMITATION — HEADER AUTH IS NOT CRYPTOGRAPHIC**
 >
 > `x-user-role` is an unauthenticated HTTP header. Any client can send `x-user-role: admin` without providing any credential. This provides no protection against malicious or misconfigured callers. It is used here **solely as a development/demo convention** for a hackathon prototype.
 >
-> **Before any production deployment**, replace this with a verified mechanism: signed JWTs, secure HttpOnly session cookies, or OAuth2/OIDC access tokens validated against a JWKS endpoint.
+> **Production fail-closed mitigation:** Because this repository does not yet implement a verified credential mechanism, policy mutations reject header-only authorization when `NODE_ENV=production`. The `x-user-role` header is never treated as production authentication.
+>
+> **Before any production deployment**, integrate and validate a verified mechanism: signed JWTs, secure HttpOnly session cookies, or OAuth2/OIDC access tokens validated against a JWKS endpoint. The current mitigation is not production-grade authentication and does not identify an administrator.
 
 ### Concurrency
 - `withStoreLock` serializes all budget check-and-write operations within a single Node.js process using a FIFO promise-chain mutex. This prevents race conditions in single-instance deployments.

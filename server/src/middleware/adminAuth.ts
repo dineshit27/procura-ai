@@ -4,7 +4,8 @@ import { Request, Response, NextFunction } from 'express';
  * SECURITY NOTICE — DEVELOPMENT / DEMO AUTHORIZATION ONLY
  *
  * This middleware reads the `x-user-role` HTTP request header and grants or
- * denies access based on an allowlist of privileged role strings.
+ * denies access based on an allowlist of privileged role strings in the
+ * development and test environments only.
  *
  * ⚠  THIS IS NOT CRYPTOGRAPHIC AUTHENTICATION.
  *
@@ -14,7 +15,9 @@ import { Request, Response, NextFunction } from 'express';
  * development demos and hackathon prototypes that do not yet integrate a
  * full identity/auth system (e.g. JWT, session cookies, OAuth2).
  *
- * BEFORE production deployment, replace this middleware with a verified
+ * In production, header-only authorization is rejected because this
+ * repository does not yet have a verified credential mechanism. Before
+ * production deployment, replace this middleware with a verified
  * mechanism such as:
  *  - Signed JWT bearer tokens (verified with a secret or public key)
  *  - Secure session cookies (HttpOnly, Secure, SameSite=Strict)
@@ -42,6 +45,18 @@ const ADMIN_ROLES = new Set(['admin', 'finance_manager', 'finance-manager', 'pro
  * ⚠  See security notice above.  ⚠
  */
 export function requireAdminRole(req: Request, res: Response, next: NextFunction): void {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(403).json({
+      status: 'error',
+      error: 'FORBIDDEN',
+      message: 'Administrative policy changes require verified authentication in production.',
+      authNote:
+        'Production authorization is fail-closed until a verified JWT, session, or OAuth2/OIDC mechanism is configured. ' +
+        'The x-user-role header is never accepted as authentication.',
+    });
+    return;
+  }
+
   const rawRole = req.headers['x-user-role'];
   const role = typeof rawRole === 'string' ? rawRole : '';
 

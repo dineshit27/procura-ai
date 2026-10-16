@@ -13,31 +13,53 @@ import {
   Ban,
   CheckCircle2,
   DollarSign,
+  Loader2,
 } from 'lucide-react';
 import { PurchaseRequest, ActivityItem, NavigationTab, SpendGuardSummary } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 import { fetchSpendGuardSummary } from '../services/api';
 
+function formatActivityTime(isoDateStr: string): string {
+  try {
+    const d = new Date(isoDateStr);
+    if (isNaN(d.getTime())) return isoDateStr;
+    const now = Date.now();
+    const diffSec = Math.floor((now - d.getTime()) / 1000);
+    if (diffSec < 60) return 'Just now';
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDays = Math.floor(diffHr / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return d.toLocaleDateString();
+  } catch {
+    return isoDateStr;
+  }
+}
+
 interface OverviewViewProps {
   requests: PurchaseRequest[];
-  activity: ActivityItem[];
+  activity?: ActivityItem[];
   onNavigate: (tab: NavigationTab) => void;
   onSelectRequest: (req: PurchaseRequest) => void;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
   requests,
-  activity,
+  activity = [],
   onNavigate,
   onSelectRequest,
 }) => {
   // Authoritative SpendGuard summary state
   const [summary, setSummary] = useState<SpendGuardSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState<boolean>(true);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const loadSummary = useCallback(async () => {
     try {
+      setSummaryLoading(true);
       setSummaryError(null);
       const data = await fetchSpendGuardSummary();
       setSummary(data);
@@ -45,6 +67,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       console.debug('[OverviewView] Failed to load SpendGuard summary, using local fallback:', err);
       setSummaryError('Failed to synchronize with SpendGuard backend engine');
     } finally {
+      setSummaryLoading(false);
       setIsRefreshing(false);
     }
   }, []);
@@ -459,35 +482,83 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                 <Activity className="w-5 h-5 text-cobalt-700" />
                 <h3 className="font-extrabold text-lg text-neutral-900">Audit Trail</h3>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-paper-200 border border-neutral-900 px-2 py-0.5">
-                Live Log
+              <span className="text-[10px] font-mono uppercase bg-emerald-100 text-emerald-900 border border-neutral-900 px-2 py-0.5 font-bold">
+                Live Backend Stream
               </span>
             </div>
 
             <div className="p-5 space-y-4">
-              {activity.length === 0 ? (
-                <div className="text-center py-8 text-neutral-500 text-xs">
-                  No activity events recorded yet.
+              {/* Loading State */}
+              {summaryLoading && !summary && (
+                <div className="py-10 text-center text-xs font-mono text-neutral-500 space-y-2">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto text-cobalt-700" />
+                  <p>Loading live audit log from SpendGuard engine...</p>
                 </div>
-              ) : (
-                activity.slice(0, 6).map((item) => (
+              )}
+
+              {/* Error State */}
+              {summaryError && !summary && (
+                <div className="p-3 bg-rose-50 border border-rose-400 text-rose-900 text-xs space-y-2">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                    <span>Live Audit Log Unavailable</span>
+                  </div>
+                  <p className="text-[11px] text-rose-700 leading-snug">{summaryError}</p>
+                  <button
+                    onClick={handleManualRefresh}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold border-2 border-neutral-900 bg-white hover:bg-paper-100 shadow-brutal-xs"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Retry Connection
+                  </button>
+                  {activity.length > 0 && (
+                    <div className="pt-2 border-t border-rose-200">
+                      <span className="text-[10px] font-mono uppercase font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 border border-amber-300">
+                        Demo Fallback Active
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Live Backend Recent Activity */}
+              {summary && summary.recentActivity && summary.recentActivity.length > 0 ? (
+                summary.recentActivity.slice(0, 6).map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 bg-paper-100 border border-neutral-900 shadow-brutal-xs space-y-1"
+                    className="p-3 bg-paper-100 border border-neutral-900 shadow-brutal-xs space-y-1.5"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-neutral-900">{item.title}</span>
-                      <span className="text-[10px] font-mono text-neutral-500">{item.timestamp}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-xs text-neutral-900 truncate" title={item.title}>
+                        {item.title}
+                      </span>
+                      <StatusBadge status={item.status as any} size="sm" />
                     </div>
-                    <p className="text-xs text-neutral-600 leading-snug">{item.description}</p>
-                    {item.amount && (
-                      <div className="pt-1 text-[11px] font-mono font-bold text-cobalt-700">
-                        Value: ${item.amount.toFixed(2)} USD
+                    <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500">
+                      <span className="font-bold text-neutral-700">{item.id}</span>
+                      <span>{formatActivityTime(item.timestamp)}</span>
+                    </div>
+                    {item.supplier && (
+                      <div className="text-[11px] text-neutral-600 truncate flex items-center gap-1">
+                        <span className="text-neutral-400 font-mono">Vendor:</span>
+                        <span>{item.supplier}</span>
                       </div>
                     )}
+                    <div className="pt-1 text-[11px] font-mono font-bold text-cobalt-700 border-t border-neutral-200 flex justify-between items-center">
+                      <span>Authoritative Total:</span>
+                      <span>${item.total.toFixed(2)} USD</span>
+                    </div>
                   </div>
                 ))
-              )}
+              ) : summary && (!summary.recentActivity || summary.recentActivity.length === 0) ? (
+                /* Empty State */
+                <div className="text-center py-8 text-neutral-500 text-xs font-mono space-y-1">
+                  <p className="font-bold text-neutral-700">No activity recorded yet</p>
+                  <p className="text-[11px] text-neutral-500">
+                    Requests submitted, approved, paid, or blocked will stream here live.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
 

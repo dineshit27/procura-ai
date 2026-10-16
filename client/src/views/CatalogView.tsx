@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Search,
   Filter,
@@ -10,11 +10,15 @@ import {
   PlusCircle,
   X,
   Layers,
+  Loader2,
+  RefreshCw,
+  AlertTriangle,
 } from 'lucide-react';
 import { CatalogItem } from '../types';
+import { fetchCatalogItems } from '../services/api';
 
 interface CatalogViewProps {
-  catalogItems: CatalogItem[];
+  catalogItems?: CatalogItem[];
   onSelectForRequest: (item: CatalogItem) => void;
 }
 
@@ -22,6 +26,34 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   catalogItems,
   onSelectForRequest,
 }) => {
+  // Authoritative catalog state fetched from /api/catalog
+  const [items, setItems] = useState<CatalogItem[]>(catalogItems || []);
+  const [loading, setLoading] = useState<boolean>(!catalogItems || catalogItems.length === 0);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadCatalog = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const fetched = await fetchCatalogItems();
+      setItems(fetched);
+    } catch (err) {
+      console.error('[CatalogView] Failed to load catalog from server:', err);
+      setError(err instanceof Error ? err.message : 'Failed to connect to catalog API');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!catalogItems || catalogItems.length === 0) {
+      loadCatalog();
+    } else {
+      setItems(catalogItems);
+      setLoading(false);
+    }
+  }, [catalogItems, loadCatalog]);
+
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -33,7 +65,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const categories = ['All', 'IT & Hardware', 'Office Ergonomics', 'Software & Cloud', 'Facility Supplies'];
 
   const filteredItems = useMemo(() => {
-    return catalogItems
+    return items
       .filter((item) => {
         if (selectedCategory !== 'All' && item.category !== selectedCategory) {
           return false;
@@ -54,7 +86,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         if (sortBy === 'delivery') return a.deliveryDays - b.deliveryDays;
         return 0; // featured default
       });
-  }, [catalogItems, selectedCategory, searchQuery, sortBy]);
+  }, [items, selectedCategory, searchQuery, sortBy]);
 
   return (
     <div className="space-y-6">
@@ -122,8 +154,29 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         </div>
       </div>
 
-      {/* Catalog Items Grid */}
-      {filteredItems.length === 0 ? (
+      {/* Catalog Items Grid / State Views */}
+      {loading && items.length === 0 ? (
+        <div className="bg-white border-2 border-neutral-900 p-16 text-center shadow-brutal space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-cobalt-700" />
+          <h3 className="font-extrabold text-lg text-neutral-900">Loading Product Catalog</h3>
+          <p className="text-xs font-mono text-neutral-500">
+            Fetching authoritative vendor items from /api/catalog...
+          </p>
+        </div>
+      ) : error && items.length === 0 ? (
+        <div className="bg-white border-2 border-rose-500 p-12 text-center shadow-brutal space-y-4">
+          <AlertTriangle className="w-8 h-8 text-rose-600 mx-auto" />
+          <h3 className="font-extrabold text-lg text-neutral-900">Unable to Load Catalog</h3>
+          <p className="text-xs text-rose-700 max-w-md mx-auto">{error}</p>
+          <button
+            onClick={loadCatalog}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-neutral-900 text-white text-xs font-bold border-2 border-neutral-900 shadow-brutal-xs hover:bg-neutral-800"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Retry Connection
+          </button>
+        </div>
+      ) : filteredItems.length === 0 ? (
         <div className="bg-white border-2 border-neutral-900 p-12 text-center shadow-brutal space-y-3">
           <Layers className="w-8 h-8 text-neutral-400 mx-auto" />
           <h3 className="font-extrabold text-lg text-neutral-900">No matching products found</h3>

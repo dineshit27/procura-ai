@@ -4,14 +4,15 @@
  * Tests:
  *  1. Spoofed x-user-role header is rejected (unknown role)
  *  2. Missing x-user-role header is rejected
- *  3. Known privileged roles are accepted
- *  4. Currency mismatch on capture returns 422 CURRENCY_MISMATCH
- *  5. Correct currency on capture succeeds
- *  6. Duplicate PayPal order creation returns 409 ORDER_ALREADY_EXISTS
- *  7. Concurrent request creation cannot bypass cumulative budget
- *  8. Concurrent approvals — only one succeeds within tight budget
- *  9. Repeated checkout attempts after an existing order is blocked
- * 10. PATCH /status cannot set paid (HTTP 403)
+ *  3. Known privileged roles are accepted in the test environment
+ *  4. Production rejects header-only admin authorization
+ *  5. Currency mismatch on capture returns 422 CURRENCY_MISMATCH
+ *  6. Correct currency on capture succeeds
+ *  7. Duplicate PayPal order creation returns 409 ORDER_ALREADY_EXISTS
+ *  8. Concurrent request creation cannot bypass cumulative budget
+ *  9. Concurrent approvals — only one succeeds within tight budget
+ * 10. Repeated checkout attempts after an existing order is blocked
+ * 11. PATCH /status cannot set paid (HTTP 403)
  */
 
 import assert from 'node:assert/strict';
@@ -179,7 +180,41 @@ async function runAllTests(): Promise<void> {
     });
 
     // -----------------------------------------------------------------------
-    // Test 4: Currency mismatch on capture → 422 CURRENCY_MISMATCH
+    // Test 4: Production must not accept spoofable role headers
+    // -----------------------------------------------------------------------
+    await runTest('Test 4: Production rejects x-user-role authorization on policy mutations', async () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      try {
+        const updateRes = await fetch(`${baseUrl}/api/policies/current`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin' },
+          body: JSON.stringify({ departmentName: 'Should remain unchanged' }),
+        });
+        assert.equal(updateRes.status, 403);
+        const updateData = await updateRes.json() as { error: string; authNote: string };
+        assert.equal(updateData.error, 'FORBIDDEN');
+        assert.match(updateData.authNote, /never accepted as authentication/i);
+
+        const resetRes = await fetch(`${baseUrl}/api/policies/reset`, {
+          method: 'POST',
+          headers: { 'x-user-role': 'admin' },
+        });
+        assert.equal(resetRes.status, 403);
+        const resetData = await resetRes.json() as { error: string };
+        assert.equal(resetData.error, 'FORBIDDEN');
+      } finally {
+        if (originalNodeEnv === undefined) {
+          delete process.env.NODE_ENV;
+        } else {
+          process.env.NODE_ENV = originalNodeEnv;
+        }
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // Test 5: Currency mismatch on capture → 422 CURRENCY_MISMATCH
     // -----------------------------------------------------------------------
     await runTest('Test 4: Capture with wrong currency returns 422 CURRENCY_MISMATCH', async () => {
       resetPurchaseRequests();

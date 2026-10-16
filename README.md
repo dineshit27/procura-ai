@@ -1,395 +1,221 @@
-# Procura AI — AI-Powered Procurement Assistant for Small Businesses
+# Procura AI
+### AI-powered procurement with intelligent spending controls.
 
-> Built for the **PayPal AI Hackathon** &bull; Powered by **Google Gemini 2.0 Flash** + **PayPal Checkout SDK** + **SpendGuard AI**
+Procura AI helps small businesses make smarter purchasing decisions by combining AI-assisted product recommendations, server-enforced spending policies, human approval, and PayPal checkout in one workflow.
 
-Procura AI is an intelligent procurement assistant designed to empower small businesses by streamlining vendor sourcing, purchase orders, spend analytics, and automated PayPal-backed payments — all from a single, premium UI.
+**Built for the PayPal AI Hackathon**
 
-[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-green)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-91%2F91%20passing-brightgreen)](#testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![React](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-green?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![PayPal](https://img.shields.io/badge/Payments-PayPal%20Sandbox-003087?logo=paypal&logoColor=white)](https://developer.paypal.com/)
+[![Postman](https://img.shields.io/badge/API-Postman-FF6C37?logo=postman&logoColor=white)](https://www.postman.com/)
+[![Render](https://img.shields.io/badge/Hosting-Render-46E3B7?logo=render&logoColor=black)](https://render.com/)
+[![Zapier](https://img.shields.io/badge/Automation-Zapier-FF4A00?logo=zapier&logoColor=white)](https://zapier.com/)
+
+> **Demo notice:** Supplier catalogs and purchasing records are simulated. Payments use the PayPal Sandbox and do not represent real financial transactions.
 
 ---
 
-## 🏗 Architecture Overview
+## The Problem
 
-```text
-procura-ai/
-├── LICENSE                        # MIT open-source license
-├── .env.example                   # Root environment configuration reference
-├── .gitignore                     # Comprehensive exclusions (credentials, node_modules, dist, runtime JSON)
-├── package.json                   # Monorepo orchestration scripts (concurrent dev, build, typecheck, test)
-├── README.md                      # Project documentation & setup instructions
-│
-├── client/                        # Frontend Web Application (React 18 + Vite 6 + Tailwind CSS)
-│   ├── .env.example               # Client environment template
-│   ├── index.html                 # HTML5 entrypoint with Plus Jakarta Sans & JetBrains Mono
-│   ├── src/
-│   │   ├── App.tsx                # Multi-screen shell & global PayPal checkout state
-│   │   ├── index.css              # Neo-Brutalist design system tokens & animations
-│   │   ├── types/                 # Typed domain models (CatalogItem, PurchaseRequest, SpendGuard, etc.)
-│   │   ├── data/
-│   │   │   └── demoData.ts        # ⚠ DEMO: Simulated suppliers, catalog records, history
-│   │   ├── components/
-│   │   │   ├── Navigation.tsx     # Sidebar with backend health & "Demo Workspace" label
-│   │   │   ├── Header.tsx         # Screen header with demo-catalog context
-│   │   │   ├── StatusBadge.tsx    # Status pills (Pending / Approved / Paid (Demo) / etc.)
-│   │   │   └── PayPalCheckoutModal.tsx  # PayPal JS SDK approval → backend capture flow
-│   │   ├── views/
-│   │   │   ├── OverviewView.tsx   # SpendGuard Control Center, KPIs, alerts, blocked-requests drawer
-│   │   │   ├── NewRequestView.tsx # Natural-language form → Gemini AI analysis
-│   │   │   ├── CatalogView.tsx    # Filterable vendor catalog & specs modal
-│   │   │   ├── HistoryView.tsx    # Transaction ledger with SpendGuard rule matrix & checkout trigger
-│   │   │   └── SettingsView.tsx   # Policy thresholds, spending period, alert threshold, supplier management
-│   │   └── services/
-│   │       └── api.ts             # Typed API service layer (Gemini AI + PayPal + SpendGuard endpoints)
-│
-└── server/                        # Backend API Server (Node.js + Express + TypeScript)
-    ├── .env.example               # Server environment template with all variable docs
-    ├── data/
-    │   └── purchaseRequests.json  # File-backed persistence (survives server restarts)
-    │   └── policySettings.json   # File-backed policy persistence (gitignored)
-    ├── src/
-    │   ├── index.ts               # Entrypoint with graceful SIGINT/SIGTERM shutdown
-    │   ├── server.ts              # Express factory, CORS, JSON parsers, route mounting
-    │   ├── config/
-    │   │   ├── env.ts             # Zod environment schema — strict validation on boot
-    │   │   └── policySettings.ts  # Policy schema, defaults, disk persistence (in/out of test)
-    │   ├── data/
-    │   │   └── purchaseRequests.ts # File-backed purchase store with disk persistence
-    │   ├── middleware/
-    │   │   ├── adminAuth.ts       # x-user-role allowlist guard (see security notice in file)
-    │   │   ├── logger.ts          # Request logger with timing & status coloring
-    │   │   └── errorHandler.ts    # 404 & global error handling
-    │   ├── routes/
-    │   │   ├── api.ts             # API root router — mounts all sub-routers
-    │   │   ├── health.ts          # GET /api/health — system diagnostics
-    │   │   ├── requests.ts        # GET/POST /api/requests — purchase request CRUD (locked)
-    │   │   ├── checkout.ts        # POST /api/checkout/* — PayPal order lifecycle
-    │   │   ├── policies.ts        # GET/PUT /api/policies — spending policy management
-    │   │   ├── spendGuard.ts      # GET /api/spendguard/* — SpendGuard summary & alerts
-    │   │   └── ai.ts              # POST /api/ai/analyze-purchase — Gemini AI
-    │   ├── services/
-    │   │   ├── geminiService.ts   # Gemini 2.0 Flash + deterministic rules-engine fallback
-    │   │   ├── paypalService.ts   # PayPal REST API v2 — order create & capture
-    │   │   ├── policyEngine.ts    # Deterministic 9-rule policy evaluator
-    │   │   └── spendGuardService.ts # Cumulative spend engine, FIFO mutex, atomic approvals
-    │   └── types/
-    │       ├── catalog.ts         # Shared procurement domain types
-    │       ├── checkout.ts        # Checkout / purchase request types
-    │       └── policy.ts          # Policy evaluation types
-    └── test/
-        ├── policyEngine.test.ts   # 12 policy rule evaluation tests
-        ├── env.test.ts            # 9 environment validation tests
-        ├── checkout.test.ts       # 19 PayPal lifecycle & idempotency tests
-        ├── geminiService.test.ts  # 16 Gemini AI & rules-engine fallback tests
-        ├── persistence.test.ts    # 10 disk persistence & request lifecycle tests
-        ├── spendGuard.test.ts     # 15 SpendGuard budget & concurrency tests
-        └── securityAudit.test.ts  # 10 security & concurrency audit tests
+Small businesses often manage purchasing across spreadsheets, supplier catalogs, approval messages, and disconnected payment workflows. This makes it difficult to control spending, enforce purchasing policies, and understand how much budget remains available.
+
+## The Solution
+
+Procura AI connects purchasing decisions to financial controls.
+
+- **AI-powered recommendations:** Translate natural-language purchasing needs into catalog-grounded recommendations using Google Gemini.
+- **SpendGuard AI:** Enforce order limits, approved-supplier rules, cumulative budgets, and approval thresholds on the backend.
+- **Human-in-the-loop approvals:** Flag purchases that require review before payment.
+- **PayPal checkout:** Create and capture PayPal Sandbox orders through a server-validated payment workflow.
+- **Spending visibility:** Track paid spending, reserved budgets, available headroom, policy violations, and purchase history.
+
+### What makes it different?
+
+Procura AI doesn't rely on AI alone to authorize spending. AI assists with purchasing decisions, while a deterministic backend policy engine enforces financial limits. Approved purchases then follow a controlled payment workflow.
+
+## How It Works
+
+```mermaid
+flowchart TD
+    A[Describe Purchasing Need] --> B[AI Recommendations]
+    B --> C[Catalog and Policy Validation]
+    C --> D{Policy Decision}
+    D -->|Blocked| E[Explain Violation]
+    D -->|Approval Required| F[Human Review]
+    D -->|Allowed| G[Payment Workflow]
+    F -->|Approved| G
+    F -->|Rejected| H[Release Budget Reservation]
+    G --> I[PayPal Sandbox Checkout]
+    I --> J[Verify Payment Capture]
+    J --> K[Update Purchase and Spend Dashboard]
 ```
 
----
+## Key Feature: SpendGuard AI
 
-## 🛡 SpendGuard AI — Intelligent Spending Control
+SpendGuard is a backend-enforced spending control system, not just a dashboard.
 
-SpendGuard AI is a **backend-enforced** financial control layer embedded directly into Procura AI. It is not a frontend feature — all limits are evaluated and enforced on the server.
+| Control | Default policy |
+|---|---:|
+| Maximum single order | $10,000 |
+| Maximum order quantity | 250 units |
+| Monthly cumulative budget | $20,000 |
+| Auto-approval threshold | Up to $500 |
+| Higher-value purchases | Manual approval required |
+| Supplier restrictions | Configurable allowlist |
 
-### Policy Rules Enforced
+These are configurable demo defaults, not universal financial recommendations.
 
-| Rule | Limit | Action |
-|:---|:---|:---|
-| Single Order Ceiling | $10,000 max | `BLOCKED` |
-| Order Quantity Limit | 250 units max | `BLOCKED` |
-| Approved Supplier List | Configurable allowlist | `BLOCKED` |
-| Cumulative Period Budget | $20,000/month default | `BLOCKED` |
-| Auto-Approval Threshold | ≤ $500 | `ALLOWED` (instant) |
-| Manual Approval Threshold | > $500 | `NEEDS_APPROVAL` |
+**Budget accounting includes:**
+- Paid spend from completed purchases.
+- Reserved spend for approved purchases awaiting payment.
+- Available budget after accounting for paid and reserved amounts.
+- Reservation release when an approved purchase is cancelled or rejected.
+- Concurrency controls to prevent simultaneous requests from bypassing budget checks within a single server process.
 
-### Authoritative Budget Accounting
+## Technology Stack
 
-- **Paid Spend**: Sum of all `status === 'paid'` requests in the active period window.
-- **Reserved Spend**: Sum of `status === 'approved'` requests awaiting payment.
-- **Available Headroom**: `CumulativeBudgetLimit − (Paid + Reserved)`
-- **Reservation Release**: Cancelling or rejecting an approved request immediately releases its reserved amount.
-- **Double-count Prevention**: Paid requests are excluded from reserved spend. The `excludeRequestId` parameter prevents a request from being counted twice when it transitions between states.
-- **Race Condition Prevention**: `withStoreLock` (FIFO promise-chain mutex) serializes all budget check-and-write operations. Concurrent approvals and request creations cannot collectively bypass the budget ceiling.
+| Layer | Technologies |
+|---|---|
+| Frontend | React, TypeScript, Vite, Tailwind CSS |
+| Backend | Node.js, Express, TypeScript |
+| AI | Google Gemini API, deterministic rules-engine fallback |
+| Payments | PayPal JavaScript SDK, PayPal REST API v2 |
+| Validation | Zod |
+| Testing | Automated server tests |
+| Data persistence | File-backed JSON storage |
+| Deployment | Render |
+| Version Control | Git & GitHub |
 
-### SpendGuard Endpoints
+## Architecture
 
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `GET` | `/api/spendguard/summary` | Full period metrics, utilization %, blocked requests |
-| `GET` | `/api/spendguard/alerts` | Active deterministic alert banners |
-| `POST` | `/api/spendguard/check-budget` | Dry-run budget headroom check |
-| `GET` | `/api/policies/current` | Read current policy settings |
-| `PUT` | `/api/policies/current` | Update policy (admin role required) |
-| `POST` | `/api/policies/reset` | Reset to defaults (admin role required) |
+```text
+React + TypeScript Client
+          |
+          v
+    Express REST API
+          |
+    +-----+----------+
+    |        |       |
+    v        v       v
+   Gemini  SpendGuard PayPal REST API
+    AI     + Policies      |
+    |        |             v
+    +--------+        Order Capture
+             |
+             v
+      Purchase Store
+```
 
-### Dashboard
+The backend validates purchase policies and authoritative payment amounts. The PayPal client secret remains server-side and must never be exposed to the browser.
 
-The **Overview** screen displays the SpendGuard Control Center:
-- 4 KPI cards: Spending Limit, Settled Paid Spend, Reserved Budget, Available Headroom
-- Tri-color progress bar (Green = settled, Amber = reserved, Gray = available)
-- Real-time alert banners (EXCEEDED, APPROACHING, APPROVAL_REQUIRED, PURCHASE_BLOCKED)
-- Blocked Requests slide-out drawer with exact policy violation reasons
+## Getting Started
 
----
+### Prerequisites
 
-## 📋 Prerequisites
-
-| Requirement | Minimum | Tested On |
-|:---|:---|:---|
-| **Node.js** | v18.0.0 | v22.14.0 |
-| **npm** | v9.0.0 | v11.1.0 |
-| **Git** | any | — |
-
----
-
-## 🚀 Quick Start & Installation
+- Node.js 18 or later
+- npm
+- Google Gemini API key
+- PayPal Developer account with Sandbox credentials
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/dineshit27/procura-ai.git
 cd procura-ai
 ```
 
-### 2. Install all dependencies
+### 2. Install dependencies
+
 ```bash
 npm run install:all
 ```
-*(Or install individually: `npm install`, `cd server && npm install`, `cd client && npm install`)*
 
-### 3. Configure Environment Variables
+Alternatively, install dependencies in the root, `server`, and `client` directories separately.
 
-**Server (required):**
+### 3. Configure environment variables
+
+Copy the server environment template:
+
 ```bash
 cp server/.env.example server/.env
-# Then fill in your actual keys in server/.env
 ```
 
-`server/.env` fields:
+Configure the variables supported by the server template. The primary settings include:
+
 ```env
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
-# Google Gemini AI (from https://aistudio.google.com/apikey)
-GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-2.0-flash   # actual model used by geminiService.ts
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.0-flash
 
-# PayPal REST API (from https://developer.paypal.com/dashboard/applications/sandbox)
-PAYPAL_CLIENT_ID=your_paypal_client_id_here
-PAYPAL_CLIENT_SECRET=your_paypal_client_secret_here
+PAYPAL_CLIENT_ID=your_sandbox_client_id
+PAYPAL_CLIENT_SECRET=your_sandbox_client_secret
 PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
-
-# CRITICAL for USD Sandbox payments — must be a US-country Sandbox Business account email
-# PAYPAL_PAYEE_EMAIL=sb-xxxxxxx@business.example.com
 ```
 
-**Client (optional — defaults work for local dev):**
-```bash
-cp client/.env.example client/.env
-```
+Configure `PAYPAL_PAYEE_EMAIL` if required by your Sandbox setup. Use the exact variable names and defaults documented in `server/.env.example`.
+
+Optionally, configure `client/.env`:
+
 ```env
 VITE_API_URL=http://localhost:5000
 ```
 
-> **🔒 Security**: Never commit `server/.env`. `PAYPAL_CLIENT_SECRET` must only live in `server/.env` and is never returned by any API endpoint.
+**Never commit real API keys, PayPal secrets, or populated environment files.**
 
----
+### 4. Run the application
 
-## 💻 Running the Application
-
-### Development Mode (Frontend + Backend concurrently)
 ```bash
 npm run dev
 ```
 
+Default local URLs:
+
 | Service | URL |
-|:---|:---|
-| **Frontend Client** | http://localhost:5173 |
-| **Backend API** | http://localhost:5000 |
-| **Health Endpoint** | http://localhost:5000/api/health |
+|---|---|
+| Frontend | http://localhost:5173 |
+| Backend | http://localhost:5000 |
+| Health check | http://localhost:5000/api/health |
 
-### Run Services Individually
-```bash
-npm run dev:server   # Backend only (tsx watch + hot reload)
-npm run dev:client   # Frontend only (Vite HMR)
-```
+## Testing and Build
 
----
-
-## 🧪 Testing
+Run the available validation commands from the repository root:
 
 ```bash
-npm test             # All tests (root script — runs npm --prefix server test)
-npm --prefix server test   # Server tests directly
+npm test
+npm run typecheck
+npm run build
 ```
 
-**Current result: 91/91 tests passing across 7 suites, 0 failures**
+The test suite covers policy evaluation, environment validation, PayPal checkout, AI fallback behavior, persistence, spending controls, and security-related scenarios.
 
-| Suite | Tests | Description |
-|:---|:---|:---|
-| `policyEngine.test.ts` | 12 | Rule evaluation: ALLOWED / NEEDS_APPROVAL / BLOCKED decisions |
-| `env.test.ts` | 9 | Environment validation, missing vars, Zod schema |
-| `checkout.test.ts` | 19 | PayPal order lifecycle, amount enforcement, idempotency |
-| `geminiService.test.ts` | 16 | Gemini AI responses, rules-engine fallback, catalog grounding |
-| `persistence.test.ts` | 10 | Disk persistence, request lifecycle, checkout routing |
-| `spendGuard.test.ts` | 15 | Budget limits, concurrency mutex, reservations, security |
-| `securityAudit.test.ts` | 10 | Spoofed roles, currency mismatch, duplicate orders, concurrent races |
+The latest reported validation completed with **95 tests passing and zero failures**. Re-run the tests after changes to verify the current result.
 
----
+## Security and Limitations
 
-## 🩺 Health Check
+- **Authentication:** The demo does not implement verified user authentication. The `x-user-role` header is a development/test convention, not proof of identity. Policy mutations fail closed in production until verified authentication is integrated.
+- **Simulated data:** Suppliers, catalog entries, and preloaded purchase history are demo data, not live supplier integrations.
+- **AI reliability:** Gemini output assists purchasing decisions; deterministic backend rules enforce spending policies. AI recommendations are not guaranteed to be correct.
+- **Payment environment:** Checkout uses PayPal Sandbox. Live payments require appropriate production credentials, configuration, security controls, and testing.
+- **Persistence and scaling:** JSON storage and in-process concurrency controls are intended for the prototype. Production deployment should use a suitable database and distributed concurrency controls for multiple server instances.
+- **Payment reconciliation:** Capture confirmation is handled synchronously; a PayPal webhook integration is not currently implemented.
 
-```http
-GET /api/health
-```
+## Future Scope
 
-Sample response:
-```json
-{
-  "status": "healthy",
-  "service": "procura-ai-api",
-  "version": "0.1.0",
-  "timestamp": "2026-10-16T08:00:00.000Z",
-  "uptimeSeconds": 120,
-  "environment": "development",
-  "gemini": {
-    "configured": true,
-    "model": "gemini-2.0-flash"
-  },
-  "paypal": {
-    "configured": true,
-    "checkoutEnabled": true,
-    "baseUrl": "https://api-m.sandbox.paypal.com",
-    "statusMessage": "PayPal credentials configured. PayPal checkout is enabled."
-  }
-}
-```
+- Verified Google and email/password authentication with role-based access control.
+- Live supplier and inventory integrations.
+- Database-backed multi-business workspaces.
+- PayPal webhook-based payment reconciliation.
+- Advanced procurement analytics and configurable approval workflows.
+
+## License
+
+Released under the [MIT License](./LICENSE).
 
 ---
 
-## 🤖 Gemini AI Integration
-
-Procura AI uses **Google Gemini 2.0 Flash** (`gemini-2.0-flash`) via `@google/genai` to evaluate purchasing requirements against the approved vendor catalog.
-
-> **Note on model naming**: The README previously referenced "Gemini 2.5 Flash", which was a documentation error. The actual model string configured in `geminiService.ts` and used at runtime is `gemini-2.0-flash` (overridden by `GEMINI_MODEL` in `server/.env`).
-
-**Endpoint:**
-```http
-POST /api/ai/analyze-purchase
-Content-Type: application/json
-
-{
-  "prompt": "Need ergonomic chairs for 3 remote employees",
-  "budget": 1200,
-  "quantity": 3,
-  "category": "Office Ergonomics",
-  "urgency": "standard"
-}
-```
-
-**Response includes:**
-- Ranked catalog matches with AI-generated trade-off rationale
-- Budget fit analysis and recommended quantity
-- Policy compliance check (spend limits, approved suppliers)
-- `provider` field: `"gemini"` (live) or `"rules-engine"` (fallback)
-
-**Fallback behavior:** If `GEMINI_API_KEY` is absent or the Gemini API is unreachable, the service seamlessly switches to a local deterministic rules engine. All responses are structurally identical regardless of provider.
-
-### Known Limitations
-- Gemini analysis is grounded only in the pre-loaded demo catalog (not a live supplier database)
-- Free-tier Gemini API keys have rate limits; high-volume hackathon demos may fall back to rules-engine
-- No streaming — analysis results are returned as a single JSON response
-
----
-
-## 💳 PayPal Sandbox Integration
-
-Procura AI uses the **PayPal JavaScript SDK** (buyer-side) + **PayPal REST API v2** (server-side capture) for end-to-end checkout.
-
-### Checkout Flow
-```
-1. Buyer clicks "Pay with PayPal" in HistoryView
-2. Frontend: PayPal JS SDK loads from GET /api/checkout/config (clientId only — no secret)
-3. Frontend: createOrder() → POST /api/checkout/create-order (server validates authoritative total)
-4. PayPal Sandbox approval window opens
-5. Buyer approves
-6. Frontend: onApprove() → POST /api/checkout/capture-order
-7. Server: calls PayPal REST API /v2/checkout/orders/{id}/capture
-8. Server: verifies captured currency == authoritative currency AND amount ≈ authoritative total
-9. Server: marks purchase PAID only on confirmed status === "COMPLETED"
-10. Frontend: dashboard updates to show settlement details
-```
-
-### Safety Guarantees
-- ✅ Server computes and enforces the authoritative total — client amount is never trusted
-- ✅ `PAYPAL_CLIENT_SECRET` is never returned to the browser
-- ✅ Captured currency is verified to match authoritative purchase currency before marking paid
-- ✅ In-flight capture lock prevents duplicate concurrent captures (`409 CONCURRENT_CAPTURE`)
-- ✅ Already-paid requests reject with `409 ALREADY_PAID` — idempotent
-- ✅ Non-COMPLETED capture status (FAILED, PENDING) returns 422 — never marks paid
-- ✅ Duplicate order creation for an in-progress request returns `409 ORDER_ALREADY_EXISTS`
-- ✅ Purchase state persists across server restarts (`server/data/purchaseRequests.json`)
-
-### Known Sandbox Limitations
-- **Currency Restriction**: If `PAYPAL_PAYEE_EMAIL` points to a Sandbox Business account created with a non-US country (e.g. India), buyers will see *"This seller doesn't accept payments in your currency."* Fix: create a US-country Sandbox Business account and set `PAYPAL_PAYEE_EMAIL` accordingly.
-- **Sandbox Only**: `PAYPAL_BASE_URL` is set to `https://api-m.sandbox.paypal.com`. Change to `https://api-m.paypal.com` for live production (requires a real PayPal merchant account).
-- **No webhooks**: Capture confirmation is synchronous via REST — no PayPal webhook listener is implemented.
-
----
-
-## 🔒 Security & Known Limitations
-
-### Policy Authorization
-The `PUT /api/policies/current` and `POST /api/policies/reset` endpoints are protected by the `requireAdminRole` middleware (`server/src/middleware/adminAuth.ts`). In development and test environments, the middleware reads the `x-user-role` HTTP request header and checks it against an **allowlist** of privileged role strings so the hackathon demo flow continues to work.
-
-> ⚠ **SECURITY LIMITATION — HEADER AUTH IS NOT CRYPTOGRAPHIC**
->
-> `x-user-role` is an unauthenticated HTTP header. Any client can send `x-user-role: admin` without providing any credential. This provides no protection against malicious or misconfigured callers. It is used here **solely as a development/demo convention** for a hackathon prototype.
->
-> **Production fail-closed mitigation:** Because this repository does not yet implement a verified credential mechanism, policy mutations reject header-only authorization when `NODE_ENV=production`. The `x-user-role` header is never treated as production authentication.
->
-> **Before any production deployment**, integrate and validate a verified mechanism: signed JWTs, secure HttpOnly session cookies, or OAuth2/OIDC access tokens validated against a JWKS endpoint. The current mitigation is not production-grade authentication and does not identify an administrator.
-
-### Concurrency
-- `withStoreLock` serializes all budget check-and-write operations within a single Node.js process using a FIFO promise-chain mutex. This prevents race conditions in single-instance deployments.
-- In a **multi-instance / clustered** deployment, replace `withStoreLock` with a distributed lock (e.g. Redis `Redlock` or Postgres `SELECT ... FOR UPDATE`).
-
-### Other Quality Standards
-- **Strict Env Validation**: Zod schema validates all env vars on boot (`server/src/config/env.ts`). Missing or invalid values log diagnostics and exit before accepting traffic.
-- **Secret Protection**: `PAYPAL_CLIENT_SECRET` and `GEMINI_API_KEY` live only in `server/.env` (gitignored). `GET /api/checkout/config` exposes only the public `clientId`.
-- **Strict TypeScript**: `strict: true`, `noImplicitAny: true`, and strict null checks across both workspaces. Zero type errors verified.
-- **Graceful Shutdown**: `SIGINT`, `SIGTERM`, and uncaught error handlers close connections cleanly.
-
----
-
-## 🛠 Available Scripts
-
-| Command | Description |
-|:---|:---|
-| `npm run dev` | Start server & client concurrently (development) |
-| `npm run dev:server` | Start backend only with hot reloading (`tsx watch`) |
-| `npm run dev:client` | Start Vite frontend with HMR |
-| `npm run build` | Build server (tsc) + client (vite build) for production |
-| `npm run typecheck` | TypeScript strict checks on both server and client |
-| `npm test` | Run all 91 backend integration tests across 7 suites |
-| `npm run install:all` | Install root + server + client dependencies |
-
----
-
-## ⚠ Demo Data Notice
-
-All catalog items, supplier names, and pre-loaded purchase history are **simulated demo data** for hackathon demonstration purposes only:
-
-- Suppliers are labelled `(Demo Supplier)` in all data records
-- The UI sidebar shows **"Demo Workspace"** and **"Preloaded simulated catalog & non-live demo records"**
-- Status badges show **"Paid (Demo)"** for sandbox-settled purchases
-- No real supplier relationships, real inventory, or real financial transactions are implied
-
----
-
-## 📄 License
-
-[MIT](./LICENSE) © 2026 Dinesh — Procura AI (PayPal AI Hackathon)
+**Procura AI | Smarter purchasing. Controlled spending. Secure payment workflows.**

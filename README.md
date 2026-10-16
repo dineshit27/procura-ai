@@ -1,3 +1,11 @@
+<p align="center">
+  <img
+    src="Procura AI Banner.png"
+    alt="Procura AI | AI-powered procurement with intelligent spending controls"
+    width="100%"
+  />
+</p>
+
 # Procura AI
 ### AI-powered procurement with intelligent spending controls.
 

@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #FBF9F5;
+  color: #171717;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Neo-Brutalist button and surface active state helpers */
+.brutal-btn {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.brutal-btn:hover {
+  transform: translate(-1px, -1px);
+}
+
+.brutal-btn:active {
+  transform: translate(1.5px, 1.5px);
+  box-shadow: 1px 1px 0px 0px #171717 !important;
+}
+
+/* Custom scrollbars for clean editorial tables */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F4F1EA;
+}
+::-webkit-scrollbar-thumb {
+  background: #C8C3B6;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9D9686;
+}

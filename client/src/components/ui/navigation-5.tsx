@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   ArrowRight,
   GitBranch,
+  Github,
   HelpCircle,
   Mail,
   Menu,
@@ -70,6 +71,15 @@ export function Navigation5() {
 
           <div className="hidden items-center gap-2 md:flex">
             <a
+              href="https://github.com/dineshit27/procura-ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub repository"
+              className="size-10 rounded-full border-2 border-[#111827] bg-white flex items-center justify-center text-[#111827] shadow-[2px_2px_0px_#111827] transition-all hover:bg-[#EAF0FF] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_#111827] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+            >
+              <Github className="size-4" />
+            </a>
+            <a
               href="/app"
               className="rounded-full bg-[#2457E6] px-6 py-2.5 text-sm font-bold text-white border-2 border-[#111827] shadow-[2px_2px_0px_#111827] transition-all hover:bg-[#173BB8] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_#111827] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
             >
@@ -107,9 +117,19 @@ export function Navigation5() {
               );
             })}
             <a
+              href="https://github.com/dineshit27/procura-ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="mt-2 flex items-center justify-center gap-2 rounded-xl border-2 border-[#111827] bg-white px-5 py-2.5 text-center text-sm font-bold text-[#111827] shadow-[2px_2px_0px_#111827] hover:bg-[#EAF0FF]"
+            >
+              <Github className="size-4" />
+              <span>GitHub</span>
+            </a>
+            <a
               href="/app"
               onClick={() => setOpen(false)}
-              className="mt-2 flex items-center justify-center gap-2 rounded-full bg-[#2457E6] px-5 py-2.5 text-center text-sm font-bold text-white border-2 border-[#111827] shadow-[2px_2px_0px_#111827]"
+              className="flex items-center justify-center gap-2 rounded-full bg-[#2457E6] px-5 py-2.5 text-center text-sm font-bold text-white border-2 border-[#111827] shadow-[2px_2px_0px_#111827]"
             >
               <span>Get started</span>
               <ArrowRight className="size-4" />

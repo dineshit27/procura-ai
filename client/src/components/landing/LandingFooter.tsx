@@ -11,8 +11,8 @@ export const LandingFooter: React.FC = () => {
           {
             title: 'Product',
             links: [
-              { label: 'Platform', href: '#platform' },
-              { label: 'SpendGuard', href: '#product' },
+              { label: 'Features', href: '#product' },
+              { label: 'Try Procura', href: '/app' },
               { label: 'Workflow', href: '#workflow' },
               { label: 'FAQ', href: '#faq' },
             ],
@@ -26,20 +26,12 @@ export const LandingFooter: React.FC = () => {
               { label: 'History', href: '/app?tab=history' },
             ],
           },
-          {
-            title: 'Trust',
-            links: [
-              { label: 'SpendGuard controls', href: '#product' },
-              { label: 'Sandbox checkout', href: '#product' },
-              { label: 'AI recommendations', href: '#workflow' },
-              { label: 'Demo boundaries', href: '#faq' },
-            ],
-          },
+
           {
             title: 'About',
             links: [
-              { label: 'PayPal AI Hackathon', href: '#top' },
-              { label: 'MIT licensed', href: '#top' },
+              { label: 'PayPal AI Hackathon', href: 'https://paypalaihackathon.devpost.com/' },
+              { label: 'MIT licensed', href: 'https://github.com/dineshit27/procura-ai' },
               { label: 'Documentation', href: '#faq' },
               { label: 'Open workspace', href: '/app' },
             ],

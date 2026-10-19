@@ -235,7 +235,7 @@ export default function ContactWithGlobe({
                     </label>
                     <input
                       type="text"
-                      placeholder="Alex Morgan"
+                      placeholder="Enrique Lores"
                       value={formData.name}
                       onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                       className="w-full bg-[#FBF9F5] border-2 border-[#111827]/20 rounded-xl px-4 py-2.5 text-sm text-[#111827] font-sans placeholder:text-[#46536B]/50 placeholder:font-sans outline-none focus:border-[#2457E6] focus:bg-white focus:ring-2 focus:ring-[#2457E6]/10 transition-all duration-200"
@@ -247,7 +247,7 @@ export default function ContactWithGlobe({
                     </label>
                     <input
                       type="text"
-                      placeholder="Acme Corp"
+                      placeholder="Paypal"
                       value={formData.company}
                       onChange={(e) => setFormData((prev) => ({ ...prev, company: e.target.value }))}
                       className="w-full bg-[#FBF9F5] border-2 border-[#111827]/20 rounded-xl px-4 py-2.5 text-sm text-[#111827] font-sans placeholder:text-[#46536B]/50 placeholder:font-sans outline-none focus:border-[#2457E6] focus:bg-white focus:ring-2 focus:ring-[#2457E6]/10 transition-all duration-200"
@@ -263,7 +263,7 @@ export default function ContactWithGlobe({
                     <input
                       type="email"
                       required
-                      placeholder="alex@acme.com"
+                      placeholder="elonmusk@paypal.com"
                       value={formData.email}
                       onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                       className="w-full bg-[#FBF9F5] border-2 border-[#111827]/20 rounded-xl px-4 py-2.5 text-sm text-[#111827] font-sans placeholder:text-[#46536B]/50 placeholder:font-sans outline-none focus:border-[#2457E6] focus:bg-white focus:ring-2 focus:ring-[#2457E6]/10 transition-all duration-200"
@@ -289,7 +289,7 @@ export default function ContactWithGlobe({
                   </label>
                   <input
                     type="text"
-                    placeholder="100 Montgomery St, Suite 500, San Francisco, CA"
+                    placeholder="2211 N 1st St, San Jose, CA 95131, United States"
                     value={formData.address}
                     onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
                     className="w-full bg-[#FBF9F5] border-2 border-[#111827]/20 rounded-xl px-4 py-2.5 text-sm text-[#111827] font-sans placeholder:text-[#46536B]/50 placeholder:font-sans outline-none focus:border-[#2457E6] focus:bg-white focus:ring-2 focus:ring-[#2457E6]/10 transition-all duration-200"

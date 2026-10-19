@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { ArrowUpRight, Github, Menu, X } from 'lucide-react';
 
 const SECTION_LINKS = [
   { href: '#platform', label: 'Platform' },
@@ -35,6 +35,15 @@ export const LandingNav: React.FC = () => {
         </nav>
 
         <div className="hidden lg:flex items-center gap-2.5">
+          <a
+            href="https://github.com/dineshit27/procura-ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub repository"
+            className="w-9 h-9 rounded-full border border-black/15 grid place-items-center text-neutral-600 hover:text-[#623cf6] hover:border-[#623cf6]/30 transition-colors"
+          >
+            <Github className="w-4 h-4" />
+          </a>
           <a href="#sandbox" className="landing-pill landing-pill--outline-light">
             Sandbox notes
           </a>
@@ -79,6 +88,15 @@ export const LandingNav: React.FC = () => {
             >
               New purchase request
             </Link>
+            <a
+              href="https://github.com/dineshit27/procura-ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="landing-pill landing-pill--outline-light w-full"
+            >
+              <Github className="w-4 h-4" />
+              GitHub
+            </a>
           </div>
         </div>
       )}

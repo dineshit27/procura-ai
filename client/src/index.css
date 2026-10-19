@@ -20,6 +20,13 @@ body {
   cursor: none !important;
 }
 
+@media (max-width: 768px), (pointer: coarse), (hover: none) {
+  .smooth-cursor-active,
+  .smooth-cursor-active * {
+    cursor: auto !important;
+  }
+}
+
 /* Neo-Brutalist button and surface active state helpers */
 .brutal-btn {
   transition: transform 0.1s ease, box-shadow 0.1s ease;

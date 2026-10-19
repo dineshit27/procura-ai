@@ -38,6 +38,13 @@
   cursor: none !important;
 }
 
+@media (max-width: 768px), (pointer: coarse), (hover: none) {
+  .smooth-cursor-active .landing,
+  .smooth-cursor-active .landing * {
+    cursor: auto !important;
+  }
+}
+
 .landing .cinematic-scroll::-webkit-scrollbar {
   display: none;
 }

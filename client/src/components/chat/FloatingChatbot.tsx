@@ -47,8 +47,10 @@ export const FloatingChatbot: React.FC = () => {
   useEffect(() => {
     if (isOpen) {
       scrollToBottom(false);
-      // Auto focus input when opened
-      setTimeout(() => inputRef.current?.focus(), 100);
+      // Auto focus input when opened only on desktop (on mobile, focusing triggers virtual keyboard immediately and obscures conversation)
+      if (typeof window !== 'undefined' && window.innerWidth >= 640) {
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
     }
   }, [isOpen, scrollToBottom]);
 
@@ -195,11 +197,11 @@ export const FloatingChatbot: React.FC = () => {
   return (
     <>
       {/* Floating Chat Launcher Button */}
-      <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center">
+      <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] flex items-center">
         <button
           ref={launcherRef}
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`size-14 rounded-2xl bg-[#2457E6] text-white border-2 border-[#111827] shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#111827] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_#111827] transition-all flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2457E6] focus:ring-offset-2 ${
+          className={`size-14 rounded-2xl bg-[#2457E6] text-white border-2 border-[#111827] shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#111827] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_#111827] transition-all flex items-center justify-center cursor-pointer touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-[#2457E6] focus:ring-offset-2 ${
             isOpen ? 'rotate-90' : 'rotate-0'
           }`}
           aria-label={isOpen ? 'Close Procura AI assistant' : 'Open Procura AI assistant'}
@@ -221,7 +223,7 @@ export const FloatingChatbot: React.FC = () => {
         <section
           role="dialog"
           aria-label="Procura AI Assistant chat window"
-          className="fixed bottom-22 right-4 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[410px] h-[550px] max-h-[82vh] bg-white border-2 border-[#111827] rounded-2xl shadow-[6px_6px_0px_#111827] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+          className="fixed bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-24 z-[60] sm:w-[410px] max-w-[calc(100vw-1.5rem)] h-[520px] max-h-[calc(100dvh-5.5rem)] sm:max-h-[82vh] bg-white border-2 border-[#111827] rounded-2xl shadow-[6px_6px_0px_#111827] flex flex-col overflow-hidden transition-all duration-200"
         >
           {/* Header */}
           <header className="bg-[#111827] text-white p-3.5 border-b-2 border-[#111827] flex items-center justify-between shrink-0">
@@ -327,7 +329,7 @@ export const FloatingChatbot: React.FC = () => {
                       key={idx}
                       disabled={isLoading}
                       onClick={() => handleSend(prompt)}
-                      className="text-left text-xs bg-white hover:bg-[#E6EEFE] text-[#111827] hover:text-[#2457E6] px-3 py-2 rounded-xl border border-[#111827]/20 hover:border-[#2457E6] shadow-sm transition-all flex items-center justify-between group cursor-pointer disabled:opacity-50"
+                      className="text-left text-xs bg-white hover:bg-[#E6EEFE] text-[#111827] hover:text-[#2457E6] px-3 py-2 rounded-xl border border-[#111827]/20 hover:border-[#2457E6] shadow-sm transition-all flex items-center justify-between group cursor-pointer touch-manipulation disabled:opacity-50"
                     >
                       <span className="font-medium">{prompt}</span>
                       <ChevronRight className="size-3 text-slate-400 group-hover:text-[#2457E6] transition-transform group-hover:translate-x-0.5" />
@@ -384,7 +386,7 @@ export const FloatingChatbot: React.FC = () => {
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isLoading}
-                className="size-9 rounded-xl bg-[#2457E6] text-white border-2 border-[#111827] shadow-[2px_2px_0px_#111827] hover:shadow-[3px_3px_0px_#111827] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                className="size-9 rounded-xl bg-[#2457E6] text-white border-2 border-[#111827] shadow-[2px_2px_0px_#111827] hover:shadow-[3px_3px_0px_#111827] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center shrink-0 cursor-pointer touch-manipulation"
                 aria-label="Send message"
               >
                 <Send className="size-4" />

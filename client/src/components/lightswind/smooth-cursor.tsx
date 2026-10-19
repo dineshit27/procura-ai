@@ -129,6 +129,15 @@ export function SmoothCursor({
   onCursorLeave,
   disabled = false,
 }: SmoothCursorProps) {
+  const [isMobileDevice, setIsMobileDevice] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      window.innerWidth < 768 ||
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(hover: none)").matches
+    );
+  });
+
   const [, setIsMoving] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [, setIsClicking] = useState(false);
@@ -156,8 +165,22 @@ export function SmoothCursor({
   const defaultCursor = <DefaultCursorSVG size={size} color={color} />;
   const cursorElement = cursor || defaultCursor;
 
+  // Track responsive screen size changes
   useEffect(() => {
-    if (disabled) return;
+    const checkMobile = () => {
+      const isTouchOrSmall =
+        window.innerWidth < 768 ||
+        window.matchMedia("(pointer: coarse)").matches ||
+        window.matchMedia("(hover: none)").matches;
+      setIsMobileDevice(isTouchOrSmall);
+    };
+
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (disabled || isMobileDevice) return;
 
     const updateVelocity = (currentPos: Position) => {
       const currentTime = Date.now();
@@ -326,10 +349,11 @@ export function SmoothCursor({
     magneticElements,
     onCursorMove,
     onCursorEnter,
-    onCursorLeave
+    onCursorLeave,
+    isMobileDevice,
   ]);
 
-  if (disabled || !isVisible) return null;
+  if (disabled || isMobileDevice || !isVisible) return null;
 
   return (
     <>

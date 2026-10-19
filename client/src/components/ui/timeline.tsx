@@ -282,12 +282,12 @@ export default function Timeline({
     if (!section) return;
     const scroller = section.closest<HTMLElement>(".cinematic-scroll") ?? undefined;
 
-    const isMobile = window.innerWidth < 600;
-    const slidePercent = isMobile ? -64 : -72;
-    const lineWidth = isMobile ? "75%" : "100%";
-    const lineStart = isMobile ? "top 30%" : "top 25%";
-    const slideEnd = isMobile ? "82% 50%" : "92% bottom";
-    const lineEnd = isMobile ? "80% 50%" : "92% bottom";
+    const isMobile = window.innerWidth <= 768;
+    const slidePercent = isMobile ? -85 : -74;
+    const lineWidth = "100%";
+    const lineStart = isMobile ? "top 20%" : "top 25%";
+    const slideEnd = isMobile ? "98% bottom" : "94% bottom";
+    const lineEnd = isMobile ? "98% bottom" : "94% bottom";
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -463,15 +463,15 @@ export default function Timeline({
     };
 
     const positions: ReadonlyArray<readonly [number, number]> =
-      window.innerWidth < 600
+      window.innerWidth <= 768
         ? [
-          [22, 32],
-          [28, 38],
-          [36, 46],
-          [45, 55],
-          [42, 52],
-          [51, 61],
-          [60, 70],
+          [16, 26],
+          [24, 34],
+          [32, 42],
+          [40, 50],
+          [48, 58],
+          [56, 66],
+          [64, 74],
         ]
         : [
           [6, 26],
@@ -511,14 +511,14 @@ export default function Timeline({
     <section
       ref={sectionRef}
       id="workflow"
-      className="h-[160vw] max-[600px]:h-[320vh] w-full relative border-b-2 border-[#111827]/10"
+      className="h-[160vw] max-[768px]:h-[380vh] max-[600px]:h-[380vh] w-full relative border-b-2 border-[#111827]/10"
       style={sectionStyle}
     >
       <span id="journey" className="sr-only" />
       <div className="h-screen w-screen sticky top-[0%] flex flex-col justify-center overflow-hidden">
         <div
           ref={wholeSliderRef}
-          className="mr-[2vw] flex h-[30vw] w-[280vw] items-center gap-[5vw] px-[5vw] max-[600px]:h-[80vh] max-[600px]:w-[950vw] max-[600px]:px-[7vw]"
+          className="mr-[2vw] flex h-[30vw] w-[280vw] items-center gap-[5vw] px-[5vw] max-[768px]:h-[82vh] max-[768px]:w-[950vw] max-[768px]:px-[7vw] max-[600px]:h-[80vh] max-[600px]:w-[950vw] max-[600px]:px-[7vw]"
         >
           <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] border-2 border-[#111827] shadow-[4px_4px_0px_#111827] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[3vw] max-[600px]:shadow-[3px_3px_0px_#111827]">
             <img
@@ -633,11 +633,11 @@ export default function Timeline({
 
                 {/* Procura AI App Launchpad Card after Step 07 (Phase 7) */}
                 <div
-                  className="relative h-full w-[30vw] px-[2vw] max-[600px]:flex max-[600px]:w-[80vw] max-[600px]:flex-col max-[600px]:px-[5vw] shrink-0 pointer-events-auto"
+                  className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[82vw] max-[768px]:flex-col max-[768px]:px-[5vw] max-[600px]:flex max-[600px]:w-[80vw] max-[600px]:flex-col max-[600px]:px-[5vw] shrink-0 pointer-events-auto"
                 >
                   {/* Neo-brutalist Step Card Container */}
-                  <div className="mt-[-1vw] max-[600px]:mt-[-2vw]">
-                    <div className="relative bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
+                  <div className="mt-[-1vw] max-[768px]:mt-[-2vw] max-[600px]:mt-[-2vw]">
+                    <div className="relative bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[768px]:p-3.5 max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
                       {/* Direct horizontal conduit connection terminal on card left border */}
                       <div
                         className="absolute -left-[0.6vw] max-[600px]:-left-2 top-[16vw] max-[600px]:top-1/2 -translate-y-1/2 size-[1.1vw] max-[600px]:size-4 rounded-full border-2 border-[#111827] bg-[#2457E6] shadow-[1px_1px_0px_#111827] flex items-center justify-center pointer-events-none z-10"

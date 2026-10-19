@@ -1,0 +1,17 @@
+@keyframes klyv-beam-dash {
+  to {
+    stroke-dashoffset: var(--beam-travel);
+  }
+}
+
+.klyv-beam-motion {
+  animation-name: klyv-beam-dash;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .klyv-beam-motion {
+    animation-play-state: paused !important;
+  }
+}

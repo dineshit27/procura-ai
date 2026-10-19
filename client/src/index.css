@@ -15,6 +15,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.smooth-cursor-active,
+.smooth-cursor-active * {
+  cursor: none !important;
+}
+
 /* Neo-Brutalist button and surface active state helpers */
 .brutal-btn {
   transition: transform 0.1s ease, box-shadow 0.1s ease;

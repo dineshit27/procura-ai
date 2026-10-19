@@ -25,6 +25,9 @@ body {
   .smooth-cursor-active * {
     cursor: auto !important;
   }
+  .smooth-cursor-pointer {
+    display: none !important;
+  }
 }
 
 /* Neo-Brutalist button and surface active state helpers */

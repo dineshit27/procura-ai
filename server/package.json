@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "cross-env NODE_ENV=test tsx test/policyEngine.test.ts && cross-env NODE_ENV=test tsx test/env.test.ts && cross-env NODE_ENV=test tsx test/checkout.test.ts && cross-env NODE_ENV=test tsx test/geminiService.test.ts && cross-env NODE_ENV=test tsx test/persistence.test.ts && cross-env NODE_ENV=test tsx test/spendGuard.test.ts && cross-env NODE_ENV=test tsx test/securityAudit.test.ts && cross-env NODE_ENV=test tsx test/dataSourceFixes.test.ts"
+    "test": "cross-env NODE_ENV=test tsx test/policyEngine.test.ts && cross-env NODE_ENV=test tsx test/env.test.ts && cross-env NODE_ENV=test tsx test/checkout.test.ts && cross-env NODE_ENV=test tsx test/geminiService.test.ts && cross-env NODE_ENV=test tsx test/persistence.test.ts && cross-env NODE_ENV=test tsx test/spendGuard.test.ts && cross-env NODE_ENV=test tsx test/securityAudit.test.ts && cross-env NODE_ENV=test tsx test/dataSourceFixes.test.ts && cross-env NODE_ENV=test tsx test/backendSyncAndAuditLog.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.29.1",

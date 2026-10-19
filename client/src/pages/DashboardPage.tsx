@@ -43,7 +43,8 @@ export const DashboardPage: React.FC = () => {
 
   // Core Data State (authoritatively synchronized with backend)
   const [requests, setRequests] = useState<PurchaseRequest[]>([]);
-  const [, setRequestsLoading] = useState<boolean>(true);
+  const [requestsLoading, setRequestsLoading] = useState<boolean>(true);
+  const [requestsError, setRequestsError] = useState<string | null>(null);
   const [isUsingDemoFallback, setIsUsingDemoFallback] = useState<boolean>(false);
   const [activity, setActivity] = useState(INITIAL_ACTIVITY_ITEMS);
   const [settings, setSettings] = useState<ProcurementSettings>(INITIAL_SETTINGS);
@@ -61,13 +62,16 @@ export const DashboardPage: React.FC = () => {
         // Authoritative API response (even if empty []) replaces list cleanly
         setRequests(live);
         setIsUsingDemoFallback(false);
+        setRequestsError(null);
         return live;
       }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Connection failed';
       console.warn('[App] Backend requests sync failed. Explicit demo fallback activated:', err);
       // Demo data used ONLY when an actual network/API connection failure occurs
       setRequests((prev) => (prev.length === 0 ? INITIAL_PURCHASE_REQUESTS : prev));
       setIsUsingDemoFallback(true);
+      setRequestsError(msg);
     } finally {
       setRequestsLoading(false);
     }
@@ -77,6 +81,27 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     refreshRequests();
   }, []);
+
+  // Auto-recovery: when in fallback mode, periodically poll until backend responds
+  useEffect(() => {
+    if (!isUsingDemoFallback) return;
+
+    const interval = setInterval(() => {
+      refreshRequests();
+    }, 12000);
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshRequests();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [isUsingDemoFallback, refreshRequests]);
 
   // Backend Health Integration (Preserving Phase 1)
   const [healthResult, setHealthResult] = useState<HealthCheckResult | null>(null);
@@ -294,19 +319,30 @@ export const DashboardPage: React.FC = () => {
           {/* Explicit Offline Demo Fallback Banner */}
           {isUsingDemoFallback && (
             <div className="mb-6 bg-amber-50 border-2 border-amber-600 p-4 text-xs font-mono text-amber-950 shadow-brutal-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-amber-200 border border-amber-600 font-bold uppercase text-[10px]">
-                  Offline Demo Fallback
-                </span>
-                <span>
-                  Backend API (/api/requests) was unreachable. Showing simulated sample records.
-                </span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-amber-200 border border-amber-600 font-bold uppercase text-[10px]">
+                    Offline Demo Fallback
+                  </span>
+                  <span className="font-semibold">
+                    Backend synchronization paused — displaying simulated demonstration records.
+                  </span>
+                  <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 border border-amber-300">
+                    Auto-recovering
+                  </span>
+                </div>
+                {requestsError && (
+                  <p className="text-[11px] text-amber-900/80 break-words pl-0.5">
+                    Connection detail: {requestsError}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => refreshRequests()}
-                className="self-start sm:self-auto px-3 py-1 bg-white border-2 border-neutral-900 text-neutral-900 font-bold text-xs hover:bg-neutral-100 shadow-brutal-xs"
+                disabled={requestsLoading}
+                className="self-start sm:self-auto px-3 py-1 bg-white border-2 border-neutral-900 text-neutral-900 font-bold text-xs hover:bg-neutral-100 shadow-brutal-xs cursor-pointer disabled:opacity-50"
               >
-                Retry Connection
+                {requestsLoading ? 'Connecting...' : 'Retry Connection'}
               </button>
             </div>
           )}
@@ -315,8 +351,10 @@ export const DashboardPage: React.FC = () => {
             <OverviewView
               requests={requests}
               activity={activity}
+              isUsingDemoFallback={isUsingDemoFallback}
               onNavigate={setActiveTab}
               onSelectRequest={handleSelectRequestFromOverview}
+              onRefreshRequests={refreshRequests}
             />
           )}
 

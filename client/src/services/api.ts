@@ -28,22 +28,146 @@ export interface HealthCheckResult {
   latencyMs: number;
 }
 
+/**
+ * Resolves the backend origin for Procura AI API calls:
+ * 1. Checks VITE_API_URL (set at build-time or in local .env).
+ * 2. In production on Render (when running on procura-io.onrender.com),
+ *    defaults to the live deployed backend at https://procura-ai-f4eo.onrender.com.
+ * 3. In local development on localhost/127.0.0.1, returns '' to leverage Vite proxy,
+ *    or fallback to http://localhost:5000.
+ */
+export function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    // Render deployment domain check
+    if (
+      hostname.includes('procura-io.onrender.com') ||
+      (hostname.endsWith('.onrender.com') && !hostname.includes('procura-ai-f4eo'))
+    ) {
+      return 'https://procura-ai-f4eo.onrender.com';
+    }
+  }
+
+  // Local development default: empty string allows Vite dev proxy to route /api -> targetBackend
+  return '';
+}
+
+/**
+ * Builds a fully qualified API URL or relative path if base is empty.
+ */
+export function buildApiUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  const base = getApiBaseUrl();
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return base ? `${base}${cleanPath}` : cleanPath;
+}
+
+/**
+ * Sanitizes a raw text string for safe logging and error reporting without exposing sensitive data.
+ */
+export function sanitizeResponsePreview(text: string, maxLength = 120): string {
+  if (!text) return '';
+  // Strip script tags and HTML tags
+  const noScripts = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  const noTags = noScripts.replace(/<[^>]+>/g, ' ');
+  // Scrub potential sensitive patterns like Authorization, passwords, tokens
+  const scrubbed = noTags
+    .replace(/(bearer\s+)[A-Za-z0-9._~+/-]+/gi, '$1[REDACTED]')
+    .replace(/(token|password|secret|key|client_id)\s*[:=]\s*["']?[^"'\s,}]+/gi, '$1=[REDACTED]');
+  const collapsed = scrubbed.replace(/\s+/g, ' ').trim();
+  return collapsed.slice(0, maxLength);
+}
+
+/**
+ * Safe fetch wrapper that:
+ * 1. Resolves target backend origin using buildApiUrl(path).
+ * 2. Checks HTTP status and Content-Type header before attempting JSON parsing.
+ * 3. If the server returned HTML (e.g. Render SPA fallback on the frontend host),
+ *    logs a structured warning with the requested URL, status, and sanitized preview
+ *    (without leaking credentials or tokens), and throws a descriptive error.
+ * 4. Parses error JSON safely to extract backend error messages.
+ */
+export async function safeRequestJson<T>(
+  path: string,
+  init?: RequestInit
+): Promise<T> {
+  const fullUrl = buildApiUrl(path);
+
+  const headers = new Headers(init?.headers);
+  if (!headers.has('Accept')) {
+    headers.set('Accept', 'application/json');
+  }
+  if (init?.body && typeof init.body === 'string' && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(fullUrl, {
+      ...init,
+      headers,
+    });
+  } catch (networkErr) {
+    const errorMsg = networkErr instanceof Error ? networkErr.message : 'Network request failed';
+    console.warn(`[API] Network failure connecting to backend:`, {
+      url: fullUrl,
+      error: errorMsg,
+    });
+    throw new Error(`Unable to connect to backend at ${fullUrl}: ${errorMsg}`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  const isJson = contentType.toLowerCase().includes('application/json');
+
+  if (!isJson) {
+    const rawText = await response.text().catch(() => '');
+    const preview = sanitizeResponsePreview(rawText);
+    const isHtml =
+      contentType.toLowerCase().includes('text/html') ||
+      rawText.trim().startsWith('<');
+
+    console.warn(`[API] Non-JSON response received:`, {
+      url: fullUrl,
+      status: response.status,
+      contentType: contentType || '(none)',
+      preview: preview ? `"${preview}"` : '(empty)',
+    });
+
+    if (isHtml) {
+      throw new Error(
+        `Server returned HTML (HTTP ${response.status}) instead of JSON for ${fullUrl}. ` +
+        `This typically indicates the request went to a static SPA host or the route was not found. Preview: "${preview}"`
+      );
+    }
+
+    throw new Error(
+      `Server returned unexpected Content-Type "${contentType}" (HTTP ${response.status}) for ${fullUrl}. Preview: "${preview}"`
+    );
+  }
+
+  if (!response.ok) {
+    const errJson = await response.json().catch(() => null);
+    const errorMsg =
+      (errJson && (errJson.message || errJson.error)) ||
+      `HTTP ${response.status}: ${response.statusText}`;
+    throw new Error(errorMsg);
+  }
+
+  return response.json();
+}
+
 export async function checkBackendHealth(): Promise<HealthCheckResult> {
   const startTime = performance.now();
   try {
-    const response = await fetch('/api/health', {
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
+    const data = await safeRequestJson<SystemHealthResponse>('/api/health');
     const latencyMs = Math.round(performance.now() - startTime);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data: SystemHealthResponse = await response.json();
     return { data, error: null, latencyMs };
   } catch (err) {
     const latencyMs = Math.round(performance.now() - startTime);
@@ -77,31 +201,11 @@ export interface AnalyzePurchaseResult {
 export async function analyzePurchase(payload: AnalyzePurchasePayload): Promise<AnalyzePurchaseResult> {
   const startTime = performance.now();
   try {
-    const response = await fetch('/api/ai/analyze-purchase', {
+    const json = await safeRequestJson<{ data: any }>('/api/ai/analyze-purchase', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
       body: JSON.stringify(payload),
     });
-
     const latencyMs = Math.round(performance.now() - startTime);
-
-    if (!response.ok) {
-      let message = `HTTP ${response.status}: ${response.statusText}`;
-      try {
-        const errorJson = await response.json();
-        if (errorJson.message) {
-          message = errorJson.message;
-        }
-      } catch {
-        // use fallback message
-      }
-      throw new Error(message);
-    }
-
-    const json = await response.json();
     return { data: json.data, error: null, latencyMs };
   } catch (err) {
     const latencyMs = Math.round(performance.now() - startTime);
@@ -130,29 +234,11 @@ export async function evaluatePurchasePolicy(
 ): Promise<EvaluatePolicyResult> {
   const startTime = performance.now();
   try {
-    const response = await fetch('/api/policies/evaluate', {
+    const json = await safeRequestJson<{ data: import('../types').PolicyEvaluationResult }>('/api/policies/evaluate', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
       body: JSON.stringify(payload),
     });
-
     const latencyMs = Math.round(performance.now() - startTime);
-
-    if (!response.ok) {
-      let message = `HTTP ${response.status}: ${response.statusText}`;
-      try {
-        const errJson = await response.json();
-        if (errJson.message) message = errJson.message;
-      } catch {
-        // fallback
-      }
-      throw new Error(message);
-    }
-
-    const json = await response.json();
     return { data: json.data, error: null, latencyMs };
   } catch (err) {
     const latencyMs = Math.round(performance.now() - startTime);
@@ -176,13 +262,7 @@ export interface PayPalConfigResponse {
 }
 
 export async function getPayPalCheckoutConfig(): Promise<PayPalConfigResponse> {
-  const response = await fetch('/api/checkout/config', {
-    headers: { Accept: 'application/json' },
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch PayPal config (${response.status})`);
-  }
-  return response.json();
+  return safeRequestJson<PayPalConfigResponse>('/api/checkout/config');
 }
 
 export interface CreateOrderResult {
@@ -204,21 +284,10 @@ export interface CreateOrderResult {
 }
 
 export async function createCheckoutOrder(purchaseRequestId: string): Promise<CreateOrderResult> {
-  const response = await fetch('/api/checkout/create-order', {
+  return safeRequestJson<CreateOrderResult>('/api/checkout/create-order', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
     body: JSON.stringify({ purchaseRequestId }),
   });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || `Failed to create PayPal order (${response.status})`);
-  }
-
-  return data;
 }
 
 export interface CaptureOrderResult {
@@ -241,21 +310,10 @@ export async function captureCheckoutOrder(
   purchaseRequestId: string,
   orderId: string
 ): Promise<CaptureOrderResult> {
-  const response = await fetch('/api/checkout/capture-order', {
+  return safeRequestJson<CaptureOrderResult>('/api/checkout/capture-order', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
     body: JSON.stringify({ purchaseRequestId, orderId }),
   });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || `Failed to capture PayPal order (${response.status})`);
-  }
-
-  return data;
 }
 
 export interface PaymentStatusData {
@@ -272,16 +330,7 @@ export interface PaymentStatusData {
 }
 
 export async function fetchPaymentStatus(orderId: string): Promise<PaymentStatusData> {
-  const response = await fetch(`/api/checkout/status/${orderId}`, {
-    headers: { Accept: 'application/json' },
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || `Failed to query payment status (${response.status})`);
-  }
-
-  return data;
+  return safeRequestJson<PaymentStatusData>(`/api/checkout/status/${encodeURIComponent(orderId)}`);
 }
 
 export async function cancelCheckoutOrder(
@@ -289,16 +338,10 @@ export async function cancelCheckoutOrder(
   orderId?: string,
   reason?: string
 ): Promise<{ success: boolean; message: string }> {
-  const response = await fetch('/api/checkout/cancel-order', {
+  return safeRequestJson<{ success: boolean; message: string }>('/api/checkout/cancel-order', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
     body: JSON.stringify({ purchaseRequestId, orderId, reason }),
   });
-
-  return response.json();
 }
 
 /**
@@ -324,16 +367,8 @@ export function normalizePurchaseRequest(serverReq: any): import('../types').Pur
  * Fetches the authoritative purchase requests from the backend API.
  */
 export async function fetchPurchaseRequests(): Promise<import('../types').PurchaseRequest[]> {
-  const response = await fetch('/api/requests', {
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch purchase requests (${response.status})`);
-  }
-
-  const json = await response.json();
-  const rawList: any[] = json.data || [];
+  const json = await safeRequestJson<{ success?: boolean; data?: any[] }>('/api/requests');
+  const rawList: any[] = json?.data || [];
   return rawList.map(normalizePurchaseRequest);
 }
 
@@ -341,15 +376,7 @@ export async function fetchPurchaseRequests(): Promise<import('../types').Purcha
  * Fetches a single purchase request authoritatively by ID.
  */
 export async function fetchPurchaseRequestById(id: string): Promise<import('../types').PurchaseRequest> {
-  const response = await fetch(`/api/requests/${encodeURIComponent(id)}`, {
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch purchase request "${id}" (${response.status})`);
-  }
-
-  const json = await response.json();
+  const json = await safeRequestJson<{ success?: boolean; data: any }>(`/api/requests/${encodeURIComponent(id)}`);
   return normalizePurchaseRequest(json.data);
 }
 
@@ -375,18 +402,11 @@ export async function syncPurchaseRequestToServer(
     status: req.status,
   };
 
-  const response = await fetch('/api/requests', {
+  const json = await safeRequestJson<{ success?: boolean; data: any }>('/api/requests', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({})) as { message?: string };
-    throw new Error(err.message || `Failed to persist purchase request to server (${response.status})`);
-  }
-
-  const json = await response.json();
   return normalizePurchaseRequest(json.data);
 }
 
@@ -398,18 +418,14 @@ export async function updateRequestStatusOnServer(
   id: string,
   status: import('../types').RequestStatus
 ): Promise<import('../types').PurchaseRequest> {
-  const response = await fetch(`/api/requests/${encodeURIComponent(id)}/status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ status }),
-  });
+  const json = await safeRequestJson<{ success?: boolean; data: any }>(
+    `/api/requests/${encodeURIComponent(id)}/status`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }
+  );
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({})) as { message?: string };
-    throw new Error(err.message || `Failed to update request status on server (${response.status})`);
-  }
-
-  const json = await response.json();
   return normalizePurchaseRequest(json.data);
 }
 
@@ -421,15 +437,9 @@ export async function updateRequestStatusOnServer(
  * Fetches authoritative SpendGuard budget overview, utilization, and real-time alerts.
  */
 export async function fetchSpendGuardSummary(): Promise<import('../types').SpendGuardSummary> {
-  const response = await fetch('/api/spendguard/summary', {
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch SpendGuard summary (${response.status})`);
-  }
-
-  const json = await response.json();
+  const json = await safeRequestJson<{ success?: boolean; data: import('../types').SpendGuardSummary }>(
+    '/api/spendguard/summary'
+  );
   return json.data;
 }
 
@@ -446,17 +456,20 @@ export async function checkBudgetHeadroom(
   limit: number;
   reason?: string;
 }> {
-  const response = await fetch('/api/spendguard/check-budget', {
+  const json = await safeRequestJson<{
+    success?: boolean;
+    data: {
+      allowed: boolean;
+      remainingBudget: number;
+      projectedTotal: number;
+      limit: number;
+      reason?: string;
+    };
+  }>('/api/spendguard/check-budget', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ amount, excludeRequestId }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Failed to evaluate budget headroom (${response.status})`);
-  }
-
-  const json = await response.json();
   return json.data;
 }
 
@@ -464,15 +477,7 @@ export async function checkBudgetHeadroom(
  * Fetches the active server-side procurement policy configuration.
  */
 export async function fetchCurrentPolicy(): Promise<any> {
-  const response = await fetch('/api/policies/current', {
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch current policy (${response.status})`);
-  }
-
-  const json = await response.json();
+  const json = await safeRequestJson<{ success?: boolean; data: any }>('/api/policies/current');
   return json.data;
 }
 
@@ -480,22 +485,14 @@ export async function fetchCurrentPolicy(): Promise<any> {
  * Persists policy updates to the authoritative backend store.
  */
 export async function updatePolicySettings(updates: any): Promise<any> {
-  const response = await fetch('/api/policies/current', {
+  const json = await safeRequestJson<{ success?: boolean; data: any }>('/api/policies/current', {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
       'x-user-role': 'admin',
     },
     body: JSON.stringify(updates),
   });
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({})) as { message?: string };
-    throw new Error(err.message || `Failed to update policy settings (${response.status})`);
-  }
-
-  const json = await response.json();
   return json.data;
 }
 
@@ -503,19 +500,13 @@ export async function updatePolicySettings(updates: any): Promise<any> {
  * Resets policy configuration back to factory defaults.
  */
 export async function resetPolicySettings(): Promise<any> {
-  const response = await fetch('/api/policies/reset', {
+  const json = await safeRequestJson<{ success?: boolean; data: any }>('/api/policies/reset', {
     method: 'POST',
     headers: {
-      Accept: 'application/json',
       'x-user-role': 'admin',
     },
   });
 
-  if (!response.ok) {
-    throw new Error(`Failed to reset policy settings (${response.status})`);
-  }
-
-  const json = await response.json();
   return json.data;
 }
 
@@ -523,15 +514,7 @@ export async function resetPolicySettings(): Promise<any> {
  * Fetches the authoritative product catalog items from the backend API.
  */
 export async function fetchCatalogItems(): Promise<import('../types').CatalogItem[]> {
-  const response = await fetch('/api/catalog', {
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch product catalog (${response.status})`);
-  }
-
-  const json = await response.json();
+  const json = await safeRequestJson<{ success?: boolean; data: any[] }>('/api/catalog');
   return json.data || [];
 }
 
@@ -553,21 +536,10 @@ export async function sendAssistantChatMessage(payload: {
   message: string;
   history?: AssistantChatMessage[];
 }): Promise<AssistantChatResult> {
-  const response = await fetch('/api/ai/chat', {
+  const json = await safeRequestJson<{ success?: boolean; data: AssistantChatResult }>('/api/ai/chat', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const errData = await response.json().catch(() => ({})) as { message?: string };
-    throw new Error(errData.message || `Chat service unavailable (${response.status})`);
-  }
-
-  const json = await response.json();
   return json.data;
 }
-

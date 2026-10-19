@@ -9,10 +9,32 @@ export function createServer(): Application {
   const app: Application = express();
 
   // Middleware
+  const allowedOrigins = [
+    'https://procura-io.onrender.com',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:5000',
+    'http://127.0.0.1:5000',
+    env.CLIENT_URL.replace(/\/+$/, ''),
+  ];
+
   app.use(
     cors({
-      origin: [env.CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, server-to-server, curl)
+        if (!origin) return callback(null, true);
+        const normalized = origin.replace(/\/+$/, '');
+        if (
+          allowedOrigins.includes(normalized) ||
+          normalized.endsWith('.onrender.com')
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true);
+      },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-user-role'],
     })
   );
   app.use(express.json());

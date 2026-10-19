@@ -41,15 +41,19 @@ function formatActivityTime(isoDateStr: string): string {
 interface OverviewViewProps {
   requests: PurchaseRequest[];
   activity?: ActivityItem[];
+  isUsingDemoFallback?: boolean;
   onNavigate: (tab: NavigationTab) => void;
   onSelectRequest: (req: PurchaseRequest) => void;
+  onRefreshRequests?: () => Promise<any>;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
   requests,
   activity = [],
+  isUsingDemoFallback = false,
   onNavigate,
   onSelectRequest,
+  onRefreshRequests,
 }) => {
   // Authoritative SpendGuard summary state
   const [summary, setSummary] = useState<SpendGuardSummary | null>(null);
@@ -64,22 +68,52 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       const data = await fetchSpendGuardSummary();
       setSummary(data);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to synchronize with SpendGuard backend engine';
       console.debug('[OverviewView] Failed to load SpendGuard summary, using local fallback:', err);
-      setSummaryError('Failed to synchronize with SpendGuard backend engine');
+      setSummaryError(msg);
     } finally {
       setSummaryLoading(false);
       setIsRefreshing(false);
     }
   }, []);
 
-
   useEffect(() => {
     loadSummary();
   }, [loadSummary, requests]);
 
+  // Auto-recovery for SpendGuard audit log when in error state
+  useEffect(() => {
+    if (!summaryError) return;
+
+    const retryTimer = setInterval(() => {
+      loadSummary();
+      if (onRefreshRequests) {
+        onRefreshRequests();
+      }
+    }, 12000);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadSummary();
+        if (onRefreshRequests) {
+          onRefreshRequests();
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(retryTimer);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [summaryError, loadSummary, onRefreshRequests]);
+
   const handleManualRefresh = () => {
     setIsRefreshing(true);
     loadSummary();
+    if (onRefreshRequests) {
+      onRefreshRequests();
+    }
   };
 
   // Fallback calculations if backend summary is still loading
@@ -482,9 +516,20 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                 <Activity className="w-5 h-5 text-cobalt-700" />
                 <h3 className="font-extrabold text-lg text-neutral-900">Audit Trail</h3>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-emerald-100 text-emerald-900 border border-neutral-900 px-2 py-0.5 font-bold">
-                Live Backend Stream
-              </span>
+              {summary ? (
+                <span className="text-[10px] font-mono uppercase bg-emerald-100 text-emerald-900 border border-emerald-500 px-2 py-0.5 font-bold flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                  Live Backend Stream
+                </span>
+              ) : summaryLoading ? (
+                <span className="text-[10px] font-mono uppercase bg-blue-50 text-blue-800 border border-blue-400 px-2 py-0.5 font-bold">
+                  Connecting...
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono uppercase bg-amber-100 text-amber-900 border border-amber-500 px-2 py-0.5 font-bold">
+                  Demo Fallback
+                </span>
+              )}
             </div>
 
             <div className="p-5 space-y-4">
@@ -499,22 +544,31 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
               {/* Error State */}
               {summaryError && !summary && (
                 <div className="p-3 bg-rose-50 border border-rose-400 text-rose-900 text-xs space-y-2">
-                  <div className="font-bold flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                    <span>Live Audit Log Unavailable</span>
+                  <div className="font-bold flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                      <span>Live Audit Log Unavailable</span>
+                    </div>
+                    <span className="text-[9px] font-mono text-rose-600 bg-rose-100 px-1 py-0.5 rounded border border-rose-200">
+                      Auto-retrying
+                    </span>
                   </div>
-                  <p className="text-[11px] text-rose-700 leading-snug">{summaryError}</p>
+                  <p className="text-[11px] text-rose-700 leading-snug break-words">{summaryError}</p>
                   <button
                     onClick={handleManualRefresh}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold border-2 border-neutral-900 bg-white hover:bg-paper-100 shadow-brutal-xs"
+                    disabled={isRefreshing}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold border-2 border-neutral-900 bg-white hover:bg-paper-100 shadow-brutal-xs cursor-pointer disabled:opacity-50"
                   >
-                    <RefreshCw className="w-3 h-3" />
-                    Retry Connection
+                    <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    <span>{isRefreshing ? 'Reconnecting...' : 'Retry Connection'}</span>
                   </button>
                   {activity.length > 0 && (
-                    <div className="pt-2 border-t border-rose-200">
+                    <div className="pt-2 border-t border-rose-200 flex items-center justify-between">
                       <span className="text-[10px] font-mono uppercase font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 border border-amber-300">
-                        Demo Fallback Active
+                        Demo Fallback Stream
+                      </span>
+                      <span className="text-[10px] font-mono text-neutral-500">
+                        Showing simulated sample records
                       </span>
                     </div>
                   )}
@@ -558,12 +612,46 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                     Requests submitted, approved, paid, or blocked will stream here live.
                   </p>
                 </div>
+              ) : (!summary || isUsingDemoFallback) && activity.length > 0 ? (
+                /* Fallback Activity Feed when backend is offline */
+                <div className="space-y-3">
+                  {activity.slice(0, 6).map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3 bg-amber-50/50 border border-amber-200 shadow-brutal-xs space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-xs text-neutral-900 truncate" title={item.title}>
+                          {item.title}
+                        </span>
+                        <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 bg-amber-200 text-amber-900 rounded border border-amber-300">
+                          Demo
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500">
+                        <span className="font-bold text-neutral-700">{item.id}</span>
+                        <span>{formatActivityTime(item.timestamp)}</span>
+                      </div>
+                      {item.description && (
+                        <div className="text-[11px] text-neutral-600 truncate">
+                          {item.description}
+                        </div>
+                      )}
+                      {typeof item.amount === 'number' && (
+                        <div className="pt-1 text-[11px] font-mono font-bold text-amber-800 border-t border-amber-200 flex justify-between items-center">
+                          <span>Simulated Total:</span>
+                          <span>${item.amount.toFixed(2)} USD</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               ) : null}
             </div>
           </div>
 
           <div className="p-4 bg-paper-100 border-t-2 border-neutral-900 text-xs text-center text-neutral-600 font-mono">
-            Authoritative SpendGuard audit log
+            {summary ? 'Authoritative SpendGuard audit log (Live)' : 'SpendGuard audit log (Demo Fallback)'}
           </div>
         </div>
       </div>

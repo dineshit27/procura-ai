@@ -43,6 +43,9 @@
   .smooth-cursor-active .landing * {
     cursor: auto !important;
   }
+  .smooth-cursor-pointer {
+    display: none !important;
+  }
 }
 
 .landing .cinematic-scroll::-webkit-scrollbar {

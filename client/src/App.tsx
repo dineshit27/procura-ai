@@ -36,6 +36,7 @@ export const App: React.FC = () => {
         accentColor="#2457E6"
         blurMax={20}
         enableTopBlur={false}
+        enableBottomBlur={false}
       >
         <Routes>
           <Route path="/" element={<RootEntry />} />

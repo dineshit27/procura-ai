@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { LandingPage } from './pages/LandingPage';
+import { ContactPage } from './pages/ContactPage';
 import SmoothCursor from './components/lightswind/smooth-cursor';
 import CinematicScroll from './components/lightswind/cinematic-scroll';
 
@@ -22,21 +23,23 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <SmoothCursor
-        size={22}
-        color="#3b82f6"
+        size={16}
+        color="#2457E6"
         showTrail
-        trailLength={6}
+        trailLength={5}
         glowEffect
-        magneticDistance={60}
+        magneticDistance={50}
         magneticElements="[data-magnetic]"
       />
       <CinematicScroll
         className="h-screen"
-        accentColor="#3b82f6"
+        accentColor="#2457E6"
         blurMax={20}
+        enableTopBlur={false}
       >
         <Routes>
           <Route path="/" element={<RootEntry />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/app" element={<DashboardPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

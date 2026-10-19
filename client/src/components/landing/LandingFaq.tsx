@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Bot,
   ChevronDown,
-  CircleDollarSign,
+  Mail,
   ClipboardList,
   CreditCard,
   Database,
@@ -255,25 +255,25 @@ export const LandingFaq: React.FC = () => {
   }, [query, selectedCategory]);
 
   return (
-    <section id="faq" ref={revealRef} className="reveal border-t border-black/5 py-24">
+    <section id="faq" ref={revealRef} className="reveal bg-white border-b-2 border-[#111827]/10 py-10 sm:py-14">
       <div className="landing-wrap">
-        <header className="flex flex-col gap-3">
-          <p className="landing-mono text-[12px] font-semibold uppercase tracking-[0.16em] text-[#623cf6]">
+        <header className="flex flex-col gap-2">
+          <p className="landing-mono text-[12px] font-bold uppercase tracking-[0.16em] text-[#2457E6]">
             Help by workflow
           </p>
-          <div className="flex flex-col gap-2">
-            <h2 className="landing-display text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
+          <div className="flex flex-col gap-1.5">
+            <h2 className="font-display text-3xl font-bold tracking-[-0.025em] leading-[1.08] text-[#111827] sm:text-4xl md:text-5xl">
               Product, workflow, or support
             </h2>
-            <p className="max-w-2xl text-sm leading-relaxed text-neutral-600">
+            <p className="max-w-2xl font-sans text-base leading-relaxed text-[#46536B]">
               Choose a Procura team, then open the questions that match your purchase journey.
             </p>
           </div>
         </header>
 
-        <div className="mt-10 flex flex-col gap-6 md:flex-row md:gap-10">
+        <div className="mt-6 flex flex-col gap-6 md:flex-row md:gap-10">
           <div
-            className="flex h-auto w-full flex-row gap-1 overflow-x-auto md:w-48 md:flex-col md:overflow-visible"
+            className="flex h-auto w-full flex-row gap-1.5 overflow-x-auto md:w-48 md:flex-col md:overflow-visible"
             role="tablist"
             aria-label="FAQ categories"
           >
@@ -289,11 +289,10 @@ export const LandingFaq: React.FC = () => {
                     setSelectedCategory(value);
                     setOpenItem(FAQ_ITEMS.find((item) => item.category === value)?.id ?? null);
                   }}
-                  className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm transition md:w-full ${
-                    active
-                      ? 'bg-neutral-100 font-medium text-neutral-950'
-                      : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-950'
-                  }`}
+                  className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all md:w-full ${active
+                    ? 'border-2 border-[#111827] bg-[#2457E6] font-bold text-white shadow-[2px_2px_0px_#111827]'
+                    : 'border-2 border-transparent text-[#46536B] hover:bg-[#EAF0FF] hover:text-[#111827]'
+                    }`}
                 >
                   <Icon className="size-4" />
                   <span>{label}</span>
@@ -307,57 +306,59 @@ export const LandingFaq: React.FC = () => {
               <label htmlFor={inputId} className="sr-only">
                 Search questions in this FAQ category
               </label>
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#46536B]" />
               <input
                 id={inputId}
                 type="search"
                 value={query}
                 placeholder={`Search ${selectedCategory.toLowerCase()} questions...`}
                 onChange={(event) => setQuery(event.target.value)}
-                className="w-full rounded-xl border border-black/10 bg-white py-3 pl-11 pr-11 text-sm outline-none transition focus:border-[#623cf6] focus:ring-2 focus:ring-[#623cf6]/15"
+                className="w-full rounded-xl border-2 border-[#111827] bg-white py-3 pl-11 pr-11 text-sm text-[#111827] placeholder:text-[#46536B]/60 shadow-[2px_2px_0px_#111827] outline-none transition focus:border-[#2457E6] focus:shadow-[3px_3px_0px_#2457E6]"
               />
               {query && (
                 <button
                   type="button"
                   aria-label="Clear search"
                   onClick={() => setQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-neutral-500 hover:text-neutral-950"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-[#46536B] hover:text-[#111827]"
                 >
                   <X className="size-4" />
                 </button>
               )}
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
               {filteredItems.map((item) => {
                 const isOpen = openItem === item.id;
                 return (
                   <div
                     key={item.id}
-                    className={`transition-all duration-200 ${
-                      isOpen ? 'rounded-2xl bg-white shadow-[0_12px_35px_rgba(17,17,17,0.07)]' : ''
-                    }`}
+                    className={`transition-all duration-200 ${isOpen
+                      ? 'rounded-xl border-2 border-[#111827] bg-white shadow-[3px_3px_0px_#111827]'
+                      : 'rounded-xl border-2 border-[#111827]/15 bg-white hover:border-[#111827]'
+                      }`}
                   >
                     <button
                       type="button"
                       aria-expanded={isOpen}
                       onClick={() => setOpenItem(isOpen ? null : item.id)}
-                      className="flex w-full items-center justify-between gap-6 px-4 py-3.5 text-left text-sm font-semibold text-neutral-950 hover:text-[#623cf6]"
+                      className="flex w-full items-center justify-between gap-6 px-4 py-3.5 text-left font-display text-[17px] font-bold tracking-tight text-[#111827] hover:text-[#2457E6]"
                     >
                       <span>{item.question}</span>
-                      <ChevronDown className={`size-5 shrink-0 text-neutral-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`size-5 shrink-0 text-[#46536B] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isOpen && (
-                      <div className="flex flex-col gap-3 px-4 pb-4 text-neutral-600">
-                        <p className="text-sm leading-relaxed">{item.answer}</p>
+                      <div className="flex flex-col gap-3 px-4 pb-4 font-sans text-[15px] text-[#46536B]">
+                        <p className="leading-relaxed">{item.answer}</p>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             aria-label={`Mark "${item.question}" as helpful`}
                             onClick={() => setFeedback((current) => ({ ...current, [item.id]: 'yes' }))}
-                            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition ${
-                              feedback[item.id] === 'yes' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-black/10 hover:bg-neutral-50'
-                            }`}
+                            className={`inline-flex items-center gap-1.5 rounded-lg border-2 px-2.5 py-1.5 text-xs font-semibold transition ${feedback[item.id] === 'yes'
+                              ? 'border-[#111827] bg-[#EAF0FF] text-[#173BB8] shadow-[1.5px_1.5px_0px_#111827]'
+                              : 'border-[#111827]/20 hover:border-[#111827] hover:bg-[#F5F8FF] text-[#111827]'
+                              }`}
                           >
                             <ThumbsUp className="size-3.5" />
                             Helpful
@@ -366,9 +367,10 @@ export const LandingFaq: React.FC = () => {
                             type="button"
                             aria-label={`Mark "${item.question}" as not helpful`}
                             onClick={() => setFeedback((current) => ({ ...current, [item.id]: 'no' }))}
-                            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition ${
-                              feedback[item.id] === 'no' ? 'border-red-200 bg-red-50 text-red-700' : 'border-black/10 hover:bg-neutral-50'
-                            }`}
+                            className={`inline-flex items-center gap-1.5 rounded-lg border-2 px-2.5 py-1.5 text-xs font-semibold transition ${feedback[item.id] === 'no'
+                              ? 'border-[#111827] bg-red-50 text-red-700 shadow-[1.5px_1.5px_0px_#111827]'
+                              : 'border-[#111827]/20 hover:border-[#111827] hover:bg-[#F5F8FF] text-[#111827]'
+                              }`}
                           >
                             <ThumbsDown className="size-3.5" />
                             Not helpful
@@ -382,19 +384,19 @@ export const LandingFaq: React.FC = () => {
             </div>
 
             {!filteredItems.length && (
-              <div className="rounded-2xl border border-dashed border-black/10 py-10 text-center">
-                <p className="text-sm text-neutral-600">No questions match your search.</p>
-                <button type="button" onClick={() => setQuery('')} className="mt-3 text-sm font-semibold text-[#623cf6] hover:underline">
+              <div className="rounded-2xl border-2 border-dashed border-[#111827]/20 py-10 text-center">
+                <p className="text-sm text-[#46536B]">No questions match your search.</p>
+                <button type="button" onClick={() => setQuery('')} className="mt-3 text-sm font-bold text-[#2457E6] hover:underline">
                   Clear search
                 </button>
               </div>
             )}
 
             <a
-              href="mailto:hello@procura.ai?subject=Procura%20support"
+              href="mailto:m.dinesh.it27@gmail.com?subject=Procura%20support"
               className="landing-pill landing-pill--purple mt-8 w-fit"
             >
-              <CircleDollarSign className="size-4" />
+              <Mail className="size-4" />
               Reach support
             </a>
           </div>

@@ -297,3 +297,226 @@ Output format: You MUST return a single JSON object with this exact structure:
     );
   }
 }
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface AssistantChatRequest {
+  message: string;
+  history?: ChatMessage[];
+}
+
+export interface AssistantChatResponse {
+  reply: string;
+  provider: 'gemini' | 'deterministic-faq';
+  timestamp: string;
+}
+
+/**
+ * Intelligent deterministic FAQ assistant.
+ * Provides high-quality, grounded answers about Procura AI when Gemini is unavailable or not configured.
+ */
+export function runDeterministicFaqAssistant(userMessage: string): AssistantChatResponse {
+  const query = userMessage.toLowerCase().trim();
+
+  // 1. What is Procura AI / Purpose / Features
+  if (
+    query.includes('what is procura') ||
+    query.includes('what does procura') ||
+    query.includes('overview') ||
+    query.includes('about procura') ||
+    query.includes('purpose') ||
+    query.includes('how it works') ||
+    query.includes('tell me about')
+  ) {
+    return {
+      reply: `**Procura AI** is an AI-powered procurement intelligence and spend-control platform designed to turn purchasing requests into governed, policy-checked decisions.\n\n**Key Capabilities:**\n1. **Natural-Language Intake**: Describe what your team needs (e.g. "5 developer laptops under $6,000") in plain language.\n2. **AI Catalog Matching**: Gemini AI evaluates requirements against approved catalog items and ranks top 3 options with cost/spec trade-offs.\n3. **SpendGuard Policy Engine**: Enforces department budget caps, approval thresholds, and preferred supplier rules before money moves.\n4. **Human-in-the-Loop Signoff**: Designated managers review flagged purchases with an immutable audit trail.\n5. **PayPal Sandbox Checkout**: Safe end-to-end checkout execution via PayPal Sandbox.\n\nYou can click **"Open Workspace"** or visit \`/app\` to test the full flow!`,
+      provider: 'deterministic-faq',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 2. SpendGuard Policies
+  if (
+    query.includes('spendguard') ||
+    query.includes('policy') ||
+    query.includes('policies') ||
+    query.includes('rules') ||
+    query.includes('guardrail') ||
+    query.includes('limit') ||
+    query.includes('budget')
+  ) {
+    return {
+      reply: `**SpendGuard** is Procura AI's deterministic governance engine that prevents maverick spending before submission.\n\n**How SpendGuard Evaluates Spend:**\n- **Budget Caps**: Checks category ceilings (e.g. IT Equipment, Cloud Infrastructure, Office Supplies) and tracks remaining departmental headroom.\n- **Approval Thresholds**: Auto-approves routine purchases under $1,000, while requiring manager signoff for amounts above $1,000 and executive review over $2,500.\n- **Supplier Governance**: Flags purchases from non-preferred or restricted vendors.\n\n**Three Distinct Outcomes:**\n- 🟢 **ALLOWED**: Completely conforms to budget & policy; proceeds directly.\n- 🟡 **NEEDS_APPROVAL**: Exceeds threshold or uses non-preferred vendor; routes to designated stakeholder.\n- 🔴 **BLOCKED**: Exceeds hard department budget cap or uses prohibited vendor.\n\nYou can customize policy rules anytime in the **Policy Settings** tab in \`/app\`.`,
+      provider: 'deterministic-faq',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 3. Purchase Approvals & Human Signoff
+  if (
+    query.includes('approval') ||
+    query.includes('approve') ||
+    query.includes('human') ||
+    query.includes('signoff') ||
+    query.includes('stakeholder') ||
+    query.includes('review')
+  ) {
+    return {
+      reply: `**Purchase Approvals** in Procura AI keep humans in control of spending decisions.\n\n**Approval Workflow:**\n1. **Automated Flagging**: If a request exceeds $1,000 or triggers a SpendGuard rule, its status is set to \`NEEDS_APPROVAL\`.\n2. **Stakeholder Notification**: The designated approver (Team Lead, Department Head, or VP) receives the request with the AI recommendation, alternative options, and budget impact.\n3. **Decision & Audit**: Approvers can Approve or Reject with notes. Approved requests receive an audit lock and move forward to checkout.\n4. **Status Lifecycle**: Requests progress clearly through \`PENDING\` ➔ \`APPROVED\` ➔ \`COMPLETED\` (or \`REJECTED\`).`,
+      provider: 'deterministic-faq',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 4. PayPal Sandbox Checkout
+  if (
+    query.includes('paypal') ||
+    query.includes('checkout') ||
+    query.includes('payment') ||
+    query.includes('sandbox') ||
+    query.includes('pay')
+  ) {
+    return {
+      reply: `**PayPal Sandbox Checkout** provides a realistic payment experience without moving real funds.\n\n**How It Works in Procura AI:**\n- **Governance Guard**: Only requests that have been verified and **APPROVED** can initiate the PayPal checkout flow.\n- **Official PayPal REST API**: Integrates directly with PayPal's standard v2 order capture APIs configured in Sandbox mode.\n- **Simulated Test Payments**: Uses simulated PayPal test credentials so users can test end-to-end checkout safely.\n- **Order Completion**: Captures order ID and transaction timestamp into your purchase history for auditing.`,
+      provider: 'deterministic-faq',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 5. Catalog & Suppliers
+  if (
+    query.includes('catalog') ||
+    query.includes('supplier') ||
+    query.includes('vendor') ||
+    query.includes('product') ||
+    query.includes('items') ||
+    query.includes('marketplace')
+  ) {
+    return {
+      reply: `Procura AI features a curated enterprise product catalog across key categories:\n\n- **IT Hardware**: Developer laptops, 4K monitors, wireless peripherals (Apple, Dell, Lenovo, Logitech).\n- **Cloud & Infrastructure**: Cloud hosting, database clusters, compute nodes (AWS, Google Cloud).\n- **Software & SaaS**: Security licenses, design tools, enterprise software.\n- **Office & Workplace**: Ergonomic workstations, seating (Herman Miller).\n\n**Note on Marketplaces**: Procura connects with simulated catalog suppliers for this hackathon showcase. Live marketplace logos (Amazon, Flipkart, Swiggy) represent the unified procurement layer concept rather than direct consumer store checkout.`,
+      provider: 'deterministic-faq',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 6. Navigation / Getting Started / Try it
+  if (
+    query.includes('workspace') ||
+    query.includes('get started') ||
+    query.includes('try') ||
+    query.includes('start') ||
+    query.includes('demo') ||
+    query.includes('app')
+  ) {
+    return {
+      reply: `Getting started with Procura AI takes only a few seconds:\n\n1. Click **"Open Workspace"** on the landing page or navigate to \`/app\`.\n2. In the **New Request** tab, type what you need (e.g., *"3 ergonomic office chairs under $1,800"*).\n3. Click **"Analyze with Gemini"** to receive AI-ranked catalog recommendations.\n4. Observe SpendGuard evaluate your request against budget and policy rules.\n5. Click **"Create Purchase Request"** and proceed to review or the PayPal Sandbox checkout demo!`,
+      provider: 'deterministic-faq',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 7. Security, Autonomy & Safety
+  if (
+    query.includes('security') ||
+    query.includes('safe') ||
+    query.includes('autonomous') ||
+    query.includes('ai execute') ||
+    query.includes('privacy')
+  ) {
+    return {
+      reply: `**Procura AI Safety & Autonomy Principles:**\n\n- **Human-in-the-Loop**: The AI never executes financial payments autonomously or overrides policy rules without human approval.\n- **Zero Real-Money Risk**: All payments run on PayPal Sandbox test accounts.\n- **Deterministic Guardrails**: Policy decisions rely on deterministic math, not unconstrained AI hallucinations.\n- **Transparent Audit Trail**: Every decision, match score, and manager approval is logged with timestamps.`,
+      provider: 'deterministic-faq',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Fallback for general / out of scope queries
+  return {
+    reply: `I am the **Procura AI Assistant**, specialized in guiding you through our procurement platform, SpendGuard policy engine, and PayPal checkout demo.\n\nHere are some things you can ask me about:\n- *"What does Procura AI do?"*\n- *"How does SpendGuard enforce policy limits?"*\n- *"How does the human approval process work?"*\n- *"How does the PayPal Sandbox checkout demo work?"*\n- *"How do I launch the workspace?"*\n\nYou can also click **"Open Workspace"** on this page to test the live application!`,
+    provider: 'deterministic-faq',
+    timestamp: new Date().toISOString(),
+  };
+}
+
+/**
+ * Executes assistant chat conversation via Gemini with seamless deterministic FAQ fallback.
+ */
+export async function chatWithAssistant(
+  request: AssistantChatRequest
+): Promise<AssistantChatResponse> {
+  const { message, history = [] } = request;
+
+  if (!env.GEMINI_API_KEY) {
+    return runDeterministicFaqAssistant(message);
+  }
+
+  const systemInstruction = `You are the Procura AI Assistant, a knowledgeable, professional, and friendly procurement guide on the Procura AI landing page.
+Your mission is to help visitors understand Procura AI, its features, architecture, and value proposition.
+
+KNOWLEDGE BASE:
+1. Product Concept: Procura AI is an AI-powered procurement intelligence and spending-control platform designed to eliminate rogue spending for SMBs and enterprise teams.
+2. Workflow:
+   - Intake: Users submit natural-language purchase requests (prompt, target budget, quantity).
+   - AI Sourcing: Gemini AI evaluates requirements against approved catalog items and ranks the top 3 options with cost/spec trade-offs.
+   - SpendGuard: A deterministic policy engine that checks category budget caps, approval thresholds ($1,000 standard, $2,500 executive), preferred supplier policies, and restricted vendors. Generates ALLOWED, NEEDS_APPROVAL, or BLOCKED.
+   - Human Approvals: Stakeholders (team leads, finance) review flagged requests before purchase.
+   - PayPal Sandbox Checkout: Uses the official PayPal REST API in Sandbox mode with test accounts (zero real money).
+3. Catalog: A curated 10-item pre-approved catalog (Apple, Dell, AWS, Lenovo, Herman Miller) used for the demo.
+4. Workspace: Visitors can click "Open Workspace" or visit /app to test the platform.
+
+RESPONSE RULES:
+- Ground answers strictly in the real Procura AI capabilities described above. Do NOT invent live marketplace syncs (Amazon, Flipkart) or autonomous payment execution.
+- If asked about non-procurement or non-Procura topics, politely explain that you specialize in Procura AI and procurement workflows.
+- Keep responses friendly, concise (2-3 short paragraphs or bullet points), and well-formatted with markdown.
+- Never execute purchases or request credit card numbers.`;
+
+  // Build conversational contents
+  const conversationContents: string[] = [];
+
+  // Add recent context history if available (limit to last 6 messages)
+  const recentHistory = history.slice(-6);
+  for (const h of recentHistory) {
+    const roleLabel = h.role === 'user' ? 'User' : 'Assistant';
+    conversationContents.push(`${roleLabel}: ${h.content}`);
+  }
+
+  conversationContents.push(`User: ${message}`);
+  conversationContents.push(`Assistant:`);
+
+  const promptText = conversationContents.join('\n\n');
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+    const modelName = env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: promptText,
+      config: {
+        systemInstruction,
+        temperature: 0.3,
+        maxOutputTokens: 600,
+      },
+    });
+
+    const reply = response.text?.trim();
+
+    if (!reply) {
+      throw new Error('Gemini returned an empty reply for assistant chat.');
+    }
+
+    return {
+      reply,
+      provider: 'gemini',
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.warn(`[Gemini Assistant Chat] Failed to query Gemini: ${errorMsg}. Falling back to deterministic FAQ.`);
+    return runDeterministicFaqAssistant(message);
+  }
+}
+

@@ -12,6 +12,8 @@ interface CinematicScrollProps {
   blurSize?: number;
   accentColor?: string;
   showScrollbar?: boolean;
+  enableTopBlur?: boolean;
+  enableBottomBlur?: boolean;
 }
 
 export const CinematicScroll = ({
@@ -22,6 +24,8 @@ export const CinematicScroll = ({
   blurSize = 80,
   accentColor = "#3b82f6",
   showScrollbar = true,
+  enableTopBlur = false,
+  enableBottomBlur = true,
 }: CinematicScrollProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -60,7 +64,7 @@ export const CinematicScroll = ({
           key={`${side}-${index}`}
           className="absolute inset-0"
           style={{
-            backdropFilter: `blur(${Math.sin(((blurLayers - (index + 1)) / blurLayers) * Math.PI / 2) * blurMax}px) contrast(1.2) brightness(1.1)`,
+            backdropFilter: `blur(${Math.sin(((blurLayers - (index + 1)) / blurLayers) * Math.PI / 2) * blurMax}px)`,
             maskImage: `linear-gradient(to bottom, black, transparent ${((index + 1) / blurLayers) * 100}%)`,
             WebkitMaskImage: `linear-gradient(to bottom, black, transparent ${((index + 1) / blurLayers) * 100}%)`,
           }}
@@ -84,8 +88,8 @@ export const CinematicScroll = ({
         } as React.CSSProperties
       }
     >
-      {blurMask("top")}
-      {blurMask("bottom")}
+      {enableTopBlur && blurMask("top")}
+      {enableBottomBlur && blurMask("bottom")}
 
       {showScrollbar && (
         <motion.div

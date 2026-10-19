@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { analyzePurchasingRequest } from '../services/geminiService.js';
+import { analyzePurchasingRequest, chatWithAssistant } from '../services/geminiService.js';
 
 export const aiRouter = Router();
 
@@ -22,6 +22,22 @@ const analyzePurchaseSchema = z.object({
   preferredSupplier: z.string().optional(),
   urgency: z.enum(['standard', 'expedited', 'flexible']).optional(),
   constraints: z.string().max(1000).optional(),
+});
+
+const assistantChatSchema = z.object({
+  message: z
+    .string({ required_error: 'Message is required' })
+    .min(1, 'Message cannot be empty')
+    .max(1000, 'Message cannot exceed 1000 characters'),
+  history: z
+    .array(
+      z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string().max(2000),
+      })
+    )
+    .max(10)
+    .optional(),
 });
 
 /**
@@ -56,3 +72,36 @@ aiRouter.post(
     }
   }
 );
+
+/**
+ * POST /api/ai/chat
+ * Answers visitor inquiries about Procura AI, SpendGuard, approvals, and PayPal Sandbox demo.
+ */
+aiRouter.post(
+  '/chat',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const parseResult = assistantChatSchema.safeParse(req.body);
+
+      if (!parseResult.success) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Invalid assistant chat payload',
+          details: parseResult.error.flatten().fieldErrors,
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      const result = await chatWithAssistant(parseResult.data);
+
+      res.status(200).json({
+        status: 'success',
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+

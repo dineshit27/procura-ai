@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Navigation5 from "@/components/ui/navigation-5";
+import { SparklesText } from "@/components/ui/sparkles-text";
 
 const barCount = 23;
 const centerIndex = Math.floor(barCount / 2);
@@ -39,8 +40,8 @@ export default function SynthexHero() {
   return (
     <section
       id="top"
-      className="relative min-h-screen overflow-hidden bg-[#030303] text-white selection:bg-blue-500/30"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      className="relative min-h-screen overflow-hidden bg-[#060B1A] text-white selection:bg-[#2457E6]/40"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
       <div className="absolute inset-0 z-0 flex items-end justify-center gap-0 px-0 pb-0">
         {Array.from({ length: barCount }, (_, index) => (
@@ -53,7 +54,7 @@ export default function SynthexHero() {
             style={{
               height: `${22 + Math.pow(Math.abs(index - centerIndex) / centerIndex, 1.4) * 68}%`,
               background:
-                "linear-gradient(to top, #020617 0%, #1e3a8a 22%, #ffffff 42%, #3b82f6 65%, transparent 95%)",
+                "linear-gradient(to top, #060B1A 0%, #173BB8 22%, #FFFFFF 42%, #2457E6 65%, #386BFF 85%, transparent 95%)",
             }}
           />
         ))}
@@ -64,33 +65,42 @@ export default function SynthexHero() {
 
         <main className="flex flex-1 flex-col items-center justify-center px-4 pb-32 text-center">
           <div className="group relative mb-7 cursor-pointer">
-            <div className="absolute inset-0 rounded-full bg-[#3b82f6] opacity-40 blur-2xl transition-all duration-700 group-hover:scale-110 group-hover:opacity-70" />
-            <div className="relative rounded-full border border-blue-300/30 bg-blue-500/10 px-4 py-1.5 text-xs font-medium text-blue-100 backdrop-blur-sm">
+            <div className="absolute inset-0 rounded-full bg-[#2457E6] opacity-40 blur-2xl transition-all duration-700 group-hover:scale-110 group-hover:opacity-70" />
+            <div className="relative rounded-full border border-[#386BFF]/40 bg-[#2457E6]/15 px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#EAF0FF] backdrop-blur-sm shadow-[2px_2px_0px_rgba(255,255,255,0.15)]">
               Intelligence for every purchase
             </div>
           </div>
 
-          <h1 className="mb-5 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
-            Systems That Think Ahead.
+          <h1 className="mb-5 max-w-4xl font-display text-[clamp(2.5rem,5.2vw,4.5rem)] font-bold tracking-[-0.03em] leading-[1.06] text-white">
+            Smarter{" "}
+            <SparklesText
+              as="span"
+              className="inline-block text-inherit font-inherit"
+              style={{ fontSize: 'inherit', fontFamily: 'inherit', fontWeight: 'inherit', lineHeight: 'inherit', letterSpacing: 'inherit' }}
+              colors={{ first: "#60A5FA", second: "#FFFFFF" }}
+              sparklesCount={8}
+            >
+              purchase
+            </SparklesText>
+            . Controlled spending.
           </h1>
 
-          <p className="mb-9 max-w-[540px] text-sm leading-relaxed text-gray-400 md:text-base">
-            Design, build, and optimize procurement workflows using intelligence
-            that maps your processes and improves with every action.
+          <p className="mb-9 max-w-[560px] font-sans text-base leading-relaxed text-slate-300 md:text-lg">
+            Procura AI turns purchasing requests into policy-checked recommendations, with budget controls and human approval before payment.
           </p>
 
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <a
               href="/app"
-              className="w-full rounded-full bg-white px-7 py-3 text-sm font-medium text-black shadow-[0_0_24px_rgba(255,255,255,0.25)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] sm:w-auto"
+              className="w-full rounded-full bg-white px-7 py-3 font-sans text-sm font-bold tracking-wide text-[#111827] border-2 border-white shadow-[3px_3px_0px_#2457E6] transition-all duration-200 hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#386BFF] sm:w-auto"
             >
-              Launch Now
+              Open Workspace
             </a>
             <a
               href="#workflow"
-              className="w-full rounded-full border border-white/10 bg-black/40 px-7 py-3 text-sm font-medium text-white backdrop-blur-md transition-all duration-300 hover:border-white/20 hover:bg-white/10 sm:w-auto"
+              className="w-full rounded-full border-2 border-white/60 bg-black/40 px-7 py-3 font-sans text-sm font-semibold tracking-wide text-white backdrop-blur-md transition-all duration-200 hover:border-white hover:bg-white/10 hover:shadow-[3px_3px_0px_rgba(255,255,255,0.2)] sm:w-auto"
             >
-              Play Video
+              How it works?
             </a>
           </div>
         </main>

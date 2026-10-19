@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Menu,
   X,
+  ArrowLeft,
 } from 'lucide-react';
 import { NavigationTab } from '../types';
 import { HealthCheckResult } from '../services/api';
@@ -69,17 +70,21 @@ export const Navigation: React.FC<NavigationProps> = ({
     <>
       {/* Mobile Top Bar */}
       <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-[#FBF9F5] border-b-2 border-neutral-900 sticky top-0 z-40">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 bg-cobalt-700 border-2 border-neutral-900 flex items-center justify-center font-bold text-white shadow-brutal-xs">
-            P
+        <a href="/" className="flex items-center space-x-3 group cursor-pointer" title="Return to Landing Page">
+          <div className="w-10 h-10 rounded-lg border-2 border-neutral-900 bg-white p-0.5 shadow-brutal-xs flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+            <img
+              src="/procura-icon.png"
+              alt="Procura AI Logo"
+              className="w-full h-full object-contain scale-120"
+            />
           </div>
           <div>
-            <span className="font-extrabold text-base tracking-tight text-neutral-900">PROCURA AI</span>
+            <span className="font-extrabold text-base tracking-tight text-neutral-900 group-hover:text-cobalt-700 transition-colors">PROCURA AI</span>
             <span className="ml-2 text-[10px] font-mono font-bold uppercase bg-amber-200 text-amber-950 px-1.5 py-0.5 border border-neutral-900">
               Demo
             </span>
           </div>
-        </div>
+        </a>
         <button
           onClick={onToggleMobile}
           className="p-2 border-2 border-neutral-900 bg-white shadow-brutal-xs brutal-btn"
@@ -98,15 +103,19 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div className="p-6">
           {/* Logo & Brand Header */}
           <div className="flex items-center justify-between pb-6 border-b-2 border-neutral-900">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-cobalt-700 border-2 border-neutral-900 flex items-center justify-center text-white font-extrabold text-xl shadow-brutal-sm">
-                P
+            <a href="/" className="flex items-center space-x-3 group cursor-pointer" title="Return to Landing Page">
+              <div className="w-12 h-12 rounded-xl border-2 border-neutral-900 bg-white p-1 shadow-brutal-sm flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                <img
+                  src="/procura-icon.png"
+                  alt="Procura AI Logo"
+                  className="w-full h-full object-contain scale-120"
+                />
               </div>
               <div>
-                <div className="font-extrabold text-lg tracking-tight text-neutral-900">PROCURA AI</div>
+                <div className="font-extrabold text-lg tracking-tight text-neutral-900 group-hover:text-cobalt-700 transition-colors">PROCURA AI</div>
                 <div className="text-[11px] font-mono text-neutral-600 tracking-wider">SMART PROCUREMENT</div>
               </div>
-            </div>
+            </a>
             {mobileOpen && (
               <button
                 onClick={onToggleMobile}
@@ -172,6 +181,21 @@ export const Navigation: React.FC<NavigationProps> = ({
               );
             })}
           </nav>
+
+          {/* Back to Landing Page CTA */}
+          <div className="mt-4 pt-3 border-t border-neutral-900/15">
+            <a
+              href="/"
+              className="w-full flex items-center justify-between px-3.5 py-2 text-xs font-mono font-bold text-neutral-600 hover:text-neutral-900 bg-paper-100 hover:bg-paper-200 border border-neutral-900/20 shadow-brutal-xs transition-all"
+              title="Return to Main Landing Page"
+            >
+              <div className="flex items-center space-x-2">
+                <ArrowLeft className="w-3.5 h-3.5 text-cobalt-700" />
+                <span>Return to Home</span>
+              </div>
+              <span className="text-[10px] uppercase text-neutral-400 font-semibold">Exit</span>
+            </a>
+          </div>
         </div>
 
         {/* Footer: Live Backend Status (Preserving Phase 1 Verification) */}

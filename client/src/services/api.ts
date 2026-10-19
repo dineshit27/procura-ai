@@ -534,3 +534,40 @@ export async function fetchCatalogItems(): Promise<import('../types').CatalogIte
   const json = await response.json();
   return json.data || [];
 }
+
+export interface AssistantChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface AssistantChatResult {
+  reply: string;
+  provider: 'gemini' | 'deterministic-faq';
+  timestamp: string;
+}
+
+/**
+ * Sends a message to the Procura AI Assistant backend chat endpoint.
+ */
+export async function sendAssistantChatMessage(payload: {
+  message: string;
+  history?: AssistantChatMessage[];
+}): Promise<AssistantChatResult> {
+  const response = await fetch('/api/ai/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({})) as { message?: string };
+    throw new Error(errData.message || `Chat service unavailable (${response.status})`);
+  }
+
+  const json = await response.json();
+  return json.data;
+}
+

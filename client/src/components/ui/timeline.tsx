@@ -10,6 +10,19 @@ import {
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
+import {
+  Sparkles,
+  ShieldCheck,
+  Users,
+  FileCheck2,
+  Wallet,
+  BarChart3,
+  MessageSquare,
+  Zap,
+  ArrowUpRight,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import Strands from "./strands";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -37,7 +50,7 @@ function useGSAP(
       scope && typeof scope === "object" && "current" in scope
         ? scope.current
         : (scope as Element | null);
-    ctxRef.current = gsap.context(() => {}, el ?? undefined);
+    ctxRef.current = gsap.context(() => { }, el ?? undefined);
     return () => {
       cleanupRef.current?.();
       cleanupRef.current = undefined;
@@ -100,7 +113,7 @@ export type TimelineProps = {
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 function subscribeToReducedMotion(callback: () => void) {
-  if (typeof window === "undefined") return () => {};
+  if (typeof window === "undefined") return () => { };
 
   const mediaQueryList = window.matchMedia(REDUCED_MOTION_QUERY);
   mediaQueryList.addEventListener("change", callback);
@@ -183,6 +196,58 @@ const allJourneyItems: JourneyItem[] = [
   return monthOrder[a.month] - monthOrder[b.month];
 });
 
+type StepMetadata = {
+  tag: string;
+  detail: string;
+  system: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+const stepMeta: Record<string, StepMetadata> = {
+  "intake-march": {
+    tag: "Autonomous Intake",
+    detail: "Natural Language Prompt",
+    system: "Slack & Web",
+    icon: MessageSquare,
+  },
+  "match-july": {
+    tag: "AI Sourcing",
+    detail: "Catalog & Multi-Vendor",
+    system: "Gemini 2.5 Flash",
+    icon: Sparkles,
+  },
+  "guard-april": {
+    tag: "SpendGuard Engine",
+    detail: "Policy, Budget & Vendor",
+    system: "Deterministic",
+    icon: ShieldCheck,
+  },
+  "approve-may": {
+    tag: "Stakeholder Review",
+    detail: "Threshold Governance",
+    system: "Multi-Tier Signoff",
+    icon: Users,
+  },
+  "request-november": {
+    tag: "Clearance & PO",
+    detail: "Designated Ownership",
+    system: "Audit-Locked",
+    icon: FileCheck2,
+  },
+  "checkout-october": {
+    tag: "Instant Settlement",
+    detail: "Live Sandbox Demo",
+    system: "PayPal Gateway",
+    icon: Wallet,
+  },
+  "learn-september": {
+    tag: "Continuous Learning",
+    detail: "Procurement Analytics",
+    system: "Operating Memory",
+    icon: BarChart3,
+  },
+};
+
 export default function Timeline({
   title = "From request to checkout",
   periodLabel = "PROCURA WORKFLOW",
@@ -190,7 +255,7 @@ export default function Timeline({
   mutedTextColor = "var(--color-muted-foreground, #3f3f46)",
   activeColor = "#ff5f00",
   backgroundColor = "var(--color-background, #ffffff)",
-  imageUrl = "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
+  imageUrl = "https://i.pinimg.com/736x/8d/48/32/8d4832f91daa5b3eefb01e238e719288.jpg",
   imageAlt = "Team collaborating around a table",
   duration,
   scrollDuration = 1.2,
@@ -218,8 +283,8 @@ export default function Timeline({
     const scroller = section.closest<HTMLElement>(".cinematic-scroll") ?? undefined;
 
     const isMobile = window.innerWidth < 600;
-    const slidePercent = isMobile ? -57 : -65;
-    const lineWidth = isMobile ? "65%" : "98%";
+    const slidePercent = isMobile ? -64 : -72;
+    const lineWidth = isMobile ? "75%" : "100%";
     const lineStart = isMobile ? "top 30%" : "top 25%";
     const slideEnd = isMobile ? "82% 50%" : "92% bottom";
     const lineEnd = isMobile ? "80% 50%" : "92% bottom";
@@ -272,7 +337,9 @@ export default function Timeline({
     if (reducedMotion) {
       items.forEach((item) => {
         gsap.set(`.jl-${item.id}`, { scaleY: 1 });
+        gsap.set(`.jh-${item.id}`, { scaleX: 1 });
         gsap.set(`.jd-${item.id}`, { scale: 1 });
+        gsap.set(`.jc-${item.id}`, { opacity: 1 });
         gsap.set(`.title-${item.id}`, { opacity: 1, clearProps: "transform" });
         gsap.set(`.description-${item.id}`, {
           opacity: 1,
@@ -287,7 +354,12 @@ export default function Timeline({
         scaleY: 0,
         transformOrigin: "bottom bottom",
       });
+      gsap.set(`.jh-${item.id}`, {
+        scaleX: 0,
+        transformOrigin: "left center",
+      });
       gsap.set(`.jd-${item.id}`, { scale: 0 });
+      gsap.set(`.jc-${item.id}`, { opacity: 0.25 });
       gsap.set(`.title-${item.id}`, { opacity: 1 });
       gsap.set(`.description-${item.id}`, { opacity: 1 });
     });
@@ -313,7 +385,9 @@ export default function Timeline({
       endPos: number,
     ) => {
       const lineSelector = `.jl-${item.id}`;
+      const horizLineSelector = `.jh-${item.id}`;
       const dotSelector = `.jd-${item.id}`;
+      const cardSelector = `.jc-${item.id}`;
       const titleLines = titleSplits[item.id]?.lines || [];
       const descriptionLines = descriptionSplits[item.id]?.lines || [];
 
@@ -342,6 +416,22 @@ export default function Timeline({
           dotSelector,
           {
             scale: 1,
+            duration: normalizedDuration * 0.4,
+          },
+          "<",
+        )
+        .to(
+          horizLineSelector,
+          {
+            scaleX: 1,
+            duration: normalizedDuration * 0.4,
+          },
+          "<",
+        )
+        .to(
+          cardSelector,
+          {
+            opacity: 1,
             duration: normalizedDuration * 0.4,
           },
           "<",
@@ -375,23 +465,23 @@ export default function Timeline({
     const positions: ReadonlyArray<readonly [number, number]> =
       window.innerWidth < 600
         ? [
-            [22, 32],
-            [28, 38],
-            [36, 46],
-            [45, 55],
-            [42, 52],
-            [51, 61],
-            [60, 70],
-          ]
+          [22, 32],
+          [28, 38],
+          [36, 46],
+          [45, 55],
+          [42, 52],
+          [51, 61],
+          [60, 70],
+        ]
         : [
-            [6, 26],
-            [16, 36],
-            [26, 46],
-            [35, 55],
-            [32, 52],
-            [43, 63],
-            [54, 74],
-          ];
+          [6, 26],
+          [16, 36],
+          [26, 46],
+          [35, 55],
+          [32, 52],
+          [43, 63],
+          [54, 74],
+        ];
 
     items.forEach((item, index) => {
       const [startPos, endPos] = positions[index];
@@ -420,16 +510,17 @@ export default function Timeline({
   return (
     <section
       ref={sectionRef}
-      id="journey"
-      className="h-[200vw] max-[600px]:h-[400vh] w-full relative"
+      id="workflow"
+      className="h-[160vw] max-[600px]:h-[320vh] w-full relative border-b-2 border-[#111827]/10"
       style={sectionStyle}
     >
-      <div className="h-screen w-screen sticky top-[0%] pt-[10%] overflow-hidden max-[600px]:top-[5%]">
+      <span id="journey" className="sr-only" />
+      <div className="h-screen w-screen sticky top-[0%] flex flex-col justify-center overflow-hidden">
         <div
           ref={wholeSliderRef}
-          className="mr-[2vw] flex h-[30vw] w-[240vw] items-center gap-[5vw] px-[5vw] max-[600px]:h-[80vh] max-[600px]:w-[800vw] max-[600px]:px-[7vw]"
+          className="mr-[2vw] flex h-[30vw] w-[280vw] items-center gap-[5vw] px-[5vw] max-[600px]:h-[80vh] max-[600px]:w-[950vw] max-[600px]:px-[7vw]"
         >
-          <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[5vw]">
+          <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] border-2 border-[#111827] shadow-[4px_4px_0px_#111827] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[3vw] max-[600px]:shadow-[3px_3px_0px_#111827]">
             <img
               src={imageUrl}
               alt={imageAlt}
@@ -439,105 +530,288 @@ export default function Timeline({
           </div>
 
           <div className="relative h-full w-full">
-            <div className="w-full absolute left-0 top-[49%] tranlate-y-[-50%] flex items-center h-fit">
+            {/* Center Conduit Track (Animated Horizontal Railway) */}
+            <div className="w-full absolute left-0 top-1/2 -translate-y-1/2 flex items-center h-fit pointer-events-none">
               <div
-                className="h-[.8vw] max-[600px]:h-[2vw] max-[600px]:w-[2vw] w-[.8vw] rounded-full"
+                className="size-[0.8vw] max-[600px]:size-[2vw] rounded-full border-2 border-[#111827] shadow-[1px_1px_0px_#111827]"
                 style={activeStyle}
               ></div>
               <div
-                className="h-px w-[0%] rounded-full journey-line"
-                style={activeStyle}
-              ></div>
-              <div
-                className="h-[.8vw] max-[600px]:h-[2vw] max-[600px]:w-[2vw] w-[.8vw] rounded-full"
+                className="h-[3px] w-[0%] rounded-full journey-line"
                 style={activeStyle}
               ></div>
             </div>
 
+            {/* Top Row: Title + Steps 01, 03, 05, 07 */}
             <div className="flex h-1/2 w-full items-center justify-start gap-[.5vw]">
-              <div className="h-full w-[20%] pt-[2vw] max-[600px]:h-fit max-[600px]:pt-[5vw]">
-                <h2 className="w-[65%]  text-[3vw] leading-[0.95] max-[600px]:text-[8.5vw]">
+              <div className="h-full w-[20%] pt-[2vw] max-[600px]:h-fit max-[600px]:pt-[5vw] shrink-0">
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#2457E6] text-white border-2 border-[#111827] shadow-[2px_2px_0px_#111827] font-mono text-[0.65vw] max-[600px]:text-[10px] font-bold uppercase mb-[0.6vw]">
+                  <Zap className="size-[0.7vw] max-[600px]:size-2.5 fill-current" />
+                  <span>Autonomous Flow</span>
+                </div>
+                <h2 className="w-[85%] font-display font-black tracking-[-0.025em] text-[2.6vw] leading-[1.0] text-[#111827] max-[600px]:text-[7.5vw]">
                   {title}
                 </h2>
               </div>
 
               <div className="w-full flex h-full gap-x-[15vw] max-[600px]:gap-x-[40vw]">
-                {topJourneyData.map((item) => (
-                  <div
-                    key={`top-${item.id}`}
-                    className="relative h-full w-[30vw] px-[3vw] max-[600px]:flex max-[600px]:w-[70vw] max-[600px]:flex-col max-[600px]:px-[7vw]"
-                  >
-                    <div className="w-full absolute left-0 bottom-0 top-0 h-full">
-                      <div
-                        className={`size-[1vw] max-[600px]:size-[2.5vw] translate-x-[-50%] relative aspect-square rounded-full jd-${item.id}`}
-                        style={activeStyle}
-                      ></div>
-                      <div
-                        className={`h-[94%] w-px origin-bottom rounded-full jl-${item.id}`}
-                        style={activeStyle}
-                      ></div>
-                    </div>
+                {topJourneyData.map((item) => {
+                  const meta = stepMeta[item.id];
+                  const Icon = meta?.icon || Sparkles;
 
-                    <div className="mt-[-1vw] space-y-[1vw] max-[600px]:mt-[-2vw]">
-                      <h4
-                        className={`title-${item.id}  text-[2.5vw] leading-none max-[600px]:text-[6.4vw]`}
+                  return (
+                    <div
+                      key={`top-${item.id}`}
+                      className="relative h-full w-[30vw] px-[3vw] max-[600px]:flex max-[600px]:w-[70vw] max-[600px]:flex-col max-[600px]:px-[7vw]"
+                    >
+                      {/* Vertical and horizontal connector lines & node */}
+                      <div className="w-[3vw] max-[600px]:w-[7vw] absolute left-0 bottom-0 top-0 h-full pointer-events-none">
+                        {/* Vertical line: from top-[0.7vw] down to bottom-0 (exact center line) */}
+                        <div
+                          className={`absolute left-0 top-[0.7vw] bottom-0 w-[2.5px] -translate-x-1/2 origin-bottom jl-${item.id}`}
+                          style={activeStyle}
+                        ></div>
+                        {/* Horizontal line: bridges from left-0 straight into the card border */}
+                        <div
+                          className={`absolute left-0 top-[0.7vw] -translate-y-1/2 h-[2.5px] w-full origin-left jh-${item.id}`}
+                          style={activeStyle}
+                        ></div>
+                        {/* Corner junction node */}
+                        <div
+                          className={`absolute left-0 top-[0.7vw] -translate-x-1/2 -translate-y-1/2 size-[1vw] max-[600px]:size-[2.5vw] rounded-full border-2 border-[#111827] bg-[#2457E6] shadow-[2px_2px_0px_#111827] flex items-center justify-center jd-${item.id}`}
+                        >
+                          <div className="size-[0.3vw] max-[600px]:size-[1vw] rounded-full bg-white" />
+                        </div>
+                      </div>
+
+                      {/* Neo-brutalist Step Card Container */}
+                      <div className={`mt-[-1vw] max-[600px]:mt-[-2vw] jc-${item.id}`}>
+                        <div className="bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
+                          {/* Card header */}
+                          <div className="flex items-center justify-between gap-2 border-b-2 border-[#111827]/10 pb-[0.4vw] mb-[0.6vw] max-[600px]:pb-2 max-[600px]:mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[0.65vw] max-[600px]:text-[9.5px] font-black uppercase px-2 py-0.5 bg-[#2457E6] text-white rounded border border-[#111827] shadow-[1px_1px_0px_#111827]">
+                                STEP {Number(item.year)}
+                              </span>
+                              <span className="font-mono text-[0.65vw] max-[600px]:text-[9.5px] font-bold uppercase tracking-wider text-[#111827]">
+                                {meta?.tag}
+                              </span>
+                            </div>
+                            <div className="size-[1.6vw] max-[600px]:size-7 rounded-md bg-[#E6EEFE] border border-[#2457E6]/30 flex items-center justify-center text-[#2457E6]">
+                              <Icon className="size-[0.85vw] max-[600px]:size-3.5" />
+                            </div>
+                          </div>
+
+                          {/* Animated Title & Description */}
+                          <div className="space-y-[0.3vw] max-[600px]:space-y-1">
+                            <h4
+                              className={`title-${item.id} font-display font-black tracking-tight text-[1.4vw] leading-tight text-[#111827] max-[600px]:text-[4.5vw]`}
+                            >
+                              Step {Number(item.year)}
+                            </h4>
+                            <p
+                              className={`description-${item.id} font-sans text-[0.9vw] leading-snug text-[#46536B] max-[600px]:text-[3.2vw] font-medium`}
+                              style={mutedTextStyle}
+                            >
+                              {item.content}
+                            </p>
+                          </div>
+
+                          {/* Technical micro-spec footer */}
+                          <div className="mt-[0.6vw] pt-[0.4vw] border-t border-[#111827]/10 flex items-center justify-between text-[0.6vw] max-[600px]:text-[8.5px] font-mono text-[#6B7280] max-[600px]:mt-2 max-[600px]:pt-1.5">
+                            <span className="flex items-center gap-1 font-semibold">
+                              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                              {meta?.detail}
+                            </span>
+                            <span className="text-[#2457E6] font-bold">{meta?.system}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Procura AI App Launchpad Card after Step 07 (Phase 7) */}
+                <div
+                  className="relative h-full w-[30vw] px-[2vw] max-[600px]:flex max-[600px]:w-[80vw] max-[600px]:flex-col max-[600px]:px-[5vw] shrink-0 pointer-events-auto"
+                >
+                  {/* Neo-brutalist Step Card Container */}
+                  <div className="mt-[-1vw] max-[600px]:mt-[-2vw]">
+                    <div className="relative bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
+                      {/* Direct horizontal conduit connection terminal on card left border */}
+                      <div
+                        className="absolute -left-[0.6vw] max-[600px]:-left-2 top-[16vw] max-[600px]:top-1/2 -translate-y-1/2 size-[1.1vw] max-[600px]:size-4 rounded-full border-2 border-[#111827] bg-[#2457E6] shadow-[1px_1px_0px_#111827] flex items-center justify-center pointer-events-none z-10"
+                        aria-hidden="true"
                       >
-                        Phase {Number(item.year)}
-                      </h4>
-                      <p
-                        className={`description-${item.id} w-[90%] text-[1.5vw] leading-[1.15] max-[600px]:w-[90%] max-[600px]:text-[4.8vw]`}
-                        style={mutedTextStyle}
+                        <div className="size-[0.35vw] max-[600px]:size-1 rounded-full bg-white animate-pulse" />
+                      </div>
+
+                      {/* Card header */}
+                      <div className="flex items-center justify-between gap-2 border-b-2 border-[#111827]/10 pb-[0.4vw] mb-[0.6vw] max-[600px]:pb-2 max-[600px]:mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-[0.65vw] max-[600px]:text-[9.5px] font-black uppercase px-2 py-0.5 bg-[#2457E6] text-white rounded border border-[#111827] shadow-[1px_1px_0px_#111827]">
+                            PROCURA AI APP
+                          </span>
+                          <span className="font-mono text-[0.65vw] max-[600px]:text-[9.5px] font-bold uppercase tracking-wider text-[#111827]">
+                            Live Interactive Workspace
+                          </span>
+                        </div>
+                        <div className="size-[1.6vw] max-[600px]:size-7 rounded-md bg-white border border-[#2457E6]/30 flex items-center justify-center p-0.5 shadow-xs overflow-hidden">
+                          <img src="/procura-icon.png" alt="Procura AI Logo" className="size-full object-contain" />
+                        </div>
+                      </div>
+
+                      {/* Animated Title & Description */}
+                      <div className="space-y-[0.3vw] max-[600px]:space-y-1">
+                        <h4
+                          className="font-display font-black tracking-tight text-[1.4vw] leading-tight text-[#111827] max-[600px]:text-[4.5vw]"
+                        >
+                          Enter Procura AI
+                        </h4>
+                        <p
+                          className="font-sans text-[0.85vw] leading-snug text-[#46536B] max-[600px]:text-[3vw] font-medium"
+                          style={mutedTextStyle}
+                        >
+                          Launch the full procurement workspace to submit purchase requests, test SpendGuard policies, and run autonomous approvals.
+                        </p>
+                      </div>
+
+                      {/* Clearly Visible Interactive Strands Canvas */}
+                      <div className="h-[12vw] max-[600px]:h-48 w-full relative rounded-lg border-2 border-[#111827] bg-[#111c38] overflow-hidden shadow-[2px_2px_0px_#111827] mt-[0.5vw]">
+                        {/* Luminous ambient backdrop to make the particle clearly visible */}
+                        <div
+                          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.35)_0%,rgba(37,99,235,0.18)_50%,rgba(17,28,56,0.95)_85%)] pointer-events-none"
+                          aria-hidden="true"
+                        />
+                        <Strands
+                          colors={['#2457E6', '#60a5fa', '#93c5fd', '#ffffff', '#38bdf8', '#3b82f6', '#2563eb']}
+                          interactive={true}
+                          clickPulse={true}
+                          energy={0.8}
+                          speed={1.1}
+                          glass={true}
+                          glassSize={0.92}
+                          scale={1.0}
+                          glow={1.6}
+                          intensity={1.3}
+                          rim={2.2}
+                          className="w-full h-full relative z-10"
+                        />
+                      </div>
+
+                      {/* Action CTA: Open Workspace */}
+                      <Link
+                        to="/app"
+                        className="mt-[0.6vw] max-[600px]:mt-2.5 w-full flex items-center justify-center gap-2 py-[0.6vw] max-[600px]:py-2.5 px-4 rounded-lg bg-[#2457E6] hover:bg-[#1d4ed8] text-white font-mono text-[0.8vw] max-[600px]:text-[12px] font-black uppercase tracking-wider border-2 border-[#111827] shadow-[3px_3px_0px_#111827] hover:shadow-[1px_1px_0px_#111827] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[3px] active:translate-y-[3px] transition-all cursor-pointer group"
                       >
-                        {item.content}
-                      </p>
+                        <span>Open Workspace</span>
+                        <ArrowUpRight className="size-[0.9vw] max-[600px]:size-4 stroke-[2.5] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </Link>
+
+                      {/* Technical micro-spec footer */}
+                      <div className="mt-[0.6vw] pt-[0.4vw] border-t border-[#111827]/10 flex items-center justify-between text-[0.6vw] max-[600px]:text-[8.5px] font-mono text-[#6B7280] max-[600px]:mt-2 max-[600px]:pt-1.5">
+                        <span className="flex items-center gap-1 font-semibold">
+                          <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Live Demo Workspace
+                        </span>
+                        <span className="text-[#2457E6] font-bold">Instant Access</span>
+                      </div>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
 
+            {/* Bottom Row: Period Label + Steps 02, 04, 06 */}
             <div className="h-1/2 flex items-center justify-start w-full">
-              <div className="w-[34%] pt-[2vw] max-[600px]:pt-[5vw] max-[600px]:w-[30%] h-full">
-                <p
-                  className=" text-[1.65vw] leading-none max-[600px]:text-[4.2vw]"
-                  style={mutedTextStyle}
-                >
-                  {periodLabel}
+              <div className="w-[34%] pt-[2vw] max-[600px]:pt-[5vw] max-[600px]:w-[30%] h-full shrink-0">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border-2 border-[#111827] shadow-[3px_3px_0px_#111827] w-fit mb-[0.6vw]">
+                  <span className="size-2 rounded-full bg-[#2457E6] animate-ping" />
+                  <p className="font-mono uppercase tracking-[0.16em] text-[0.85vw] leading-none max-[600px]:text-[3.2vw] font-black text-[#111827]">
+                    {periodLabel}
+                  </p>
+                </div>
+                <p className="font-mono text-[0.75vw] text-[#46536B] leading-normal max-[600px]:text-[2.8vw] w-[80%]">
+                  7 interconnected stages from natural language prompt to audit-locked transaction.
                 </p>
               </div>
 
               <div className="w-full flex h-full gap-x-[20vw] ml-[7vw] max-[600px]:gap-x-[40vw] max-[600px]:ml-[7vw]">
-                {bottomJourneyData.map((item) => (
-                  <div
-                    key={`bottom-${item.id}`}
-                    className="relative h-full w-[25vw] px-[3vw] max-[600px]:w-[70vw] max-[600px]:px-[7vw]"
-                  >
-                    <div className="w-full absolute left-0 bottom-[-1%] h-full">
-                      <div
-                        className={`h-[94%] origin-top w-px rounded-full max-[600px]:h-full jl-${item.id}`}
-                        style={activeStyle}
-                      ></div>
-                      <div
-                        className={`size-[1vw] max-[600px]:size-[2.5vw] translate-x-[-50%] relative w-auto aspect-square rounded-full jd-${item.id}`}
-                        style={activeStyle}
-                      ></div>
-                    </div>
+                {bottomJourneyData.map((item) => {
+                  const meta = stepMeta[item.id];
+                  const Icon = meta?.icon || Sparkles;
 
-                    <div className="flex h-full w-full flex-col justify-end space-y-[1vw]">
-                      <h4
-                        className={`title-${item.id}  text-[2.5vw] leading-none max-[600px]:text-[6.4vw]`}
-                      >
-                        Phase {Number(item.year)}
-                      </h4>
-                      <p
-                        className={`description-${item.id} w-[90%] text-[1.5vw] leading-[1.15] max-[600px]:w-[90%] max-[600px]:text-[4.8vw]`}
-                        style={mutedTextStyle}
-                      >
-                        {item.content}
-                      </p>
+                  return (
+                    <div
+                      key={`bottom-${item.id}`}
+                      className="relative h-full w-[25vw] px-[3vw] max-[600px]:w-[70vw] max-[600px]:px-[7vw]"
+                    >
+                      {/* Vertical and horizontal connector lines & node */}
+                      <div className="w-[3vw] max-[600px]:w-[7vw] absolute left-0 top-0 bottom-0 h-full pointer-events-none">
+                        {/* Vertical line: from top-0 (exact center line) down to bottom-[0.8vw] */}
+                        <div
+                          className={`absolute left-0 top-0 bottom-[0.8vw] w-[2.5px] -translate-x-1/2 origin-top jl-${item.id}`}
+                          style={activeStyle}
+                        ></div>
+                        {/* Horizontal line: bridges from left-0 straight into the card border */}
+                        <div
+                          className={`absolute left-0 bottom-[0.8vw] -translate-y-1/2 h-[2.5px] w-full origin-left jh-${item.id}`}
+                          style={activeStyle}
+                        ></div>
+                        {/* Corner junction node */}
+                        <div
+                          className={`absolute left-0 bottom-[0.8vw] -translate-x-1/2 translate-y-1/2 size-[1vw] max-[600px]:size-[2.5vw] rounded-full border-2 border-[#111827] bg-[#2457E6] shadow-[2px_2px_0px_#111827] flex items-center justify-center jd-${item.id}`}
+                        >
+                          <div className="size-[0.3vw] max-[600px]:size-[1vw] rounded-full bg-white" />
+                        </div>
+                      </div>
+
+                      {/* Neo-brutalist Step Card Container */}
+                      <div className={`flex h-full w-full flex-col justify-end jc-${item.id}`}>
+                        <div className="bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
+                          {/* Card header */}
+                          <div className="flex items-center justify-between gap-2 border-b-2 border-[#111827]/10 pb-[0.4vw] mb-[0.6vw] max-[600px]:pb-2 max-[600px]:mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[0.65vw] max-[600px]:text-[9.5px] font-black uppercase px-2 py-0.5 bg-[#2457E6] text-white rounded border border-[#111827] shadow-[1px_1px_0px_#111827]">
+                                STEP {Number(item.year)}
+                              </span>
+                              <span className="font-mono text-[0.65vw] max-[600px]:text-[9.5px] font-bold uppercase tracking-wider text-[#111827]">
+                                {meta?.tag}
+                              </span>
+                            </div>
+                            <div className="size-[1.6vw] max-[600px]:size-7 rounded-md bg-[#E6EEFE] border border-[#2457E6]/30 flex items-center justify-center text-[#2457E6]">
+                              <Icon className="size-[0.85vw] max-[600px]:size-3.5" />
+                            </div>
+                          </div>
+
+                          {/* Animated Title & Description */}
+                          <div className="space-y-[0.3vw] max-[600px]:space-y-1">
+                            <h4
+                              className={`title-${item.id} font-display font-black tracking-tight text-[1.4vw] leading-tight text-[#111827] max-[600px]:text-[4.5vw]`}
+                            >
+                              Step {Number(item.year)}
+                            </h4>
+                            <p
+                              className={`description-${item.id} font-sans text-[0.9vw] leading-snug text-[#46536B] max-[600px]:text-[3.2vw] font-medium`}
+                              style={mutedTextStyle}
+                            >
+                              {item.content}
+                            </p>
+                          </div>
+
+                          {/* Technical micro-spec footer */}
+                          <div className="mt-[0.6vw] pt-[0.4vw] border-t border-[#111827]/10 flex items-center justify-between text-[0.6vw] max-[600px]:text-[8.5px] font-mono text-[#6B7280] max-[600px]:mt-2 max-[600px]:pt-1.5">
+                            <span className="flex items-center gap-1 font-semibold">
+                              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                              {meta?.detail}
+                            </span>
+                            <span className="text-[#2457E6] font-bold">{meta?.system}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

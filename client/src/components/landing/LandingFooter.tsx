@@ -5,6 +5,7 @@ export const LandingFooter: React.FC = () => {
   return (
     <div className="landing-footer" data-cinematic-scroll-footer>
       <Footer22
+        theme="black"
         brandName="procura"
         offerColumns={[
           {
@@ -48,7 +49,7 @@ export const LandingFooter: React.FC = () => {
         newsletterDescription="Explore the Procura demo workspace and see every decision in context."
         contactHeading="Start a request"
         contactDescription="Payments use PayPal Sandbox. Catalog and history records are simulated unless your local API is running."
-        emailContact="hello@procura.ai"
+        emailContact="m.dinesh.it27@gmail.com"
         bottomLinks={[
           { label: 'Platform', href: '#platform' },
           { label: 'Product', href: '#product' },

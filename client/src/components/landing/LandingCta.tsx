@@ -55,26 +55,26 @@ export const LandingCta: React.FC = () => {
   }, []);
 
   return (
-    <section className="landing-cta-section py-8">
-      <div className="landing-cta-shell">
+    <section className="landing-cta-section bg-[#E6EEFE] py-8 sm:py-10 border-b-2 border-[#111827]/10">
+      <div className="landing-cta-shell bg-[#E6EEFE]">
         <div className="landing-cta-shell-inner">
           <div className="landing-cta-copy">
-            <p className="landing-mono text-[12px] uppercase tracking-[0.16em] text-[#623cf6] font-semibold">
+            <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[#2457E6] font-bold">
               Start with one request
             </p>
-            <h2 className="landing-display mt-4 text-[48px] leading-[0.98] sm:text-[64px]">
+            <h2 className="font-display mt-4 text-[clamp(2.25rem,4.5vw,4rem)] leading-[1.02] font-bold tracking-[-0.025em] text-[#111827]">
               Bring order to the next purchase.
             </h2>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+            <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-[#46536B] sm:text-lg">
               Open the demo workspace to inspect SpendGuard, submit a request, or walk an approved
               order through PayPal Sandbox.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link to="/app" className="landing-pill landing-pill--purple">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row font-sans">
+              <Link to="/app" className="landing-pill landing-pill--purple font-bold text-sm tracking-wide">
                 Open workspace
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
-              <Link to="/app?tab=new-request" className="landing-pill landing-cta-light-pill">
+              <Link to="/app?tab=new-request" className="landing-pill landing-cta-light-pill font-bold text-sm tracking-wide">
                 Create a purchase request
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
@@ -84,7 +84,7 @@ export const LandingCta: React.FC = () => {
           <div ref={marqueeRef} className="landing-cta-marquee" aria-label="Procura workflow areas">
             <VerticalMarquee>
               {MARQUEE_ITEMS.map((item) => (
-                <div key={item} className="landing-cta-marquee-item landing-display">
+                <div key={item} className="landing-cta-marquee-item font-display font-bold tracking-tight text-[clamp(32px,3.8vw,64px)]">
                   {item}
                 </div>
               ))}

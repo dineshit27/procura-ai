@@ -10,32 +10,33 @@ import {
 } from "react-icons/hi";
 
 const cardClassName =
-  "rounded-3xl bg-muted/50 ring-0 transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]";
+  "rounded-2xl border-2 border-[#111827] bg-white transition-all duration-200 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6]";
 const iconClassName =
-  "flex h-10 w-10 items-center justify-center rounded-lg bg-white/80 shadow-[inset_0_2px_0_2px_rgba(255,255,255,1),0_2px_4px_rgba(0,0,0,0.05)]";
+  "flex h-10 w-10 items-center justify-center rounded-lg border border-[#111827] bg-[#EAF0FF] shadow-[2px_2px_0px_#111827]";
 const badgeClassName =
-  "text-muted-foreground inline-flex items-center rounded-md bg-white/80 px-2 py-1 text-[10px] font-medium shadow-[0_1px_4px_rgba(0,0,0,0.05)]";
+  "font-mono text-[#173BB8] inline-flex items-center rounded-md border border-[#2457E6]/30 bg-[#EAF0FF] px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase";
 
 export default function Features1() {
   return (
-    <section className="theme-injected flex w-full flex-col items-center justify-center px-[clamp(20px,4vw,64px)] py-16">
-      <h2 className="mb-12 max-w-3xl text-center text-3xl leading-[0.98] font-semibold md:text-5xl">
+    <section id="product" className="theme-injected flex w-full flex-col items-center justify-center bg-white px-[clamp(20px,4vw,64px)] py-10 sm:py-14 border-b-2 border-[#111827]/10">
+      <span id="platform" className="sr-only" />
+      <h2 className="mb-8 max-w-3xl text-center font-display text-[clamp(2rem,4vw,3.25rem)] font-bold tracking-[-0.025em] leading-[1.08] text-[#111827]">
         Everything your team needs to purchase with confidence
       </h2>
 
-      <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-3">
         <Card className={cardClassName}>
           <CardContent className="p-6">
-            <div className="bg-muted mb-2 size-fit rounded-lg p-px">
+            <div className="mb-3 size-fit">
               <div className={iconClassName}>
-                <HiLightBulb className="h-5 w-5 text-orange-500" />
+                <HiLightBulb className="h-5 w-5 text-[#2457E6]" />
               </div>
             </div>
-            <h3 className="text-lg font-medium">Describe the need</h3>
-            <p className="text-muted-foreground mb-3 text-sm">
+            <h3 className="font-display text-[22px] font-bold tracking-tight text-[#111827]">Describe the need</h3>
+            <p className="mb-4 font-sans text-[15px] leading-relaxed text-[#46536B]">
               Turn a plain-language team request into a structured purchase brief.
             </p>
-            <div className="bg-muted inline-flex rounded-lg p-0.5">
+            <div className="inline-flex">
               <span className={badgeClassName}>AI-assisted intake</span>
             </div>
           </CardContent>
@@ -43,51 +44,51 @@ export default function Features1() {
 
         <Card className={cardClassName}>
           <CardContent className="p-6">
-            <div className="bg-muted mb-2 size-fit rounded-lg p-px">
+            <div className="mb-3 size-fit">
               <div className={iconClassName}>
-                <HiDatabase className="h-5 w-5 text-purple-500" />
+                <HiDatabase className="h-5 w-5 text-[#173BB8]" />
               </div>
             </div>
-            <h3 className="mb-1 text-lg font-medium">Match the catalog</h3>
-            <p className="text-muted-foreground mb-3 text-sm">
+            <h3 className="mb-1 font-display text-[22px] font-bold tracking-tight text-[#111827]">Match the catalog</h3>
+            <p className="mb-4 font-sans text-[15px] leading-relaxed text-[#46536B]">
               Compare relevant products, suppliers, and prices before you commit.
             </p>
-            <div className="bg-muted inline-flex rounded-lg p-0.5">
+            <div className="inline-flex">
               <span className={badgeClassName}>Context-aware options</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="row-span-2 rounded-3xl bg-muted/50 ring-0 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]">
+        <Card className="row-span-2 rounded-2xl border-2 border-[#111827] bg-white transition-all duration-200 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6]">
           <CardContent className="p-6">
-            <div className="bg-muted mb-3 size-fit rounded-lg p-px">
+            <div className="mb-4 size-fit">
               <div className={iconClassName}>
-                <HiShieldCheck className="h-5 w-5 text-green-500" />
+                <HiShieldCheck className="h-5 w-5 text-[#2457E6]" />
               </div>
             </div>
-            <h3 className="mb-2 text-lg font-medium">SpendGuard protection</h3>
-            <p className="text-muted-foreground mb-6 text-sm">
+            <h3 className="mb-2 font-display text-[22px] font-bold tracking-tight text-[#111827]">SpendGuard protection</h3>
+            <p className="mb-6 font-sans text-[15px] leading-relaxed text-[#46536B]">
               Apply budget, supplier, and policy checks before an order reaches checkout.
             </p>
 
-            <div className="space-y-3">
-              <div className="bg-muted flex items-center justify-between rounded-md px-3 py-2 text-xs">
-                <span className="text-muted-foreground">Budget policy</span>
-                <span className="font-medium">Checked</span>
+            <div className="space-y-3 font-mono">
+              <div className="flex items-center justify-between rounded-lg border border-[#111827]/15 bg-[#F5F8FF] px-3.5 py-2.5 text-xs">
+                <span className="text-[#46536B] font-medium">Budget policy</span>
+                <span className="font-bold text-[#2457E6] bg-[#EAF0FF] px-2 py-0.5 rounded border border-[#2457E6]/20 uppercase tracking-wider text-[11px]">Checked</span>
               </div>
-              <div className="bg-muted flex items-center justify-between rounded-md px-3 py-2 text-xs">
-                <span className="text-muted-foreground">Supplier match</span>
-                <span className="font-medium">Verified</span>
+              <div className="flex items-center justify-between rounded-lg border border-[#111827]/15 bg-[#F5F8FF] px-3.5 py-2.5 text-xs">
+                <span className="text-[#46536B] font-medium">Supplier match</span>
+                <span className="font-bold text-[#2457E6] bg-[#EAF0FF] px-2 py-0.5 rounded border border-[#2457E6]/20 uppercase tracking-wider text-[11px]">Verified</span>
               </div>
-              <div className="bg-muted flex items-center justify-between rounded-md px-3 py-2 text-xs">
-                <span className="text-muted-foreground">Approval trail</span>
-                <span className="font-medium">Recorded</span>
+              <div className="flex items-center justify-between rounded-lg border border-[#111827]/15 bg-[#F5F8FF] px-3.5 py-2.5 text-xs">
+                <span className="text-[#46536B] font-medium">Approval trail</span>
+                <span className="font-bold text-[#2457E6] bg-[#EAF0FF] px-2 py-0.5 rounded border border-[#2457E6]/20 uppercase tracking-wider text-[11px]">Recorded</span>
               </div>
             </div>
           </CardContent>
 
           <div className="px-6 pb-6">
-            <div className="bg-muted inline-flex rounded-lg p-0.5">
+            <div className="inline-flex">
               <span className={badgeClassName}>Ready for approval</span>
             </div>
           </div>
@@ -95,16 +96,16 @@ export default function Features1() {
 
         <Card className={cardClassName}>
           <CardContent className="p-6">
-            <div className="bg-muted mb-2 size-fit rounded-lg p-px">
+            <div className="mb-3 size-fit">
               <div className={iconClassName}>
-                <HiSwitchHorizontal className="h-5 w-5 text-pink-500" />
+                <HiSwitchHorizontal className="h-5 w-5 text-[#386BFF]" />
               </div>
             </div>
-            <h3 className="mb-1 text-lg font-medium">Keep work moving</h3>
-            <p className="text-muted-foreground mb-3 text-sm">
+            <h3 className="mb-1 font-display text-[22px] font-bold tracking-tight text-[#111827]">Keep work moving</h3>
+            <p className="mb-4 font-sans text-[15px] leading-relaxed text-[#46536B]">
               Keep approved purchases synchronized from decision to Sandbox checkout.
             </p>
-            <div className="bg-muted inline-flex rounded-lg p-0.5">
+            <div className="inline-flex">
               <span className={badgeClassName}>No hidden delays</span>
             </div>
           </CardContent>
@@ -112,16 +113,16 @@ export default function Features1() {
 
         <Card className={cardClassName}>
           <CardContent className="p-6">
-            <div className="bg-muted mb-2 size-fit rounded-lg p-px">
+            <div className="mb-3 size-fit">
               <div className={iconClassName}>
-                <HiSupport className="h-5 w-5 text-blue-500" />
+                <HiSupport className="h-5 w-5 text-[#2457E6]" />
               </div>
             </div>
-            <h3 className="mb-1 text-lg font-medium">Stay in control</h3>
-            <p className="text-muted-foreground mb-3 text-sm">
+            <h3 className="mb-1 font-display text-[22px] font-bold tracking-tight text-[#111827]">Stay in control</h3>
+            <p className="mb-4 font-sans text-[15px] leading-relaxed text-[#46536B]">
               Give every stakeholder a clear view of status, ownership, and next steps.
             </p>
-            <div className="bg-muted inline-flex rounded-lg p-0.5">
+            <div className="inline-flex">
               <span className={badgeClassName}>One shared workspace</span>
             </div>
           </CardContent>

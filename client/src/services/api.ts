@@ -53,6 +53,14 @@ export function getApiBaseUrl(): string {
     }
   }
 
+  // Static production deployments do not have Vite's development proxy. Use
+  // the deployed API when a build omitted VITE_API_URL (for example, a Render
+  // static-site deployment), rather than accidentally requesting /api from
+  // the SPA host.
+  if (import.meta.env.PROD) {
+    return 'https://procura-ai-f4eo.onrender.com';
+  }
+
   // Local development default: empty string allows Vite dev proxy to route /api -> targetBackend
   return '';
 }

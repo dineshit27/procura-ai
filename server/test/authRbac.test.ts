@@ -36,6 +36,7 @@ async function invoke(clients: AuthClients | null, authorization?: string): Prom
   return { status, body, next };
 }
 
+async function main(): Promise<void> {
 await runTest('missing role assignment is forbidden with an actionable error', async () => {
   const result = await invoke(authClients(null, { id: 'user-1', email: 'admin@example.com' }), 'Bearer valid-token');
   assert.equal(result.status, 403);
@@ -47,6 +48,13 @@ await runTest('valid server-side role assignment authorizes the request', async 
   const result = await invoke(authClients({ role: 'admin' }, { id: 'user-1', email: 'admin@example.com' }), 'Bearer valid-token');
   assert.equal(result.status, 200);
   assert.equal(result.next, true);
+});
+
+await runTest('an unrecognized stored role is forbidden', async () => {
+  const result = await invoke(authClients({ role: 'superuser' }, { id: 'user-1' }), 'Bearer valid-token');
+  assert.equal(result.status, 403);
+  assert.deepEqual(result.body, { error: 'ROLE_NOT_ASSIGNED', message: 'No authorized role assignment was found. Ask a Procura administrator to assign your role.' });
+  assert.equal(result.next, false);
 });
 
 await runTest('missing or invalid access tokens are unauthorized', async () => {
@@ -77,5 +85,19 @@ await runTest('initial admin setup rejects unverified users before role assignme
   await assert.rejects(() => assignInitialAdmin(client as never, 'admin@example.com'), InitialAdminSetupError);
 });
 
+await runTest('initial admin setup does not assign a nonexistent user', async () => {
+  const client = {
+    auth: { admin: { listUsers: async () => ({ data: { users: [] }, error: null }) } },
+    rpc: async () => { throw new Error('must not be called'); },
+  };
+  await assert.rejects(() => assignInitialAdmin(client as never, 'missing@example.com'), InitialAdminSetupError);
+});
+
 console.log(`Auth/RBAC tests: ${passed} passed, ${failed} failed`);
-if (failed) process.exit(1);
+if (failed) process.exitCode = 1;
+}
+
+void main().catch((error: unknown) => {
+  console.error('Auth/RBAC test runner failed.', error);
+  process.exitCode = 1;
+});

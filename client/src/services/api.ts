@@ -29,6 +29,26 @@ export interface HealthCheckResult {
 }
 
 /**
+ * A deliberately small, credential-free representation of an API failure.
+ * Callers can distinguish authorization failures from connectivity failures
+ * without parsing an error message or exposing response bodies.
+ */
+export class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly code?: string
+  ) {
+    super(message);
+    this.name = 'ApiRequestError';
+  }
+}
+
+export function isAuthorizationError(error: unknown): boolean {
+  return error instanceof ApiRequestError && (error.status === 401 || error.status === 403);
+}
+
+/**
  * Resolves the backend origin for Procura AI API calls:
  * 1. Checks VITE_API_URL (set at build-time or in local .env).
  * 2. In production on Render (when running on procura-io.onrender.com),
@@ -170,7 +190,7 @@ export async function safeRequestJson<T>(
     const errorMsg =
       (errJson && (errJson.message || errJson.error)) ||
       `HTTP ${response.status}: ${response.statusText}`;
-    throw new Error(errorMsg);
+    throw new ApiRequestError(String(errorMsg), response.status, typeof errJson?.error === 'string' ? errJson.error : undefined);
   }
 
   return response.json();

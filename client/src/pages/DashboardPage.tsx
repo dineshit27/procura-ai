@@ -5,7 +5,7 @@ import {
   INITIAL_ACTIVITY_ITEMS,
   INITIAL_SETTINGS,
 } from '../data/demoData';
-import { checkBackendHealth, fetchPurchaseRequests, HealthCheckResult } from '../services/api';
+import { checkBackendHealth, fetchPurchaseRequests, HealthCheckResult, isAuthorizationError } from '../services/api';
 import { Navigation } from '../components/Navigation';
 import { Header } from '../components/Header';
 import { OverviewView } from '../views/OverviewView';
@@ -13,6 +13,7 @@ import { NewRequestView } from '../views/NewRequestView';
 import { CatalogView } from '../views/CatalogView';
 import { HistoryView } from '../views/HistoryView';
 import { SettingsView } from '../views/SettingsView';
+import { useAuth } from '../auth/AuthContext';
 
 const DASHBOARD_TABS: NavigationTab[] = [
   'overview',
@@ -35,6 +36,7 @@ function readInitialTab(search: string): NavigationTab {
 }
 
 export const DashboardPage: React.FC = () => {
+  const { signOut } = useAuth();
   // Navigation State
   const [activeTab, setActiveTab] = useState<NavigationTab>(() =>
     readInitialTab(window.location.search)
@@ -46,6 +48,7 @@ export const DashboardPage: React.FC = () => {
   const [requestsLoading, setRequestsLoading] = useState<boolean>(true);
   const [requestsError, setRequestsError] = useState<string | null>(null);
   const [isUsingDemoFallback, setIsUsingDemoFallback] = useState<boolean>(false);
+  const [authorizationError, setAuthorizationError] = useState<string | null>(null);
   const [activity, setActivity] = useState(INITIAL_ACTIVITY_ITEMS);
   const [settings, setSettings] = useState<ProcurementSettings>(INITIAL_SETTINGS);
 
@@ -63,14 +66,26 @@ export const DashboardPage: React.FC = () => {
         setRequests(live);
         setIsUsingDemoFallback(false);
         setRequestsError(null);
+        setAuthorizationError(null);
         return live;
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Connection failed';
+      if (isAuthorizationError(err)) {
+        // A signed-in user without a trusted role must never be shown data that
+        // could be mistaken for the protected backend dataset.
+        setRequests([]);
+        setIsUsingDemoFallback(false);
+        setAuthorizationError(msg);
+        setRequestsError(null);
+        return [];
+      }
       console.warn('[App] Backend requests sync failed. Explicit demo fallback activated:', err);
-      // Demo data used ONLY when an actual network/API connection failure occurs
+      // Demo data is only used for a backend/network failure, and is always
+      // visibly marked as simulated. Authorization failures are handled above.
       setRequests((prev) => (prev.length === 0 ? INITIAL_PURCHASE_REQUESTS : prev));
       setIsUsingDemoFallback(true);
+      setAuthorizationError(null);
       setRequestsError(msg);
     } finally {
       setRequestsLoading(false);
@@ -303,6 +318,7 @@ export const DashboardPage: React.FC = () => {
         onRefreshHealth={fetchHealth}
         mobileOpen={mobileNavOpen}
         onToggleMobile={() => setMobileNavOpen(!mobileNavOpen)}
+        onSignOut={() => { void signOut(); }}
       />
 
       {/* Main Content Viewport */}
@@ -317,6 +333,24 @@ export const DashboardPage: React.FC = () => {
 
         <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-8">
           {/* Explicit Offline Demo Fallback Banner */}
+          {authorizationError && (
+            <div className="mb-6 bg-red-50 border-2 border-red-700 p-4 text-xs font-mono text-red-950 shadow-brutal-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="w-fit px-2 py-0.5 bg-red-200 border border-red-700 font-bold uppercase text-[10px]">
+                  Authorization Required
+                </span>
+                <span className="font-semibold">Live procurement records are unavailable until your Procura role is assigned.</span>
+                <p className="text-[11px] text-red-900/80 break-words">Connection detail: {authorizationError}</p>
+              </div>
+              <button
+                onClick={() => refreshRequests()}
+                disabled={requestsLoading}
+                className="self-start sm:self-auto px-3 py-1 bg-white border-2 border-neutral-900 text-neutral-900 font-bold text-xs hover:bg-neutral-100 shadow-brutal-xs cursor-pointer disabled:opacity-50"
+              >
+                {requestsLoading ? 'Checking Access...' : 'Retry Access Check'}
+              </button>
+            </div>
+          )}
           {isUsingDemoFallback && (
             <div className="mb-6 bg-amber-50 border-2 border-amber-600 p-4 text-xs font-mono text-amber-950 shadow-brutal-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex flex-col gap-1">

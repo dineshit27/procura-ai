@@ -32,6 +32,20 @@ function clients(): AuthClients | null {
   };
 }
 
+let clientFactory: () => AuthClients | null = clients;
+
+/**
+ * Test-only dependency injection for HTTP integration tests. It has no HTTP
+ * surface and is rejected outside NODE_ENV=test, so production authentication
+ * always uses the configured Supabase clients.
+ */
+export function setAuthClientsForTests(factory?: () => AuthClients | null): void {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('Test authentication clients may only be configured in test mode.');
+  }
+  clientFactory = factory ?? clients;
+}
+
 /**
  * Builds verified Supabase/RBAC middleware.  Kept injectable so the security
  * boundary can be exercised without a real Supabase project in tests.
@@ -78,7 +92,7 @@ export function createRequireAuth(getClients: () => AuthClients | null = clients
   };
 }
 
-export const requireAuth = createRequireAuth();
+export const requireAuth = createRequireAuth(() => clientFactory());
 
 export function requirePermission(permission: Permission) {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
@@ -98,4 +112,4 @@ export function canAccessRequest(req: AuthenticatedRequest, ownerId?: string): b
 }
 
 export type AuthedRequest = AuthenticatedRequest;
-export function getAdminClient(): SupabaseClient | null { return (clients()?.adminClient as SupabaseClient | undefined) ?? null; }
+export function getAdminClient(): SupabaseClient | null { return (clientFactory()?.adminClient as SupabaseClient | undefined) ?? null; }

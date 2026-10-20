@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   ArrowLeft,
+  LogOut,
 } from 'lucide-react';
 import { NavigationTab } from '../types';
 import { HealthCheckResult } from '../services/api';
@@ -24,6 +25,7 @@ interface NavigationProps {
   onRefreshHealth: () => void;
   mobileOpen: boolean;
   onToggleMobile: () => void;
+  onSignOut: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -34,6 +36,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   onRefreshHealth,
   mobileOpen,
   onToggleMobile,
+  onSignOut,
 }) => {
   const navItems: { id: NavigationTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     {
@@ -195,6 +198,18 @@ export const Navigation: React.FC<NavigationProps> = ({
               </div>
               <span className="text-[10px] uppercase text-neutral-400 font-semibold">Exit</span>
             </a>
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="mt-2 w-full flex items-center justify-between px-3.5 py-2 text-xs font-mono font-bold text-neutral-600 hover:text-red-800 bg-paper-100 hover:bg-red-50 border border-neutral-900/20 shadow-brutal-xs transition-all"
+              title="Sign out of Procura AI"
+            >
+              <div className="flex items-center space-x-2">
+                <LogOut className="w-3.5 h-3.5 text-red-700" />
+                <span>Log out</span>
+              </div>
+              <span className="text-[10px] uppercase text-neutral-400 font-semibold">Session</span>
+            </button>
           </div>
         </div>
 

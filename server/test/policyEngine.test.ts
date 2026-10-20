@@ -207,9 +207,11 @@ async function runAsyncTests() {
   const server = app.listen(5119);
 
   try {
-    // Test 9: HTTP POST /api/policies/evaluate
+    // Test 9: protected policy evaluation fails closed without a Supabase token.
+    // Policy-engine behaviour itself is covered by the unit tests above; token
+    // and role resolution are covered by authRbac.test.ts with injectable clients.
     await new Promise<void>((resolve, reject) => {
-      runTest('Test 9: HTTP POST /api/policies/evaluate returns typed policy decision', () => {
+      runTest('Test 9: HTTP POST /api/policies/evaluate rejects an unauthenticated request', () => {
         (async () => {
           const res = await fetch('http://127.0.0.1:5119/api/policies/evaluate', {
             method: 'POST',
@@ -220,26 +222,21 @@ async function runAsyncTests() {
             }),
           });
 
-          assert.equal(res.status, 200);
+          assert.equal(res.status, 401);
           const body = await res.json();
-          assert.equal(body.status, 'success');
-          assert.equal(body.data.decision, 'ALLOWED');
-          assert.equal(body.data.itemizedCost.subtotal, 99.0);
-          assert.ok(body.data.rules.length >= 4);
+          assert.equal(body.error, 'UNAUTHENTICATED');
         })().then(resolve).catch(reject);
       });
     });
 
-    // Test 10: HTTP GET /api/policies/current
+    // Test 10: current policy data is also protected.
     await new Promise<void>((resolve, reject) => {
-      runTest('Test 10: HTTP GET /api/policies/current returns active policy metadata', () => {
+      runTest('Test 10: HTTP GET /api/policies/current rejects an unauthenticated request', () => {
         (async () => {
           const res = await fetch('http://127.0.0.1:5119/api/policies/current');
-          assert.equal(res.status, 200);
+          assert.equal(res.status, 401);
           const body = await res.json();
-          assert.equal(body.status, 'success');
-          assert.equal(body.data.maxSingleOrderBudget, 10000);
-          assert.equal(body.meta.storage, 'development-in-memory');
+          assert.equal(body.error, 'UNAUTHENTICATED');
         })().then(resolve).catch(reject);
       });
     });

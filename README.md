@@ -177,6 +177,46 @@ VITE_API_URL=http://localhost:5000
 
 **Never commit real API keys, PayPal secrets, or populated environment files.**
 
+### Supabase authentication and initial administrator
+
+Procura verifies the Supabase access token on the API server and obtains the
+application role only from `public.profiles`. A Supabase Auth user is **not**
+automatically authorized: the signed-in user must have a valid `profiles` row.
+
+1. In the Supabase SQL Editor, run these files in order:
+   - `supabase/migrations/20261020_auth_rbac.sql`
+   - `supabase/migrations/20261020_initial_admin_setup.sql`
+2. Create and verify the first user's email in Supabase Auth.
+3. Set these server-only values locally or in the Render **backend service**:
+
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your_publishable_or_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   INITIAL_ADMIN_EMAIL=verified.admin@example.com
+   INITIAL_ADMIN_SETUP_CONFIRM=assign-initial-admin
+   ```
+
+   Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_API_URL` in the
+   frontend build environment. Never put `SUPABASE_SERVICE_ROLE_KEY` or either
+   `INITIAL_ADMIN_*` variable in the frontend.
+4. From a trusted machine with the server environment loaded, run:
+
+   ```bash
+   npm --prefix server run setup:initial-admin
+   ```
+
+   The command finds the verified user by email, then calls a database function
+   executable only by `service_role`. It is not an HTTP endpoint and cannot
+   accept browser credentials or a browser-selected role. It only succeeds if
+   no administrator exists. Remove `INITIAL_ADMIN_EMAIL` and
+   `INITIAL_ADMIN_SETUP_CONFIRM` immediately afterward.
+
+For Render, set `CLIENT_URL` to the exact deployed frontend URL and set the
+three `SUPABASE_*` values on the backend service. Rebuild the frontend after
+setting its `VITE_*` values, because Vite embeds them at build time. Configure
+the same frontend URL in Supabase Auth's Site URL and Redirect URLs.
+
 ### 4. Run the application
 
 ```bash
@@ -207,7 +247,7 @@ The latest reported validation completed with **95 tests passing and zero failur
 
 ## Security and Limitations
 
-- **Authentication:** The demo does not implement verified user authentication. The `x-user-role` header is a development/test convention, not proof of identity. Policy mutations fail closed in production until verified authentication is integrated.
+- **Authentication and authorization:** Protected API routes verify the current Supabase access token and resolve roles from server-side `profiles` data. A missing role returns an actionable `ROLE_NOT_ASSIGNED` response; it is not treated as live data. The service-role key stays exclusively on the backend.
 - **Simulated data:** Suppliers, catalog entries, and preloaded purchase history are demo data, not live supplier integrations.
 - **AI reliability:** Gemini output assists purchasing decisions; deterministic backend rules enforce spending policies. AI recommendations are not guaranteed to be correct.
 - **Payment environment:** Checkout uses PayPal Sandbox. Live payments require appropriate production credentials, configuration, security controls, and testing.
@@ -229,12 +269,3 @@ Released under the [MIT License](./LICENSE).
 ---
 
 **Procura AI | Smarter purchasing. Controlled spending. Secure payment workflows.**
-# Authentication setup
-
-The dashboard requires Supabase Auth. The marketing site remains public.
-
-1. Create a Supabase project and run `supabase/migrations/20261020_auth_rbac.sql` in its SQL editor.
-2. In Supabase Auth, configure Site URL and redirect URLs for `http://localhost:5173/setup-password` and your Render URL with `/setup-password`.
-3. Copy the Supabase URL and publishable/anon key to both client and server environment files. Set `SUPABASE_SERVICE_ROLE_KEY` only in `server/.env` and Render's server environment.
-4. Create the first administrator in Supabase Auth, then insert that user's UUID and email in `profiles` with role `admin` using the SQL editor. There is intentionally no bootstrap-admin endpoint.
-5. Sign in at `/login`; admins can call the protected invitation API to invite users. The JSON request store remains single-instance and is not appropriate for multi-instance production; migrate purchase data to a database before scaling.

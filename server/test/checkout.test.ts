@@ -10,6 +10,7 @@ import {
   updatePurchaseRequestStatus,
 } from '../src/data/purchaseRequests.js';
 import { Server } from 'node:http';
+import { setAuthClientsForTests, type AuthClients } from '../src/middleware/auth.js';
 
 console.log('🧪 Starting Procura AI PayPal Checkout Integration Test Suite...\n');
 
@@ -33,6 +34,24 @@ const app = createServer();
 let server: Server;
 let serverPort: number;
 let baseUrl: string;
+
+setAuthClientsForTests(() => ({
+  publicClient: {
+    auth: { getUser: async () => ({ data: { user: { id: 'test-admin', email: 'admin@example.com' } }, error: null }) },
+  } as AuthClients['publicClient'],
+  adminClient: {
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: 'admin' }, error: null }) }) }) }),
+  } as AuthClients['adminClient'],
+}));
+
+const nativeFetch = globalThis.fetch;
+globalThis.fetch = (input, init) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (!baseUrl || !url.startsWith(baseUrl)) return nativeFetch(input, init);
+  const headers = new Headers(init?.headers);
+  headers.set('Authorization', 'Bearer test-access-token');
+  return nativeFetch(input, { ...init, headers });
+};
 
 async function startServer(): Promise<void> {
   return new Promise((resolve) => {

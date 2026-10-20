@@ -37,13 +37,11 @@ export const LoginPage: React.FC = () => {
   };
 
   return <main className="flex min-h-screen flex-col bg-[#FBF9F5] text-[#111827] lg:flex-row">
-    <section className="relative flex min-h-[42vh] w-full flex-col justify-between overflow-hidden border-b-2 border-[#111827] bg-[#2457E6] p-7 sm:p-10 lg:min-h-screen lg:w-1/2 lg:border-b-0 lg:border-r-2">
+    <section className="relative flex min-h-[42vh] w-full flex-col justify-between overflow-hidden bg-[#2457E6] p-7 sm:p-10 lg:min-h-screen lg:w-1/2">
       <img src="https://assets.watermelon.sh/auth-9.avif" alt="Abstract royal-blue background" className="absolute inset-0 size-full object-cover" />
-      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0B1E78]/35 via-transparent to-[#2457E6]/15" />
-      <div aria-hidden="true" className="absolute -right-12 -top-12 size-64 rotate-12 border-2 border-[#111827] bg-white/20 shadow-[10px_10px_0_#111827]" />
-      <div aria-hidden="true" className="absolute -bottom-16 left-10 size-48 border-2 border-[#111827] bg-[#E6EEFE] shadow-[10px_10px_0_#111827]" />
-      <div className="relative z-10 flex items-center justify-between"><span className="border-2 border-[#111827] bg-white px-3 py-1 text-lg font-black text-[#2457E6] shadow-[3px_3px_0_#111827]">PROCURA AI</span><Link to="/" className="flex items-center gap-2 border-2 border-white bg-[#111827] px-3 py-2 text-sm font-bold text-white shadow-[3px_3px_0_#111827]"><ArrowLeft className="size-4" />Back to website</Link></div>
-      <div className="relative z-10 mt-12 lg:mt-0"><p className="mb-4 inline-flex items-center gap-2 border-2 border-[#111827] bg-white px-3 py-1.5 font-mono text-xs font-black text-[#2457E6] shadow-[3px_3px_0_#111827]"><LockKeyhole className="size-3.5" />SECURE PROCUREMENT</p><h1 className="mb-4 max-w-xl text-4xl font-black leading-[1.02] text-white sm:text-6xl">Control every<br />purchase decision.</h1><p className="max-w-md border-l-4 border-white pl-4 text-base font-medium leading-relaxed text-white sm:text-lg">Sign in to manage policy-checked procurement workflows, approvals, and audit-ready purchasing.</p></div>
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#071755]/70 via-[#0B2A9B]/20 to-[#2457E6]/10" />
+      <div className="relative z-10 flex items-center justify-between"><span className="text-lg font-semibold tracking-tight text-white">PROCURA AI</span><Link to="/" className="flex items-center gap-2 text-sm font-medium text-white/90 transition-colors hover:text-white"><ArrowLeft className="size-4" />Back to website</Link></div>
+      <div className="relative z-10 mt-12 lg:mt-0"><p className="mb-4 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-white/80"><LockKeyhole className="size-3.5" />SECURE PROCUREMENT</p><h1 className="mb-4 max-w-xl text-4xl font-semibold leading-[1.1] tracking-tight text-white sm:text-6xl">Control every<br />purchase decision.</h1><p className="max-w-md text-base font-normal leading-relaxed text-white/90 sm:text-lg">Sign in to manage policy-checked procurement workflows, approvals, and audit-ready purchasing.</p></div>
     </section>
     <section className="flex w-full items-center justify-center bg-white p-6 sm:p-12 lg:w-1/2">
       <motion.div variants={container} initial="hidden" animate="visible" className="w-full max-w-md">

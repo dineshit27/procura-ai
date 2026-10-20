@@ -34,9 +34,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNewRequestClick }) 
   const current = titles[activeTab];
 
   return (
-    <header className="bg-[#FBF9F5] border-b-2 border-neutral-900 px-6 py-6 sm:px-8">
+    <header className="bg-[#FBF9F5] border-b-2 border-neutral-900 px-4 py-4 sm:px-8 sm:py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3.5">
+        <div className="flex min-w-0 items-start sm:items-center gap-3.5">
           <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-xl border-2 border-neutral-900 bg-white p-1 shadow-brutal-xs flex items-center justify-center overflow-hidden flex-shrink-0">
             <img
               src="/procura-icon.png"
@@ -44,25 +44,25 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNewRequestClick }) 
               className="w-full h-full object-contain scale-120"
             />
           </div>
-          <div>
-            <div className="flex items-center space-x-2.5 mb-1">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mb-1">
               <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-cobalt-700 bg-cobalt-50 px-2 py-0.5 border border-cobalt-600">
                 PayPal AI Hackathon
               </span>
               <span className="text-xs font-mono text-neutral-500">•</span>
-              <span className="text-xs font-mono text-neutral-600">Demo Organization Workspace</span>
+              <span className="hidden sm:inline text-xs font-mono text-neutral-600">Demo Organization Workspace</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900">
+            <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-neutral-900">
               {current.title}
             </h1>
-            <p className="text-sm text-neutral-600 mt-1 max-w-2xl">{current.subtitle}</p>
+            <p className="text-sm text-neutral-600 mt-1 max-w-2xl leading-snug">{current.subtitle}</p>
           </div>
         </div>
 
         {activeTab !== 'new-request' && (
           <button
             onClick={onNewRequestClick}
-            className="inline-flex items-center space-x-2 px-5 py-2.5 bg-cobalt-700 text-white font-bold text-sm border-2 border-neutral-900 shadow-brutal brutal-btn hover:bg-cobalt-800"
+            className="inline-flex w-full sm:w-auto items-center justify-center space-x-2 px-5 py-2.5 bg-cobalt-700 text-white font-bold text-sm border-2 border-neutral-900 shadow-brutal brutal-btn hover:bg-cobalt-800"
             id="header-create-request-btn"
           >
             <PlusCircle className="w-4 h-4" />

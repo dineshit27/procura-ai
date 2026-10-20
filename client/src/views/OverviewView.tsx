@@ -201,7 +201,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       )}
 
       {/* Hero Welcome & Primary Call-to-Action */}
-      <div className="bg-white border-2 border-neutral-900 p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-white border-2 border-neutral-900 p-4 sm:p-8 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2 max-w-2xl">
           <div className="inline-flex items-center space-x-2">
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-cobalt-700 bg-cobalt-50 px-2 py-0.5 border border-cobalt-600">
@@ -231,7 +231,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       </div>
 
       {/* SpendGuard Core Financial Control Center */}
-      <div className="bg-white border-2 border-neutral-900 shadow-brutal p-6 space-y-6">
+      <div className="bg-white border-2 border-neutral-900 shadow-brutal p-4 sm:p-6 space-y-6">
         {/* Header with Department & Period */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-neutral-900 pb-4">
           <div className="space-y-1">

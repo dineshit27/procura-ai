@@ -96,11 +96,11 @@ export const Navigation: React.FC<NavigationProps> = ({
 
       {/* Sidebar (Desktop Persistent & Mobile Drawer) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#FBF9F5] border-r-2 border-neutral-900 flex flex-col justify-between transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-[calc(100vw-1rem)] max-w-72 overflow-y-auto bg-[#FBF9F5] border-r-2 border-neutral-900 flex flex-col justify-between transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
-        <div className="p-6">
+        <div className="p-5 sm:p-6">
           {/* Logo & Brand Header */}
           <div className="flex items-center justify-between pb-6 border-b-2 border-neutral-900">
             <a href="/" className="flex items-center space-x-3 group cursor-pointer" title="Return to Landing Page">
@@ -199,7 +199,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         </div>
 
         {/* Footer: Live Backend Status (Preserving Phase 1 Verification) */}
-        <div className="p-4 m-4 bg-white border-2 border-neutral-900 shadow-brutal-xs space-y-2">
+        <div className="p-4 m-4 mt-0 bg-white border-2 border-neutral-900 shadow-brutal-xs space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Server className="w-4 h-4 text-cobalt-700" />

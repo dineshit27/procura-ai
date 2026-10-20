@@ -315,7 +315,7 @@ export const DashboardPage: React.FC = () => {
           }}
         />
 
-        <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-8">
           {/* Explicit Offline Demo Fallback Banner */}
           {isUsingDemoFallback && (
             <div className="mb-6 bg-amber-50 border-2 border-amber-600 p-4 text-xs font-mono text-amber-950 shadow-brutal-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -394,7 +394,7 @@ export const DashboardPage: React.FC = () => {
         </main>
 
         {/* Editorial Footer */}
-        <footer className="border-t-2 border-neutral-900 bg-paper-100 py-6 px-6 sm:px-8 mt-12">
+        <footer className="border-t-2 border-neutral-900 bg-paper-100 py-5 px-4 sm:px-8 mt-8 sm:mt-12">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-neutral-600">
             <div>
               <strong>Procura AI</strong> &bull; Phase 2 Neo-Brutalist Procurement System &bull; PayPal AI Hackathon

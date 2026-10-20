@@ -250,7 +250,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       {/* Transaction Inspection Drawer / Modal */}
       {activeRequest && (
         <div className="fixed inset-0 bg-neutral-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-6 sm:p-8 shadow-brutal-lg max-h-[90vh] overflow-y-auto space-y-6">
+          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-4 sm:p-8 shadow-brutal-lg max-h-[90dvh] overflow-y-auto space-y-6">
             {/* Header */}
             <div className="flex items-start justify-between border-b-2 border-neutral-900 pb-4">
               <div>

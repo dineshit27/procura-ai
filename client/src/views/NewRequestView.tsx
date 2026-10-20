@@ -345,7 +345,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
     <div className="space-y-8 max-w-5xl">
       {/* Editorial Form or Analysis View */}
       {!analysisResult ? (
-        <div className="bg-white border-2 border-neutral-900 p-6 sm:p-8 shadow-brutal space-y-6">
+        <div className="bg-white border-2 border-neutral-900 p-4 sm:p-8 shadow-brutal space-y-6">
           <div className="border-b-2 border-neutral-900 pb-5">
             <div className="flex items-center justify-between">
               <div>
@@ -556,7 +556,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
         /* Analysis Results View */
         <div className="space-y-6">
           {/* Analysis Header Banner */}
-          <div className="bg-paper-200 border-2 border-neutral-900 p-6 shadow-brutal flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div className="bg-paper-200 border-2 border-neutral-900 p-4 sm:p-6 shadow-brutal flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="space-y-2 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <span
@@ -627,7 +627,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
                 <div
                   key={option.catalogItem.id}
                   onClick={() => setSelectedOptionIndex(idx)}
-                  className={`cursor-pointer bg-white border-2 border-neutral-900 p-6 flex flex-col justify-between transition-all ${
+                  className={`cursor-pointer bg-white border-2 border-neutral-900 p-4 sm:p-6 flex flex-col justify-between transition-all ${
                     isSelected
                       ? 'shadow-brutal-lg ring-2 ring-cobalt-700 -translate-y-1'
                       : 'shadow-brutal hover:shadow-brutal-sm'

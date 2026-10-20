@@ -138,7 +138,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Settings Form Card */}
-      <div className="bg-white border-2 border-neutral-900 p-6 sm:p-8 shadow-brutal space-y-6">
+      <div className="bg-white border-2 border-neutral-900 p-4 sm:p-8 shadow-brutal space-y-6">
         <div className="border-b-2 border-neutral-900 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2">

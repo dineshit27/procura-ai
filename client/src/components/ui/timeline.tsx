@@ -283,8 +283,13 @@ export default function Timeline({
     const scroller = section.closest<HTMLElement>(".cinematic-scroll") ?? undefined;
 
     const isMobile = window.innerWidth <= 768;
-    const slidePercent = isMobile ? -85 : -74;
-    const lineWidth = "100%";
+    // The mobile track is deliberately shorter than the desktop one.  A long
+    // off-screen tail made the later cards pass the viewport before their
+    // reveal animation had completed.
+    const slidePercent = isMobile ? -82 : -74;
+    // End the conduit at the launchpad (the terminal card) instead of drawing
+    // a line through the empty part of the mobile track.
+    const lineWidth = isMobile ? "72%" : "100%";
     const lineStart = isMobile ? "top 20%" : "top 25%";
     const slideEnd = isMobile ? "98% bottom" : "94% bottom";
     const lineEnd = isMobile ? "98% bottom" : "94% bottom";
@@ -465,13 +470,16 @@ export default function Timeline({
     const positions: ReadonlyArray<readonly [number, number]> =
       window.innerWidth <= 768
         ? [
-          [16, 26],
-          [24, 34],
-          [32, 42],
-          [40, 50],
-          [48, 58],
-          [56, 66],
-          [64, 74],
+          // Reveal each card just before it reaches the viewport.  Keeping
+          // these short and early prevents steps 5–7 from appearing only
+          // after they have already scrolled past on phones.
+          [10, 18],
+          [17, 25],
+          [24, 32],
+          [31, 39],
+          [38, 46],
+          [45, 53],
+          [52, 60],
         ]
         : [
           [6, 26],
@@ -518,7 +526,7 @@ export default function Timeline({
       <div className="h-screen w-screen sticky top-[0%] flex flex-col justify-center overflow-hidden">
         <div
           ref={wholeSliderRef}
-          className="mr-[2vw] flex h-[30vw] w-[280vw] items-center gap-[5vw] px-[5vw] max-[768px]:h-[82vh] max-[768px]:w-[950vw] max-[768px]:px-[7vw] max-[600px]:h-[80vh] max-[600px]:w-[950vw] max-[600px]:px-[7vw]"
+          className="mr-[2vw] flex h-[30vw] w-[280vw] items-center gap-[5vw] px-[5vw] max-[768px]:h-[82vh] max-[768px]:w-[800vw] max-[768px]:px-[7vw] max-[600px]:h-[80vh] max-[600px]:w-[800vw] max-[600px]:px-[7vw]"
         >
           <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] border-2 border-[#111827] shadow-[4px_4px_0px_#111827] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[3vw] max-[600px]:shadow-[3px_3px_0px_#111827]">
             <img
@@ -633,19 +641,26 @@ export default function Timeline({
 
                 {/* Procura AI App Launchpad Card after Step 07 (Phase 7) */}
                 <div
-                  className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[82vw] max-[768px]:flex-col max-[768px]:px-[5vw] max-[600px]:flex max-[600px]:w-[80vw] max-[600px]:flex-col max-[600px]:px-[5vw] shrink-0 pointer-events-auto"
+                  className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[70vw] max-[768px]:flex-col max-[768px]:px-[7vw] max-[600px]:flex max-[600px]:w-[70vw] max-[600px]:flex-col max-[600px]:px-[7vw] shrink-0 pointer-events-auto"
                 >
+                  {/* Terminal rail: the launchpad is the end of the journey,
+                      so it is centered on and connected to the conduit. */}
+                  <div className="w-[3vw] max-[600px]:w-[7vw] absolute left-0 bottom-0 top-0 h-full pointer-events-none" aria-hidden="true">
+                    <div
+                      className="absolute left-0 top-[0.7vw] bottom-0 w-[2.5px] -translate-x-1/2"
+                      style={activeStyle}
+                    />
+                    <div
+                      className="absolute left-0 top-[0.7vw] -translate-y-1/2 h-[2.5px] w-full"
+                      style={activeStyle}
+                    />
+                    <div className="absolute left-0 top-[0.7vw] -translate-x-1/2 -translate-y-1/2 size-[1vw] max-[600px]:size-[2.5vw] rounded-full border-2 border-[#111827] bg-[#2457E6] shadow-[2px_2px_0px_#111827] flex items-center justify-center">
+                      <div className="size-[0.3vw] max-[600px]:size-[1vw] rounded-full bg-white" />
+                    </div>
+                  </div>
                   {/* Neo-brutalist Step Card Container */}
                   <div className="mt-[-1vw] max-[768px]:mt-[-2vw] max-[600px]:mt-[-2vw]">
                     <div className="relative bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[768px]:p-3.5 max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
-                      {/* Direct horizontal conduit connection terminal on card left border */}
-                      <div
-                        className="absolute -left-[0.6vw] max-[600px]:-left-2 top-[16vw] max-[600px]:top-1/2 -translate-y-1/2 size-[1.1vw] max-[600px]:size-4 rounded-full border-2 border-[#111827] bg-[#2457E6] shadow-[1px_1px_0px_#111827] flex items-center justify-center pointer-events-none z-10"
-                        aria-hidden="true"
-                      >
-                        <div className="size-[0.35vw] max-[600px]:size-1 rounded-full bg-white animate-pulse" />
-                      </div>
-
                       {/* Card header */}
                       <div className="flex items-center justify-between gap-2 border-b-2 border-[#111827]/10 pb-[0.4vw] mb-[0.6vw] max-[600px]:pb-2 max-[600px]:mb-2">
                         <div className="flex items-center gap-1.5">

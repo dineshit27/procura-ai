@@ -91,7 +91,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Search & Filter Toolbar */}
-      <div className="bg-white border-2 border-neutral-900 p-5 shadow-brutal space-y-4">
+      <div className="bg-white border-2 border-neutral-900 p-4 sm:p-5 shadow-brutal space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 justify-between">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -115,12 +115,12 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           </div>
 
           {/* Sort Selector */}
-          <div className="flex items-center space-x-2">
+          <div className="flex w-full sm:w-auto items-center space-x-2">
             <ArrowUpDown className="w-4 h-4 text-neutral-600 flex-shrink-0" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-2.5 border-2 border-neutral-900 bg-paper-100 text-xs font-bold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-cobalt-700 shadow-brutal-xs"
+              className="w-full px-3 py-2.5 border-2 border-neutral-900 bg-paper-100 text-xs font-bold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-cobalt-700 shadow-brutal-xs"
               id="catalog-sort-select"
             >
               <option value="featured">Sort: Recommended</option>
@@ -198,7 +198,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className="bg-white border-2 border-neutral-900 p-5 shadow-brutal flex flex-col justify-between space-y-4 hover:shadow-brutal-lg transition-all"
+              className="bg-white border-2 border-neutral-900 p-4 sm:p-5 shadow-brutal flex flex-col justify-between space-y-4 hover:shadow-brutal-lg transition-all"
             >
               <div className="space-y-3">
                 {/* Header Tag & Stock Status */}
@@ -277,7 +277,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       {/* Item Detail Modal */}
       {activeItem && (
         <div className="fixed inset-0 bg-neutral-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-6 sm:p-8 shadow-brutal-lg max-h-[90vh] overflow-y-auto space-y-6">
+          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-4 sm:p-8 shadow-brutal-lg max-h-[90dvh] overflow-y-auto space-y-6">
             <div className="flex items-start justify-between border-b-2 border-neutral-900 pb-4">
               <div>
                 <span className="text-xs font-mono font-bold uppercase text-cobalt-700 bg-cobalt-50 px-2 py-0.5 border border-cobalt-600">
@@ -317,7 +317,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             </div>
 
             {/* Availability & Compliance Note */}
-            <div className="p-3.5 bg-paper-200 border-2 border-neutral-900 grid grid-cols-2 gap-3 text-xs font-mono">
+            <div className="p-3.5 bg-paper-200 border-2 border-neutral-900 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
               <div>
                 <span className="text-neutral-600">Stock Availability:</span>{' '}
                 <strong className="text-emerald-700">
@@ -331,7 +331,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             </div>
 
             {/* Footer Pricing & Trigger Action */}
-            <div className="pt-4 border-t-2 border-neutral-900 flex items-center justify-between">
+            <div className="pt-4 border-t-2 border-neutral-900 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div>
                 <div className="text-xs font-mono text-neutral-500">Unit Price</div>
                 <div className="text-2xl font-extrabold font-mono text-neutral-900">
@@ -339,7 +339,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-end space-x-3">
                 <button
                   onClick={() => setActiveItem(null)}
                   className="px-4 py-2.5 text-xs font-bold border-2 border-neutral-900 bg-white hover:bg-paper-100 shadow-brutal-xs"

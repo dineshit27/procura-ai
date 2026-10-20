@@ -55,7 +55,7 @@ export const LandingCta: React.FC = () => {
   }, []);
 
   return (
-    <section className="landing-cta-section bg-[#E6EEFE] py-8 sm:py-10 border-b-2 border-[#111827]/10">
+    <section className="landing-cta-section bg-[#E6EEFE] py-6 sm:py-10 border-b-2 border-[#111827]/10">
       <div className="landing-cta-shell bg-[#E6EEFE]">
         <div className="landing-cta-shell-inner">
           <div className="landing-cta-copy">
@@ -65,11 +65,11 @@ export const LandingCta: React.FC = () => {
             <h2 className="font-display mt-4 text-[clamp(2.25rem,4.5vw,4rem)] leading-[1.02] font-bold tracking-[-0.025em] text-[#111827]">
               Bring order to the next purchase.
             </h2>
-            <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-[#46536B] sm:text-lg">
+            <p className="mt-4 sm:mt-6 max-w-xl font-sans text-base leading-relaxed text-[#46536B] sm:text-lg">
               Open the demo workspace to inspect SpendGuard, submit a request, or walk an approved
               order through PayPal Sandbox.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row font-sans">
+            <div className="mt-6 sm:mt-8 flex flex-col gap-3 sm:flex-row font-sans">
               <Link to="/app" className="landing-pill landing-pill--purple font-bold text-sm tracking-wide">
                 Open workspace
                 <ArrowUpRight className="h-4 w-4" />

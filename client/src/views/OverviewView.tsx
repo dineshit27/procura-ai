@@ -222,7 +222,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
         <button
           onClick={() => onNavigate('new-request')}
-          className="inline-flex items-center justify-center space-x-2.5 px-6 py-4 bg-cobalt-700 hover:bg-cobalt-800 text-white font-extrabold text-base border-2 border-neutral-900 shadow-brutal-cobalt brutal-btn whitespace-nowrap"
+          className="inline-flex w-full md:w-auto items-center justify-center space-x-2.5 px-6 py-4 bg-cobalt-700 hover:bg-cobalt-800 text-white font-extrabold text-base border-2 border-neutral-900 shadow-brutal-cobalt brutal-btn whitespace-nowrap"
           id="overview-hero-create-btn"
         >
           <PlusCircle className="w-5 h-5" />

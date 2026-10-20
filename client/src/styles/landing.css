@@ -476,7 +476,16 @@
   }
 
   .landing .landing-cta-shell-inner {
-    padding: 40px 22px;
+    padding: 24px 20px;
+    gap: 18px;
+  }
+
+  .landing .landing-cta-marquee {
+    height: 220px;
+  }
+
+  .landing .landing-cta-marquee-item {
+    padding: 16px 0;
   }
 }
 

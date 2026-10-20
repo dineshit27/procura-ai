@@ -133,7 +133,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center space-x-2 overflow-x-auto pt-2 border-t border-neutral-200">
+        <div className="flex items-center space-x-2 overflow-x-auto overscroll-x-contain pt-2 pb-2 -mb-2 border-t border-neutral-200" aria-label="Catalog category filters">
           <Filter className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0" />
           <span className="text-xs font-mono font-bold text-neutral-700 mr-1 uppercase">
             Filter:
@@ -142,7 +142,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 text-xs font-bold whitespace-nowrap border-2 transition ${
+              className={`shrink-0 px-3 py-1 text-xs font-bold whitespace-nowrap border-2 transition ${
                 selectedCategory === cat
                   ? 'bg-neutral-900 text-white border-neutral-900 shadow-brutal-xs'
                   : 'bg-paper-100 text-neutral-700 border-neutral-400 hover:border-neutral-900'

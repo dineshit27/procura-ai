@@ -100,41 +100,42 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       {/* Search & Status Filters */}
       <div className="bg-white border-2 border-neutral-900 p-4 sm:p-5 shadow-brutal space-y-4">
         {/* Search & Refresh */}
-        <div className="flex items-center gap-2.5">
-          <div className="relative flex-1">
+        <div className="w-full">
+          <div className="relative w-full">
             <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search records by Request ID, title, item name, or vendor..."
-              className="w-full pl-10 pr-4 py-2.5 border-2 border-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt-700 shadow-brutal-xs"
+              className="w-full pl-10 pr-20 py-2.5 border-2 border-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt-700 shadow-brutal-xs"
               id="history-search-input"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-700"
+                className={`absolute ${onRefreshRequests ? 'right-12' : 'right-3'} top-3 text-neutral-400 hover:text-neutral-700`}
+                aria-label="Clear purchase history search"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
+            {onRefreshRequests && (
+              <button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 border border-neutral-900 bg-paper-100 hover:bg-paper-200 text-neutral-900 shadow-brutal-xs transition-all disabled:opacity-50"
+                title="Synchronize with backend authoritative database"
+                aria-label="Refresh purchase history"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-cobalt-700' : ''}`} />
+              </button>
+            )}
           </div>
-          {onRefreshRequests && (
-            <button
-              onClick={handleManualRefresh}
-              disabled={isRefreshing}
-              className="px-3.5 py-2.5 border-2 border-neutral-900 bg-paper-100 hover:bg-paper-200 text-neutral-900 font-bold text-xs uppercase tracking-wider shadow-brutal-xs flex items-center gap-1.5 transition-all disabled:opacity-50"
-              title="Synchronize with backend authoritative database"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-cobalt-700' : ''}`} />
-              <span className="hidden sm:inline">Sync</span>
-            </button>
-          )}
-        </div>
+          </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center space-x-2 overflow-x-auto pt-2 border-t border-neutral-200">
+        <div className="flex items-center space-x-2 overflow-x-auto overscroll-x-contain pt-2 pb-2 -mb-2 border-t border-neutral-200" aria-label="Purchase history status filters">
           <Filter className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0" />
           <span className="text-xs font-mono font-bold text-neutral-700 mr-1 uppercase">
             Status:
@@ -149,7 +150,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1 text-xs font-bold whitespace-nowrap border-2 transition flex items-center space-x-1.5 ${
+                className={`shrink-0 px-3 py-1 text-xs font-bold whitespace-nowrap border-2 transition flex items-center space-x-1.5 ${
                   statusFilter === tab.id
                     ? 'bg-neutral-900 text-white border-neutral-900 shadow-brutal-xs'
                     : 'bg-paper-100 text-neutral-700 border-neutral-400 hover:border-neutral-900'

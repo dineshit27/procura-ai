@@ -3,6 +3,7 @@
 
 import {
   type CSSProperties,
+  useEffect,
   useLayoutEffect,
   useRef,
   useSyncExternalStore,
@@ -111,6 +112,12 @@ export type TimelineProps = {
 };
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const MOBILE_SLIDE_PERCENT = -82;
+const MOBILE_LINE_WIDTH = 72;
+const MOBILE_REVEAL_POSITIONS: ReadonlyArray<readonly [number, number]> = [
+  [0.1, 0.18], [0.17, 0.25], [0.24, 0.32], [0.31, 0.39],
+  [0.38, 0.46], [0.45, 0.53], [0.52, 0.6],
+];
 
 function subscribeToReducedMotion(callback: () => void) {
   if (typeof window === "undefined") return () => { };
@@ -276,6 +283,70 @@ export default function Timeline({
     color: mutedTextColor,
   };
 
+  // Mobile browser chrome changes the visual viewport while scrolling. Drive
+  // this sequence from the actual custom-scroller position so it remains
+  // animated when ScrollTrigger's cached measurements become stale.
+  useEffect(() => {
+    const section = sectionRef.current;
+    const slider = wholeSliderRef.current;
+    if (!section || !slider || window.innerWidth > 768) return;
+
+    const scroller = section.closest<HTMLElement>(".cinematic-scroll");
+    const scrollTarget: HTMLElement | Window = scroller ?? window;
+    let frame = 0;
+    const select = (selector: string) => Array.from(section.querySelectorAll<HTMLElement>(selector));
+    const setAll = (selector: string, properties: gsap.TweenVars) => {
+      const elements = select(selector);
+      if (elements.length) gsap.set(elements, properties);
+    };
+
+    const render = () => {
+      frame = 0;
+      const viewportHeight = scroller?.clientHeight ?? window.innerHeight;
+      const sectionTop = scroller
+        ? section.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop
+        : section.getBoundingClientRect().top + window.scrollY;
+      const scrollTop = scroller?.scrollTop ?? window.scrollY;
+      const travel = Math.max(1, section.offsetHeight - viewportHeight);
+      const progress = Math.min(1, Math.max(0, (scrollTop - sectionTop) / travel));
+
+      gsap.set(slider, { xPercent: MOBILE_SLIDE_PERCENT * progress });
+      const lineProgress = Math.min(1, Math.max(0, (progress - 0.2) / 0.56));
+      setAll(".journey-line", { width: `${MOBILE_LINE_WIDTH * lineProgress}%` });
+
+      allJourneyItems.forEach((item, index) => {
+        const [start, end] = MOBILE_REVEAL_POSITIONS[index];
+        const itemProgress = reducedMotion ? 1 : Math.min(1, Math.max(0, (progress - start) / (end - start)));
+        setAll(`.jl-${item.id}`, { scaleY: itemProgress });
+        setAll(`.jh-${item.id}`, { scaleX: itemProgress });
+        setAll(`.jd-${item.id}`, { scale: itemProgress });
+        setAll(`.jc-${item.id}`, { opacity: 0.25 + itemProgress * 0.75, y: (1 - itemProgress) * 12 });
+      });
+    };
+    const scheduleRender = () => {
+      if (!frame) frame = window.requestAnimationFrame(render);
+    };
+
+    allJourneyItems.forEach((item) => {
+      setAll(`.jl-${item.id}`, { scaleY: 0, transformOrigin: "bottom bottom" });
+      setAll(`.jh-${item.id}`, { scaleX: 0, transformOrigin: "left center" });
+      setAll(`.jd-${item.id}`, { scale: 0 });
+      setAll(`.jc-${item.id}`, { opacity: 0.25, y: 12 });
+    });
+    bottomJourneyData.forEach((item) => setAll(`.jl-${item.id}`, { transformOrigin: "top top" }));
+
+    scheduleRender();
+    scrollTarget.addEventListener("scroll", scheduleRender, { passive: true });
+    window.addEventListener("resize", scheduleRender);
+    window.visualViewport?.addEventListener("resize", scheduleRender);
+    return () => {
+      scrollTarget.removeEventListener("scroll", scheduleRender);
+      window.removeEventListener("resize", scheduleRender);
+      window.visualViewport?.removeEventListener("resize", scheduleRender);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [reducedMotion]);
+
   useGSAP(() => {
     const section = sectionRef.current;
 
@@ -283,6 +354,7 @@ export default function Timeline({
     const scroller = section.closest<HTMLElement>(".cinematic-scroll") ?? undefined;
 
     const isMobile = window.innerWidth <= 768;
+    if (isMobile) return;
     // The mobile track is deliberately shorter than the desktop one.  A long
     // off-screen tail made the later cards pass the viewport before their
     // reveal animation had completed.
@@ -340,6 +412,8 @@ export default function Timeline({
     const scroller = section.closest<HTMLElement>(".cinematic-scroll") ?? undefined;
 
     const items = allJourneyItems;
+
+    if (window.innerWidth <= 768) return;
 
     if (reducedMotion) {
       items.forEach((item) => {
@@ -530,7 +604,7 @@ export default function Timeline({
           ref={wholeSliderRef}
           className="mr-[2vw] flex h-[30vw] w-[280vw] items-center gap-[5vw] px-[5vw] max-[768px]:h-[82vh] max-[768px]:w-[800vw] max-[768px]:px-[7vw] max-[600px]:h-[80vh] max-[600px]:w-[800vw] max-[600px]:px-[7vw]"
         >
-          <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] border-2 border-[#111827] shadow-[4px_4px_0px_#111827] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[3vw] max-[600px]:shadow-[3px_3px_0px_#111827]">
+          <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] border-2 border-[#111827] shadow-[4px_4px_0px_#111827] max-[600px]:h-[min(65vw,240px)] max-[600px]:w-[85vw] max-[600px]:rounded-[3vw] max-[600px]:shadow-[3px_3px_0px_#111827]">
             <img
               src={imageUrl}
               alt={imageAlt}

@@ -327,12 +327,18 @@ export default function Timeline({
       const sliderTravel = Math.max(0, launchpadLeft + launchpad.offsetWidth - viewportWidth + 16);
       gsap.set(slider, { x: -sliderTravel * progress, xPercent: 0 });
 
-      // Grow the conduit from the first scroll frame and finish it exactly at
-      // the launchpad rail rather than at an arbitrary percentage of the track.
+      // Grow the conduit from the first scroll frame and finish it at the
+      // terminal card's border rather than at an arbitrary point on the track.
+      // On mobile the launchpad has no vertical branch, so this is its only
+      // connector.
       const line = section.querySelector<HTMLElement>(".journey-line");
       const lineContainer = line?.parentElement;
+      const terminalCard = launchpad.querySelector<HTMLElement>(".timeline-terminal-card");
+      const terminalCardLeft = terminalCard
+        ? offsetWithin(terminalCard, slider)
+        : launchpadLeft;
       const lineTarget = lineContainer
-        ? Math.max(0, launchpadLeft - offsetWithin(lineContainer, slider) + 8)
+        ? Math.max(0, terminalCardLeft - offsetWithin(lineContainer, slider))
         : 0;
       setAll(".journey-line", { width: `${lineTarget * (reducedMotion ? 1 : progress)}px` });
 
@@ -740,11 +746,11 @@ export default function Timeline({
                 {/* Procura AI App Launchpad Card after Step 07 (Phase 7) */}
                 <div
                   ref={launchpadRef}
-                  className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[76vw] max-[768px]:flex-col max-[768px]:px-[6vw] max-[600px]:flex max-[600px]:w-[76vw] max-[600px]:flex-col max-[600px]:px-[6vw] shrink-0 pointer-events-auto"
+                  className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[76vw] max-[768px]:translate-y-1/2 max-[768px]:flex-col max-[768px]:justify-center max-[768px]:px-[6vw] max-[600px]:flex max-[600px]:w-[76vw] max-[600px]:flex-col max-[600px]:px-[6vw] shrink-0 pointer-events-auto"
                 >
-                  {/* Terminal rail: the launchpad is the end of the journey,
-                      so it is centered on and connected to the conduit. */}
-                  <div className="w-[3vw] max-[600px]:w-[7vw] absolute left-0 bottom-0 top-0 h-full pointer-events-none" aria-hidden="true">
+                  {/* Desktop keeps the terminal rail. On phones, the animated
+                      conduit reaches this card directly instead. */}
+                  <div className="w-[3vw] max-[768px]:hidden max-[600px]:w-[7vw] absolute left-0 bottom-0 top-0 h-full pointer-events-none" aria-hidden="true">
                     <div
                       className="absolute left-0 top-[0.7vw] bottom-0 w-[2.5px] -translate-x-1/2"
                       style={activeStyle}
@@ -759,7 +765,7 @@ export default function Timeline({
                   </div>
                   {/* Neo-brutalist Step Card Container */}
                   <div className="mt-[-1vw] max-[768px]:mt-[-2vw] max-[600px]:mt-[-2vw]">
-                    <div className="relative bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[768px]:p-3.5 max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
+                    <div className="timeline-terminal-card relative bg-white border-2 border-[#111827] rounded-xl p-[1vw] max-[768px]:p-3.5 max-[600px]:p-3.5 shadow-[4px_4px_0px_#111827] hover:shadow-[5px_5px_0px_#2457E6] transition-shadow duration-200">
                       {/* Card header */}
                       <div className="flex items-center justify-between gap-2 border-b-2 border-[#111827]/10 pb-[0.4vw] mb-[0.6vw] max-[600px]:pb-2 max-[600px]:mb-2">
                         <div className="flex items-center gap-1.5">

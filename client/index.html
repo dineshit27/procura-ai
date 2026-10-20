@@ -1,54 +1,152 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 
 <head>
   <meta charset="UTF-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#FBF9F5" />
-
-  <!-- Primary SEO -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Procura AI: Smarter Purchasing for Small Businesses</title>
   <meta name="description"
     content="Procura AI helps small businesses compare purchasing options, evaluate suppliers, and make smarter buying decisions with AI-powered procurement." />
-  <meta name="robots" content="index, follow" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta name="author" content="Procura AI" />
+  <meta name="application-name" content="Procura AI" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="format-detection" content="telephone=no" />
 
-  <!-- Favicon -->
+  <!-- Canonical + language -->
+  <link rel="canonical" href="https://procura-io.onrender.com" />
+  <link rel="alternate" hreflang="en" href="https://procura-io.onrender.com" />
+  <link rel="alternate" hreflang="x-default" href="https://procura-io.onrender.com" />
+
+  <!-- ============================================================
+       BROWSER / PWA
+       ============================================================ -->
+  <meta name="theme-color" content="#FBF9F5" />
+  <meta name="color-scheme" content="light" />
   <link rel="icon" type="image/png" href="/procura-icon.png" />
   <link rel="apple-touch-icon" href="/procura-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
 
-  <!-- Canonical URL: replace with your real production URL -->
-  <link rel="canonical" href="https://YOUR-DOMAIN.com/" />
-
-  <!-- Open Graph / Social Sharing -->
+  <!-- ============================================================
+       OPEN GRAPH (Facebook, LinkedIn, WhatsApp, Slack, etc.)
+       og-image.png should be 1200x630, under 1 MB.
+       ============================================================ -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Procura AI" />
-  <meta property="og:title" content="Procura AI | Smarter Purchasing for Small Businesses" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:title" content="Procura AI: Smarter Purchasing for Small Businesses" />
   <meta property="og:description"
     content="Compare purchasing options, evaluate suppliers, and make better buying decisions with an AI-powered procurement assistant." />
-  <meta property="og:url" content="https://YOUR-DOMAIN.com/" />
-  <meta property="og:image" content="https://YOUR-DOMAIN.com/og-image.png" />
-  <meta property="og:image:alt" content="Procura AI — AI-powered procurement for small businesses" />
+  <meta property="og:url" content="https://procura-io.onrender.com/" />
+  <meta property="og:image" content="https://procura-io.onrender.com/og-image.png" />
+  <meta property="og:image:secure_url" content="https://procura-io.onrender.com/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Procura AI: AI-powered procurement for small businesses" />
 
-  <!-- X / Twitter Sharing -->
+  <!-- ============================================================
+       X / TWITTER
+       Add <meta name="twitter:site" content="@yourhandle" /> once you have one.
+       ============================================================ -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Procura AI | Smarter Purchasing for Small Businesses" />
+  <meta name="twitter:title" content="Procura AI: Smarter Purchasing for Small Businesses" />
   <meta name="twitter:description"
     content="Make purchasing decisions with greater clarity using AI-powered supplier evaluation and procurement." />
-  <meta name="twitter:image" content="https://YOUR-DOMAIN.com/og-image.png" />
+  <meta name="twitter:image" content="https://procura-io.onrender.com/og-image.png" />
+  <meta name="twitter:image:alt" content="Procura AI: AI-powered procurement for small businesses" />
 
-  <!-- Performance -->
+  <!-- ============================================================
+       STRUCTURED DATA (JSON-LD)
+       Organization + WebSite + WebApplication, linked by @id.
+       Add real "sameAs" profile URLs (LinkedIn, X, GitHub...) when available.
+       Add "offers" to the WebApplication only once pricing is public and accurate.
+       ============================================================ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://procura-io.onrender.com/#organization",
+        "name": "Procura AI",
+        "url": "https://procura-io.onrender.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://procura-io.onrender.com/procura-icon.png"
+        },
+        "description": "Procura AI is an AI-powered procurement assistant that helps small businesses compare purchasing options and evaluate suppliers."
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://procura-io.onrender.com/#website",
+        "url": "https://procura-io.onrender.com/",
+        "name": "Procura AI",
+        "description": "Smarter purchasing for small businesses with AI-powered procurement.",
+        "inLanguage": "en",
+        "publisher": { "@id": "https://procura-io.onrender.com/#organization" }
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://procura-io.onrender.com/#app",
+        "name": "Procura AI",
+        "url": "https://procura-io.onrender.com/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Compare purchasing options, evaluate suppliers, and make smarter buying decisions with AI-powered procurement.",
+        "publisher": { "@id": "https://procura-io.onrender.com/#organization" },
+        "audience": {
+          "@type": "BusinessAudience",
+          "audienceType": "Small businesses"
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- ============================================================
+       PERFORMANCE (Core Web Vitals: LCP, INP, CLS)
+       ============================================================ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
-    rel="stylesheet" />
 
-  <title>Procura AI | Smarter Purchasing for Small Businesses</title>
+  <!-- Non-render-blocking Google Fonts, with swap to avoid invisible text -->
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+    media="print" onload="this.media='all'" />
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" />
+  </noscript>
+
+  <!-- Prevent a white flash and layout shift before the app mounts -->
+  <style>
+    html { background: #FBF9F5; -webkit-text-size-adjust: 100%; }
+    body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  </style>
 </head>
 
 <body class="bg-[#FBF9F5] text-neutral-900 min-h-screen antialiased selection:bg-blue-600 selection:text-white">
   <div id="root"></div>
+
+  <!-- Crawler- and no-JS-friendly fallback content (shown only when JavaScript is disabled) -->
+  <noscript>
+    <main style="max-width:720px;margin:0 auto;padding:48px 20px;line-height:1.6;color:#171717">
+      <h1>Procura AI: Smarter Purchasing for Small Businesses</h1>
+      <p>
+        Procura AI is an AI-powered procurement assistant that helps small businesses compare purchasing options,
+        evaluate suppliers, and make smarter buying decisions.
+      </p>
+      <p>Please enable JavaScript in your browser to use the Procura AI app.</p>
+    </main>
+  </noscript>
+
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

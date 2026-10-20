@@ -36,14 +36,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNewRequestClick }) 
   return (
     <header className="bg-[#FBF9F5] border-b-2 border-neutral-900 px-4 py-4 sm:px-8 sm:py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex min-w-0 items-start sm:items-center gap-3.5">
-          <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-xl border-2 border-neutral-900 bg-white p-1 shadow-brutal-xs flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img
-              src="/procura-icon.png"
-              alt="Procura AI"
-              className="w-full h-full object-contain scale-120"
-            />
-          </div>
+        <div className="flex min-w-0 items-start sm:items-center">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mb-1">
               <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-cobalt-700 bg-cobalt-50 px-2 py-0.5 border border-cobalt-600">

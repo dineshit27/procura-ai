@@ -98,7 +98,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Search & Status Filters */}
-      <div className="bg-white border-2 border-neutral-900 p-5 shadow-brutal space-y-4">
+      <div className="bg-white border-2 border-neutral-900 p-4 sm:p-5 shadow-brutal space-y-4">
         {/* Search & Refresh */}
         <div className="flex items-center gap-2.5">
           <div className="relative flex-1">
@@ -165,8 +165,51 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
       {/* Transactions Data Table */}
       <div className="bg-white border-2 border-neutral-900 shadow-brutal overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse" id="history-data-table">
+        {/* Mobile uses compact request cards; the complete audit table remains available from sm upward. */}
+        <div className="sm:hidden divide-y divide-neutral-200">
+          {filteredRequests.length === 0 ? (
+            <div className="py-12 px-4 text-center text-neutral-500 text-xs">
+              No purchase history records found matching criteria.
+            </div>
+          ) : (
+            filteredRequests.map((req) => (
+              <article key={req.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-sm text-neutral-900 leading-snug">{req.title}</h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-mono text-neutral-500">
+                      <span className="font-bold text-neutral-700">{req.id}</span>
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="w-3 h-3" aria-hidden="true" />
+                        {new Date(req.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  <StatusBadge status={req.status} size="sm" />
+                </div>
+                <div className="text-xs text-neutral-600 leading-snug line-clamp-2">
+                  {req.selectedItemName || req.prompt}
+                </div>
+                <div className="flex items-end justify-between gap-3 border-t border-neutral-200 pt-3">
+                  <div>
+                    <div className="text-[10px] font-mono uppercase text-neutral-500">Committed total</div>
+                    <div className="font-mono font-bold text-base text-neutral-900">${req.estimatedTotal.toFixed(2)}</div>
+                  </div>
+                  <button
+                    onClick={() => setActiveRequest(req)}
+                    className="min-h-10 px-3 py-2 text-xs font-bold border-2 border-neutral-900 bg-paper-100 hover:bg-neutral-900 hover:text-white transition shadow-brutal-xs"
+                    aria-label={`View details for ${req.title}`}
+                  >
+                    View details
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+
+        <div className="hidden sm:block overflow-x-auto" aria-label="Purchase history table. Scroll horizontally to view all columns.">
+          <table className="min-w-[720px] w-full text-left border-collapse" id="history-data-table">
             <thead>
               <tr className="bg-paper-200 border-b-2 border-neutral-900 text-xs font-mono uppercase tracking-wider text-neutral-700">
                 <th className="py-3.5 px-4">Request ID & Date</th>
@@ -241,7 +284,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
           </table>
         </div>
 
-        <div className="p-4 bg-paper-100 border-t-2 border-neutral-900 flex items-center justify-between text-xs text-neutral-600 font-mono">
+        <div className="p-4 bg-paper-100 border-t-2 border-neutral-900 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs text-neutral-600 font-mono">
           <span>Showing {filteredRequests.length} of {requests.length} total demo transactions</span>
           <span className="text-[11px] text-neutral-500">Local Sandbox Ledger</span>
         </div>
@@ -249,8 +292,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
       {/* Transaction Inspection Drawer / Modal */}
       {activeRequest && (
-        <div className="fixed inset-0 bg-neutral-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-4 sm:p-8 shadow-brutal-lg max-h-[90dvh] overflow-y-auto space-y-6">
+        <div className="fixed inset-0 bg-neutral-900/60 z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-4 sm:p-8 shadow-brutal-lg max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] overflow-y-auto space-y-6" role="dialog" aria-modal="true" aria-label={`Purchase request details for ${activeRequest.id}`}>
             {/* Header */}
             <div className="flex items-start justify-between border-b-2 border-neutral-900 pb-4">
               <div>
@@ -309,40 +352,40 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
             {/* Metadata Table */}
             <div className="bg-white border-2 border-neutral-900 divide-y divide-neutral-200 text-xs font-mono">
-              <div className="p-2.5 flex justify-between">
+              <div className="p-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Category:</span>
                 <span className="font-bold text-neutral-900">{activeRequest.category}</span>
               </div>
-              <div className="p-2.5 flex justify-between">
+              <div className="p-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Fulfillment Supplier:</span>
                 <span className="font-bold text-neutral-900">
                   {activeRequest.selectedSupplier || 'TBD (Catalog Option Selection)'}
                 </span>
               </div>
-              <div className="p-2.5 flex justify-between">
+              <div className="p-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Quantity Ordered:</span>
                 <span className="font-bold text-neutral-900">{activeRequest.quantity} units</span>
               </div>
-              <div className="p-2.5 flex justify-between">
+              <div className="p-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Authorized Budget Limit:</span>
                 <span className="font-bold text-neutral-900">
                   ${activeRequest.budgetLimit.toFixed(2)} USD
                 </span>
               </div>
-              <div className="p-2.5 flex justify-between">
+              <div className="p-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Estimated Total:</span>
                 <span className="font-bold text-cobalt-700 text-sm">
                   ${activeRequest.estimatedTotal.toFixed(2)} USD
                 </span>
               </div>
-              <div className="p-2.5 flex justify-between">
+              <div className="p-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Delivery SLA:</span>
                 <span className="font-bold text-neutral-900 uppercase">
                   {activeRequest.urgency}
                 </span>
               </div>
               {activeRequest.policyDecision && (
-                <div className="p-2.5 flex justify-between items-center">
+                <div className="p-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center">
                   <span className="text-neutral-500">Policy Engine Decision:</span>
                   <span
                     className={`px-2 py-0.5 text-[11px] font-extrabold uppercase border border-neutral-900 ${
@@ -413,7 +456,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             {/* Workflow status transitions */}
             <div className="pt-4 border-t-2 border-neutral-900 flex flex-wrap items-center justify-between gap-3">
               <div className="text-xs font-mono text-neutral-600">Workflow actions:</div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex w-full sm:w-auto flex-col sm:flex-row flex-wrap gap-2">
                 {/* PayPal Sandbox Checkout — only for approved, not yet paid */}
                 {activeRequest.status === 'approved' && (
                   <button
@@ -421,7 +464,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                       setActionError(null);
                       setCheckoutRequest(activeRequest);
                     }}
-                    className="px-3 py-1.5 text-xs font-bold border-2 border-neutral-900 bg-cobalt-700 hover:bg-cobalt-800 text-white shadow-brutal-xs brutal-btn flex items-center gap-1.5"
+                    className="w-full sm:w-auto px-3 py-2 text-xs font-bold border-2 border-neutral-900 bg-cobalt-700 hover:bg-cobalt-800 text-white shadow-brutal-xs brutal-btn flex items-center justify-center gap-1.5"
                     id="paypal-checkout-btn"
                   >
                     <CreditCard className="w-3.5 h-3.5" />
@@ -447,7 +490,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                         setActionLoading(false);
                       }
                     }}
-                    className="px-3 py-1.5 text-xs font-bold border-2 border-neutral-900 bg-emerald-600 hover:bg-emerald-700 text-white shadow-brutal-xs brutal-btn disabled:opacity-50"
+                    className="w-full sm:w-auto px-3 py-2 text-xs font-bold border-2 border-neutral-900 bg-emerald-600 hover:bg-emerald-700 text-white shadow-brutal-xs brutal-btn disabled:opacity-50"
                   >
                     {actionLoading ? 'Verifying Budget...' : '✓ Approve Request'}
                   </button>
@@ -470,7 +513,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                         setActionLoading(false);
                       }
                     }}
-                    className="px-3 py-1.5 text-xs font-bold border-2 border-neutral-900 bg-amber-400 text-amber-950 shadow-brutal-xs brutal-btn disabled:opacity-50"
+                    className="w-full sm:w-auto px-3 py-2 text-xs font-bold border-2 border-neutral-900 bg-amber-400 text-amber-950 shadow-brutal-xs brutal-btn disabled:opacity-50"
                   >
                     Submit for Approval
                   </button>
@@ -493,7 +536,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                         setActionLoading(false);
                       }
                     }}
-                    className="px-3 py-1.5 text-xs font-bold border-2 border-neutral-900 bg-stone-200 text-stone-800 hover:bg-stone-300 shadow-brutal-xs brutal-btn disabled:opacity-50"
+                    className="w-full sm:w-auto px-3 py-2 text-xs font-bold border-2 border-neutral-900 bg-stone-200 text-stone-800 hover:bg-stone-300 shadow-brutal-xs brutal-btn disabled:opacity-50"
                   >
                     Cancel Request
                   </button>
@@ -504,7 +547,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                     setActionError(null);
                     onClearSelectedRequest();
                   }}
-                  className="px-4 py-1.5 text-xs font-bold border-2 border-neutral-900 bg-white hover:bg-paper-100 shadow-brutal-xs"
+                  className="w-full sm:w-auto px-4 py-2 text-xs font-bold border-2 border-neutral-900 bg-white hover:bg-paper-100 shadow-brutal-xs"
                 >
                   Close
                 </button>

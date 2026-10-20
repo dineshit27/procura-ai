@@ -276,8 +276,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       {/* Item Detail Modal */}
       {activeItem && (
-        <div className="fixed inset-0 bg-neutral-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-4 sm:p-8 shadow-brutal-lg max-h-[90dvh] overflow-y-auto space-y-6">
+        <div className="fixed inset-0 bg-neutral-900/60 z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-2xl w-full p-4 sm:p-8 shadow-brutal-lg max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] overflow-y-auto space-y-6" role="dialog" aria-modal="true" aria-label={`Catalog item details for ${activeItem.name}`}>
             <div className="flex items-start justify-between border-b-2 border-neutral-900 pb-4">
               <div>
                 <span className="text-xs font-mono font-bold uppercase text-cobalt-700 bg-cobalt-50 px-2 py-0.5 border border-cobalt-600">
@@ -294,6 +294,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               <button
                 onClick={() => setActiveItem(null)}
                 className="p-1.5 border-2 border-neutral-900 bg-white hover:bg-paper-200 shadow-brutal-xs"
+                aria-label="Close item details"
               >
                 <X className="w-5 h-5" />
               </button>

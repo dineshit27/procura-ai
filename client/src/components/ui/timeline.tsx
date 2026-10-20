@@ -292,7 +292,9 @@ export default function Timeline({
     const lineWidth = isMobile ? "72%" : "100%";
     const lineStart = isMobile ? "top 20%" : "top 25%";
     const slideEnd = isMobile ? "98% bottom" : "94% bottom";
-    const lineEnd = isMobile ? "98% bottom" : "94% bottom";
+    // Finish the mobile conduit while the last workflow cards are still in
+    // view.  This prevents the line from visibly crawling after step 3.
+    const lineEnd = isMobile ? "76% bottom" : "94% bottom";
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -641,7 +643,7 @@ export default function Timeline({
 
                 {/* Procura AI App Launchpad Card after Step 07 (Phase 7) */}
                 <div
-                  className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[70vw] max-[768px]:flex-col max-[768px]:px-[7vw] max-[600px]:flex max-[600px]:w-[70vw] max-[600px]:flex-col max-[600px]:px-[7vw] shrink-0 pointer-events-auto"
+                  className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[76vw] max-[768px]:flex-col max-[768px]:px-[6vw] max-[600px]:flex max-[600px]:w-[76vw] max-[600px]:flex-col max-[600px]:px-[6vw] shrink-0 pointer-events-auto"
                 >
                   {/* Terminal rail: the launchpad is the end of the journey,
                       so it is centered on and connected to the conduit. */}

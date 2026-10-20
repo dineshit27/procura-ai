@@ -350,8 +350,8 @@ export const PayPalCheckoutModal: React.FC<PayPalCheckoutModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-neutral-900/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-xl w-full p-6 sm:p-7 shadow-brutal-lg max-h-[95vh] overflow-y-auto space-y-5">
+    <div className="fixed inset-0 bg-neutral-900/70 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-[#FBF9F5] border-2 border-neutral-900 max-w-xl w-full p-4 sm:p-7 shadow-brutal-lg max-h-[calc(100dvh-1rem)] sm:max-h-[95dvh] overflow-y-auto space-y-5" role="dialog" aria-modal="true" aria-label="PayPal Sandbox checkout">
         {/* Header */}
         <div className="flex items-start justify-between border-b-2 border-neutral-900 pb-3.5">
           <div className="space-y-1">
@@ -369,6 +369,7 @@ export const PayPalCheckoutModal: React.FC<PayPalCheckoutModalProps> = ({
             onClick={onClose}
             className="p-1 border-2 border-neutral-900 bg-white hover:bg-paper-200 shadow-brutal-xs"
             title="Close checkout"
+            aria-label="Close PayPal Sandbox checkout"
           >
             <X className="w-4 h-4" />
           </button>
@@ -397,21 +398,21 @@ export const PayPalCheckoutModal: React.FC<PayPalCheckoutModalProps> = ({
               <span className="text-neutral-600">Request ID:</span>
               <span className="font-bold text-neutral-900">{request.id}</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center">
               <span className="text-neutral-600">Product / Need:</span>
               <span className="font-bold text-neutral-900 truncate max-w-xs">
                 {request.selectedItemName || request.title}
               </span>
             </div>
-            <div className="flex justify-between items-center font-mono">
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center font-mono">
               <span className="text-neutral-600">Quantity:</span>
               <span className="font-bold text-neutral-900">{request.quantity} units</span>
             </div>
-            <div className="flex justify-between items-center font-mono">
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center font-mono">
               <span className="text-neutral-600">Supplier:</span>
               <span className="font-bold text-neutral-900">{request.selectedSupplier || 'Apex Business Hardware'}</span>
             </div>
-            <div className="pt-2 border-t border-neutral-200 flex justify-between items-center">
+            <div className="pt-2 border-t border-neutral-200 flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center">
               <span className="text-sm font-bold text-neutral-900">Total Due (Sandbox):</span>
               <span className="text-lg font-mono font-extrabold text-cobalt-700">
                 ${request.estimatedTotal.toFixed(2)} USD
@@ -449,7 +450,7 @@ export const PayPalCheckoutModal: React.FC<PayPalCheckoutModalProps> = ({
 
         {/* Success Verified Settlement Display */}
         {captureSuccess ? (
-          <div className="p-5 bg-emerald-50 border-2 border-emerald-700 space-y-3">
+            <div className="p-4 sm:p-5 bg-emerald-50 border-2 border-emerald-700 space-y-3">
             <div className="flex items-center space-x-2 text-emerald-900 font-bold">
               <CheckCircle2 className="w-5 h-5 text-emerald-700" />
               <span>PayPal Sandbox Payment Verified & Settled</span>
@@ -459,21 +460,21 @@ export const PayPalCheckoutModal: React.FC<PayPalCheckoutModalProps> = ({
               capture.
             </p>
             <div className="bg-white border border-emerald-600 p-3 text-xs font-mono space-y-1.5 text-neutral-800">
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">PayPal Order ID:</span>
                 <span className="font-bold">{captureSuccess.orderId}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Capture ID:</span>
                 <span className="font-bold">{captureSuccess.captureId}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Authoritative Amount:</span>
                 <span className="font-bold text-emerald-800">
                   ${captureSuccess.amount?.total?.toFixed(2) ?? request.estimatedTotal.toFixed(2)} USD
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                 <span className="text-neutral-500">Captured At:</span>
                 <span>{new Date(captureSuccess.capturedAt).toLocaleString()}</span>
               </div>
@@ -558,7 +559,7 @@ export const PayPalCheckoutModal: React.FC<PayPalCheckoutModalProps> = ({
         )}
 
         {/* Footer Note */}
-        <div className="pt-2 border-t border-neutral-200 flex items-center justify-between text-[11px] font-mono text-neutral-500">
+        <div className="pt-2 border-t border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px] font-mono text-neutral-500">
           <span>Procura AI &bull; Phase 5 PayPal Integration</span>
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3 h-3 text-emerald-600" />

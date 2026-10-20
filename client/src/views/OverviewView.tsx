@@ -383,7 +383,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
       {/* Blocked Requests Section (SpendGuard Compliance Violations) */}
       {blockedRequestsList.length > 0 && (
-        <div className="bg-rose-50 border-2 border-neutral-900 shadow-brutal p-5 space-y-4">
+        <div className="bg-rose-50 border-2 border-neutral-900 shadow-brutal p-4 sm:p-5 space-y-4">
           <div className="flex items-center justify-between border-b-2 border-neutral-900 pb-3">
             <div className="flex items-center space-x-2.5">
               <Ban className="w-5 h-5 text-rose-700" />
@@ -437,7 +437,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         {/* Left Column (2/3): Recent Purchase Requests Table */}
         <div className="lg:col-span-2 bg-white border-2 border-neutral-900 shadow-brutal flex flex-col justify-between">
           <div>
-            <div className="p-5 border-b-2 border-neutral-900 flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b-2 border-neutral-900 flex items-center justify-between gap-3">
               <div className="flex items-center space-x-2.5">
                 <Receipt className="w-5 h-5 text-cobalt-700" />
                 <h3 className="font-extrabold text-lg text-neutral-900">Recent Purchase Requests</h3>
@@ -451,8 +451,37 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            {/* The overview keeps its compact table on tablet/desktop and uses
+                cards on phones so the request status and action stay visible. */}
+            <div className="sm:hidden divide-y divide-neutral-200">
+              {requests.slice(0, 5).map((req) => (
+                <article key={req.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-sm text-neutral-900 leading-snug">{req.title}</h4>
+                      <div className="mt-1 text-[11px] font-mono text-neutral-500">{req.id} · Qty: {req.quantity}</div>
+                    </div>
+                    <StatusBadge status={req.status} size="sm" />
+                  </div>
+                  <div className="flex items-end justify-between gap-3 border-t border-neutral-200 pt-2.5">
+                    <div>
+                      <div className="text-[10px] font-mono uppercase text-neutral-500">Committed total</div>
+                      <div className="font-mono font-bold text-sm text-neutral-900">${req.estimatedTotal.toFixed(2)}</div>
+                    </div>
+                    <button
+                      onClick={() => onSelectRequest(req)}
+                      className="min-h-10 px-3 py-2 text-xs font-bold border-2 border-neutral-900 bg-paper-100 hover:bg-neutral-900 hover:text-white transition shadow-brutal-xs"
+                      aria-label={`View details for ${req.title}`}
+                    >
+                      View details
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="hidden sm:block overflow-x-auto" aria-label="Recent purchase requests table. Scroll horizontally to view all columns.">
+              <table className="min-w-[680px] w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-paper-200 border-b-2 border-neutral-900 text-xs font-mono uppercase tracking-wider text-neutral-700">
                     <th className="py-3 px-4">Request / Title</th>
@@ -497,7 +526,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
           </div>
 
-          <div className="p-4 bg-paper-100 border-t-2 border-neutral-900 flex items-center justify-between text-xs text-neutral-600">
+          <div className="p-4 bg-paper-100 border-t-2 border-neutral-900 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs text-neutral-600">
             <span>Showing recent requests in pipeline</span>
             <button
               onClick={() => onNavigate('new-request')}
@@ -511,7 +540,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         {/* Right Column (1/3): Activity Feed */}
         <div className="bg-white border-2 border-neutral-900 shadow-brutal flex flex-col justify-between">
           <div>
-            <div className="p-5 border-b-2 border-neutral-900 flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b-2 border-neutral-900 flex items-center justify-between gap-3">
               <div className="flex items-center space-x-2">
                 <Activity className="w-5 h-5 text-cobalt-700" />
                 <h3 className="font-extrabold text-lg text-neutral-900">Audit Trail</h3>
@@ -532,7 +561,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
               )}
             </div>
 
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4">
               {/* Loading State */}
               {summaryLoading && !summary && (
                 <div className="py-10 text-center text-xs font-mono text-neutral-500 space-y-2">

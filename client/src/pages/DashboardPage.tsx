@@ -272,8 +272,8 @@ export const DashboardPage: React.FC = () => {
 
   if (popupNotice) {
     return (
-      <div className="min-h-screen bg-[#FBF9F5] flex items-center justify-center p-6 antialiased font-sans">
-        <div className="bg-white border-2 border-neutral-900 p-6 shadow-brutal max-w-sm w-full text-center space-y-4">
+      <div className="min-h-screen bg-[#FBF9F5] flex items-center justify-center p-4 sm:p-6 antialiased font-sans">
+        <div className="bg-white border-2 border-neutral-900 p-4 sm:p-6 shadow-brutal max-w-sm w-full text-center space-y-4">
           <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 bg-emerald-100 border border-neutral-900 text-emerald-950 font-mono text-[11px] font-bold">
             <span>PAYPAL SANDBOX</span>
           </div>

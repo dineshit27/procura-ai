@@ -750,7 +750,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
           </div>
 
           {/* Deterministic Server Policy Engine Verification Card */}
-          <div className="bg-white border-2 border-neutral-900 p-6 shadow-brutal space-y-5" id="policy-verification-panel">
+          <div className="bg-white border-2 border-neutral-900 p-4 sm:p-6 shadow-brutal space-y-5" id="policy-verification-panel">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b-2 border-neutral-900 gap-2">
               <div className="flex items-center space-x-2">
                 <Scale className="w-5 h-5 text-cobalt-700" />
@@ -881,7 +881,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
           </div>
 
           {/* Action Bar */}
-          <div className="bg-white border-2 border-neutral-900 p-6 shadow-brutal flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-white border-2 border-neutral-900 p-4 sm:p-6 shadow-brutal flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center space-x-2 text-xs text-neutral-700 font-mono">
               <ShieldCheck className="w-4 h-4 text-cobalt-700" />
               <span>

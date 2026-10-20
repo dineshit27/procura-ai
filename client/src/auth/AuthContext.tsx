@@ -9,9 +9,15 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
-    return () => listener.subscription.unsubscribe();
+    let active = true;
+    void supabase.auth.getSession()
+      .then(({ data }) => { if (active) setSession(data.session); })
+      .catch(() => { if (active) setSession(null); })
+      .finally(() => { if (active) setLoading(false); });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
+      if (active) setSession(next);
+    });
+    return () => { active = false; listener.subscription.unsubscribe(); };
   }, []);
   return <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut: async () => { await supabase?.auth.signOut(); } }}>{children}</AuthContext.Provider>;
 };

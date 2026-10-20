@@ -101,6 +101,11 @@ export async function safeRequestJson<T>(
   const fullUrl = buildApiUrl(path);
 
   const headers = new Headers(init?.headers);
+  // Supabase access tokens are the sole credential accepted by the API.
+  // Roles are resolved server-side; callers never send a role header.
+  const { supabase } = await import('../auth/supabase');
+  const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+  if (session?.access_token) headers.set('Authorization', `Bearer ${session.access_token}`);
   if (!headers.has('Accept')) {
     headers.set('Accept', 'application/json');
   }
@@ -487,9 +492,6 @@ export async function fetchCurrentPolicy(): Promise<any> {
 export async function updatePolicySettings(updates: any): Promise<any> {
   const json = await safeRequestJson<{ success?: boolean; data: any }>('/api/policies/current', {
     method: 'PUT',
-    headers: {
-      'x-user-role': 'admin',
-    },
     body: JSON.stringify(updates),
   });
 
@@ -502,9 +504,6 @@ export async function updatePolicySettings(updates: any): Promise<any> {
 export async function resetPolicySettings(): Promise<any> {
   const json = await safeRequestJson<{ success?: boolean; data: any }>('/api/policies/reset', {
     method: 'POST',
-    headers: {
-      'x-user-role': 'admin',
-    },
   });
 
   return json.data;

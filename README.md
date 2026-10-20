@@ -229,3 +229,12 @@ Released under the [MIT License](./LICENSE).
 ---
 
 **Procura AI | Smarter purchasing. Controlled spending. Secure payment workflows.**
+# Authentication setup
+
+The dashboard requires Supabase Auth. The marketing site remains public.
+
+1. Create a Supabase project and run `supabase/migrations/20261020_auth_rbac.sql` in its SQL editor.
+2. In Supabase Auth, configure Site URL and redirect URLs for `http://localhost:5173/setup-password` and your Render URL with `/setup-password`.
+3. Copy the Supabase URL and publishable/anon key to both client and server environment files. Set `SUPABASE_SERVICE_ROLE_KEY` only in `server/.env` and Render's server environment.
+4. Create the first administrator in Supabase Auth, then insert that user's UUID and email in `profiles` with role `admin` using the SQL editor. There is intentionally no bootstrap-admin endpoint.
+5. Sign in at `/login`; admins can call the protected invitation API to invite users. The JSON request store remains single-instance and is not appropriate for multi-instance production; migrate purchase data to a database before scaling.

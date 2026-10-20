@@ -43,6 +43,8 @@ export interface ServerPurchaseRequest {
   policyResult?: PolicyEvaluationResult;
   paypalOrderId?: string;
   paymentDetails?: PaymentDetails;
+  /** Supabase user id. Undefined legacy records are admin/manager-only. */
+  ownerId?: string;
 }
 
 export const createOrderRequestSchema = z.object({

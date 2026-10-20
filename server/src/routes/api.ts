@@ -6,6 +6,7 @@ import { checkoutRouter } from './checkout.js';
 import { requestsRouter } from './requests.js';
 import { spendGuardRouter } from './spendGuard.js';
 import { catalogRouter } from './catalog.js';
+import { usersRouter } from './users.js';
 
 export const apiRouter = Router();
 
@@ -16,5 +17,6 @@ apiRouter.use('/checkout', checkoutRouter);
 apiRouter.use('/requests', requestsRouter);
 apiRouter.use('/spendguard', spendGuardRouter);
 apiRouter.use('/catalog', catalogRouter);
+apiRouter.use('/users', usersRouter);
 
 

@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { env, getPayPalConfig } from '../config/env.js';
+import { requireAuth } from '../middleware/auth.js';
 import {
   createOrderRequestSchema,
   captureOrderRequestSchema,
@@ -19,6 +20,7 @@ import {
 } from '../services/paypalService.js';
 
 export const checkoutRouter = Router();
+checkoutRouter.use(requireAuth);
 
 // In-flight capture locks to strictly prevent concurrent duplicate captures
 const inFlightCaptures = new Set<string>();

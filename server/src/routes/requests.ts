@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import {
   getAllPurchaseRequests,
   getPurchaseRequestById,
@@ -9,6 +9,7 @@ import { syncPurchaseRequestSchema } from '../types/checkout.js';
 import { CATALOG_ITEMS } from '../data/catalog.js';
 import { evaluatePurchasingPolicy } from '../services/policyEngine.js';
 import { atomicApproveRequest, canCommitSpend, withStoreLock } from '../services/spendGuardService.js';
+import { AuthedRequest, canAccessRequest, requireAuth, requirePermission } from '../middleware/auth.js';
 
 export const requestsRouter = Router();
 
@@ -16,8 +17,8 @@ export const requestsRouter = Router();
  * GET /api/requests
  * Returns all purchase requests in server memory.
  */
-requestsRouter.get('/', (_req: Request, res: Response) => {
-  const requests = getAllPurchaseRequests();
+requestsRouter.get('/', requireAuth, requirePermission('read_requests'), (req: AuthedRequest, res: Response) => {
+  const requests = getAllPurchaseRequests().filter((request) => canAccessRequest(req, request.ownerId));
   res.status(200).json({
     success: true,
     data: requests,
@@ -28,7 +29,7 @@ requestsRouter.get('/', (_req: Request, res: Response) => {
  * GET /api/requests/:id
  * Returns a specific purchase request by ID.
  */
-requestsRouter.get('/:id', (req: Request, res: Response) => {
+requestsRouter.get('/:id', requireAuth, requirePermission('read_requests'), (req: AuthedRequest, res: Response) => {
   const id = req.params.id;
   if (!id) {
     res.status(400).json({ success: false, message: 'ID parameter required.' });
@@ -40,6 +41,10 @@ requestsRouter.get('/:id', (req: Request, res: Response) => {
       success: false,
       message: `Purchase request "${id}" not found.`,
     });
+    return;
+  }
+  if (!canAccessRequest(req, purchase.ownerId)) {
+    res.status(403).json({ success: false, error: 'FORBIDDEN', message: 'You cannot access this purchase request.' });
     return;
   }
   res.status(200).json({
@@ -56,7 +61,7 @@ requestsRouter.get('/:id', (req: Request, res: Response) => {
  * Wrapped in withStoreLock to prevent a race condition where two concurrent
  * requests both pass the cumulative spend check before either is written.
  */
-requestsRouter.post('/', async (req: Request, res: Response) => {
+requestsRouter.post('/', requireAuth, requirePermission('create_requests'), async (req: AuthedRequest, res: Response) => {
   const parseResult = syncPurchaseRequestSchema.safeParse(req.body);
   if (!parseResult.success) {
     res.status(400).json({
@@ -121,6 +126,7 @@ requestsRouter.post('/', async (req: Request, res: Response) => {
         selectedItemName: itemName,
         policyDecision: policyResult.decision,
         policyResult,
+        ownerId: req.auth!.userId,
       });
     });
   } catch (err) {
@@ -144,7 +150,7 @@ requestsRouter.post('/', async (req: Request, res: Response) => {
  * Strictly forbids setting 'paid' without verified PayPal capture.
  * Atomically verifies cumulative budget availability on approval.
  */
-requestsRouter.patch('/:id/status', async (req: Request, res: Response) => {
+requestsRouter.patch('/:id/status', requireAuth, async (req: AuthedRequest, res: Response) => {
   const id = req.params.id;
   const { status, notes } = req.body;
 
@@ -168,6 +174,24 @@ requestsRouter.patch('/:id/status', async (req: Request, res: Response) => {
       success: false,
       message: `Invalid status "${status}". Allowed values: draft, pending_approval, approved, cancelled.`,
     });
+    return;
+  }
+
+  const existingForAccess = getPurchaseRequestById(id);
+  if (!existingForAccess) {
+    res.status(404).json({ success: false, message: `Purchase request "${id}" not found.` });
+    return;
+  }
+  if (!canAccessRequest(req, existingForAccess.ownerId)) {
+    res.status(403).json({ success: false, error: 'FORBIDDEN', message: 'You cannot modify this purchase request.' });
+    return;
+  }
+  if (status === 'approved' && !['admin', 'procurement_manager', 'finance_manager'].includes(req.auth!.role)) {
+    res.status(403).json({ success: false, error: 'FORBIDDEN', message: 'Only authorized approvers can approve requests.' });
+    return;
+  }
+  if (status !== 'cancelled' && req.auth!.role === 'requester') {
+    res.status(403).json({ success: false, error: 'FORBIDDEN', message: 'Requesters may only cancel their own requests.' });
     return;
   }
 

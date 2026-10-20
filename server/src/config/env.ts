@@ -43,6 +43,9 @@ export const envSchema = z
       .string()
       .url()
       .default('http://localhost:5173'),
+    SUPABASE_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
+    SUPABASE_ANON_KEY: z.preprocess(emptyToUndefined, z.string().min(20).optional()),
+    SUPABASE_SERVICE_ROLE_KEY: z.preprocess(emptyToUndefined, z.string().min(20).optional()),
     GEMINI_API_KEY: z
       .string()
       .optional(),

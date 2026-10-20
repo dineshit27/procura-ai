@@ -5,6 +5,8 @@ import { LandingPage } from './pages/LandingPage';
 import { ContactPage } from './pages/ContactPage';
 import SmoothCursor from './components/lightswind/smooth-cursor';
 import CinematicScroll from './components/lightswind/cinematic-scroll';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import { LoginPage } from './pages/LoginPage';
 
 function isPayPalReturnSearch(search: string): boolean {
   const params = new URLSearchParams(search);
@@ -19,9 +21,16 @@ function RootEntry() {
   return <LandingPage />;
 }
 
+function ProtectedDashboard() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen grid place-items-center bg-[#FBF9F5] font-mono">Restoring secure session…</div>;
+  return user ? <DashboardPage /> : <Navigate to="/login" replace />;
+}
+
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <SmoothCursor
         size={16}
         color="#2457E6"
@@ -41,10 +50,13 @@ export const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<RootEntry />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/app" element={<DashboardPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/setup-password" element={<LoginPage />} />
+          <Route path="/app" element={<ProtectedDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </CinematicScroll>
+      </AuthProvider>
     </BrowserRouter>
   );
 };

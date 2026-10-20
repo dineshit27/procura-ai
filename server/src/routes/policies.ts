@@ -7,7 +7,7 @@ import {
   resetPolicyToDefault,
   procurementPolicySchema,
 } from '../config/policySettings.js';
-import { requireAdminRole } from '../middleware/adminAuth.js';
+import { requireAuth, requirePermission } from '../middleware/auth.js';
 
 export const policiesRouter = Router();
 
@@ -17,6 +17,7 @@ export const policiesRouter = Router();
  */
 policiesRouter.post(
   '/evaluate',
+  requireAuth,
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       const parseResult = policyEvaluationRequestSchema.safeParse(req.body);
@@ -54,7 +55,7 @@ policiesRouter.post(
  * GET /api/policies/current
  * Returns the active server-side policy settings (readable by any role).
  */
-policiesRouter.get('/current', (_req: Request, res: Response): void => {
+policiesRouter.get('/current', requireAuth, (_req: Request, res: Response): void => {
   const policy = getActivePolicy();
   res.status(200).json({
     status: 'success',
@@ -78,7 +79,8 @@ policiesRouter.get('/current', (_req: Request, res: Response): void => {
  */
 policiesRouter.put(
   '/current',
-  requireAdminRole,
+  requireAuth,
+  requirePermission('manage_policies'),
   (req: Request, res: Response): void => {
     const updateSchema = procurementPolicySchema.partial();
     const parseResult = updateSchema.safeParse(req.body);
@@ -118,7 +120,8 @@ policiesRouter.put(
  */
 policiesRouter.post(
   '/reset',
-  requireAdminRole,
+  requireAuth,
+  requirePermission('manage_policies'),
   (_req: Request, res: Response): void => {
     resetPolicyToDefault();
     res.status(200).json({

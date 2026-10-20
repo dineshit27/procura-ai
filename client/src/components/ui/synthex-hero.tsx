@@ -40,7 +40,7 @@ export default function SynthexHero() {
   return (
     <section
       id="top"
-      className="relative min-h-screen overflow-hidden bg-[#060B1A] text-white selection:bg-[#2457E6]/40"
+      className="relative min-h-[100svh] overflow-hidden bg-[#060B1A] text-white selection:bg-[#2457E6]/40"
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
       <div className="absolute inset-0 z-0 flex items-end justify-center gap-0 px-0 pb-0">
@@ -60,10 +60,10 @@ export default function SynthexHero() {
         ))}
       </div>
 
-      <div className="relative z-10 flex min-h-screen flex-col">
+      <div className="relative z-10 flex min-h-[100svh] flex-col">
         <Navigation5 />
 
-        <main className="flex flex-1 flex-col items-center justify-center px-4 pb-32 text-center">
+        <main className="flex flex-1 flex-col items-center justify-center px-4 pb-16 pt-8 text-center sm:pb-32 sm:pt-0">
           <div className="group relative mb-7 cursor-pointer">
             <div className="absolute inset-0 rounded-full bg-[#2457E6] opacity-40 blur-2xl transition-all duration-700 group-hover:scale-110 group-hover:opacity-70" />
             <div className="relative rounded-full border border-[#386BFF]/40 bg-[#2457E6]/15 px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#EAF0FF] backdrop-blur-sm shadow-[2px_2px_0px_rgba(255,255,255,0.15)]">

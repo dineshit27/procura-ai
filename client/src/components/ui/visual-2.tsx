@@ -65,7 +65,7 @@ export function Visual2({
   return (
     <div
       aria-hidden
-      className="relative h-[180px] w-[356px] overflow-hidden rounded-t-lg bg-white p-3.5 flex flex-col justify-between font-sans select-none border-b border-[#111827]/10"
+      className="relative h-[180px] w-full overflow-hidden rounded-t-lg bg-white p-3.5 flex flex-col justify-between font-sans select-none border-b border-[#111827]/10"
       style={{
         backgroundColor: "#ffffff",
         "--main-color": mainColor,

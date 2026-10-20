@@ -112,11 +112,9 @@ export type TimelineProps = {
 };
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-const MOBILE_SLIDE_PERCENT = -82;
-const MOBILE_LINE_WIDTH = 72;
 const MOBILE_REVEAL_POSITIONS: ReadonlyArray<readonly [number, number]> = [
-  [0.1, 0.18], [0.17, 0.25], [0.24, 0.32], [0.31, 0.39],
-  [0.38, 0.46], [0.45, 0.53], [0.52, 0.6],
+  [0.04, 0.12], [0.12, 0.2], [0.2, 0.28], [0.28, 0.36],
+  [0.36, 0.44], [0.44, 0.52], [0.52, 0.6],
 ];
 
 function subscribeToReducedMotion(callback: () => void) {
@@ -269,6 +267,7 @@ export default function Timeline({
 }: TimelineProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const wholeSliderRef = useRef<HTMLDivElement>(null);
+  const launchpadRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
   const animationDuration = duration ?? scrollDuration;
   const normalizedDuration = Math.max(0.2, animationDuration);
@@ -289,7 +288,8 @@ export default function Timeline({
   useEffect(() => {
     const section = sectionRef.current;
     const slider = wholeSliderRef.current;
-    if (!section || !slider || window.innerWidth > 768) return;
+    const launchpad = launchpadRef.current;
+    if (!section || !slider || !launchpad || window.innerWidth > 768) return;
 
     const scroller = section.closest<HTMLElement>(".cinematic-scroll");
     const scrollTarget: HTMLElement | Window = scroller ?? window;
@@ -298,6 +298,15 @@ export default function Timeline({
     const setAll = (selector: string, properties: gsap.TweenVars) => {
       const elements = select(selector);
       if (elements.length) gsap.set(elements, properties);
+    };
+    const offsetWithin = (element: HTMLElement, ancestor: HTMLElement) => {
+      let offset = 0;
+      let current: HTMLElement | null = element;
+      while (current && current !== ancestor) {
+        offset += current.offsetLeft;
+        current = current.offsetParent as HTMLElement | null;
+      }
+      return offset;
     };
 
     const render = () => {
@@ -310,9 +319,22 @@ export default function Timeline({
       const travel = Math.max(1, section.offsetHeight - viewportHeight);
       const progress = Math.min(1, Math.max(0, (scrollTop - sectionTop) / travel));
 
-      gsap.set(slider, { xPercent: MOBILE_SLIDE_PERCENT * progress });
-      const lineProgress = Math.min(1, Math.max(0, (progress - 0.2) / 0.56));
-      setAll(".journey-line", { width: `${MOBILE_LINE_WIDTH * lineProgress}%` });
+      // The track has a deliberately oversized width on phones.  Translating
+      // by a percentage of that width leaves the terminal card off-screen on
+      // many devices, so calculate the exact distance to its right edge.
+      const viewportWidth = scroller?.clientWidth ?? window.innerWidth;
+      const launchpadLeft = offsetWithin(launchpad, slider);
+      const sliderTravel = Math.max(0, launchpadLeft + launchpad.offsetWidth - viewportWidth + 16);
+      gsap.set(slider, { x: -sliderTravel * progress, xPercent: 0 });
+
+      // Grow the conduit from the first scroll frame and finish it exactly at
+      // the launchpad rail rather than at an arbitrary percentage of the track.
+      const line = section.querySelector<HTMLElement>(".journey-line");
+      const lineContainer = line?.parentElement;
+      const lineTarget = lineContainer
+        ? Math.max(0, launchpadLeft - offsetWithin(lineContainer, slider) + 8)
+        : 0;
+      setAll(".journey-line", { width: `${lineTarget * (reducedMotion ? 1 : progress)}px` });
 
       allJourneyItems.forEach((item, index) => {
         const [start, end] = MOBILE_REVEAL_POSITIONS[index];
@@ -717,6 +739,7 @@ export default function Timeline({
 
                 {/* Procura AI App Launchpad Card after Step 07 (Phase 7) */}
                 <div
+                  ref={launchpadRef}
                   className="relative h-full w-[30vw] px-[2vw] max-[768px]:flex max-[768px]:w-[76vw] max-[768px]:flex-col max-[768px]:px-[6vw] max-[600px]:flex max-[600px]:w-[76vw] max-[600px]:flex-col max-[600px]:px-[6vw] shrink-0 pointer-events-auto"
                 >
                   {/* Terminal rail: the launchpad is the end of the journey,
@@ -768,7 +791,7 @@ export default function Timeline({
                       </div>
 
                       {/* Clearly Visible Interactive Strands Canvas */}
-                      <div className="h-[12vw] max-[600px]:h-48 w-full relative rounded-lg border-2 border-[#111827] bg-[#111c38] overflow-hidden shadow-[2px_2px_0px_#111827] mt-[0.5vw]">
+                      <div className="h-[12vw] max-[768px]:h-28 max-[600px]:h-24 w-full relative rounded-lg border-2 border-[#111827] bg-[#111c38] overflow-hidden shadow-[2px_2px_0px_#111827] mt-[0.5vw]">
                         {/* Luminous ambient backdrop to make the particle clearly visible */}
                         <div
                           className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.35)_0%,rgba(37,99,235,0.18)_50%,rgba(17,28,56,0.95)_85%)] pointer-events-none"

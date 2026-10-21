@@ -256,6 +256,44 @@ assignment). Verify each role before sharing the judge packet. This preserves
 Supabase authentication and the server-side role check, but the passwords are
 shared demo credentials—not a suitable production access model.
 
+#### Required configuration for an inbox-free judge demo
+
+The current repository cannot securely make a dedicated pre-provisioned
+identity passwordless without a factor controlled by that identity. Do not
+replace the password form with anonymous sign-in, a client-supplied role, a
+public token, or an endpoint that issues a session. Each would let a visitor
+choose an account or role without proving that identity.
+
+For the supported isolated demo setup:
+
+1. Create a separate Supabase project for the hackathon. Run
+   `20261020_auth_rbac.sql` and `20261020_initial_admin_setup.sql` there only.
+2. In Supabase Auth, enable Email/password and create four disposable,
+   confirmed users. Assign their profiles server-side as `admin`,
+   `procurement_manager`, `finance_manager`, and `requester`; do not grant
+   browser clients write access to `profiles`.
+3. In `client/.env.local`, set `VITE_SUPABASE_URL`,
+   `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL`, and the four
+   `VITE_DEMO_*_EMAIL` values. These email identifiers are public; passwords
+   and service keys must not be present.
+4. In `server/.env`, set the matching `SUPABASE_URL`,
+   `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`, plus
+   `CLIENT_URL=http://localhost:5173`. Keep the service-role key server-only.
+   Configure only PayPal Sandbox credentials (`PAYPAL_BASE_URL` must remain
+   `https://api-m.sandbox.paypal.com`).
+5. Give each judge the short-lived demo password outside the application,
+   rotate or delete the accounts after judging, and never reuse the demo
+   Supabase project, PayPal sandbox credentials, or server deployment for
+   real business data.
+
+For local testing, start the API with `npm run dev:server` and the client with
+`npm run dev:client`, then use each Quick Demo card to select its email and
+sign in with its externally supplied password. Verify requester ownership
+boundaries, denied manager/admin actions for lower roles, and PayPal Sandbox
+checkout with a demo purchase request. The API independently validates the
+Supabase access token and looks up the role from `profiles` on every protected
+request.
+
 For local development, add the four email variables to `client/.env.local`
 (or `client/.env`) alongside `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
 and `VITE_API_URL`. Keep `SUPABASE_SERVICE_ROLE_KEY`, `INITIAL_ADMIN_*`, and

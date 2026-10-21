@@ -1,3 +1,6 @@
+// This command runs outside the HTTP server; import the configuration module
+// so server/.env is loaded before getAdminClient reads Supabase settings.
+import '../config/env.js';
 import { getAdminClient } from '../middleware/auth.js';
 import { assignInitialAdmin, InitialAdminSetupError } from '../services/initialAdminSetup.js';
 

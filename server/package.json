@@ -8,6 +8,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "setup:initial-admin": "tsx src/scripts/setupInitialAdmin.ts",
+    "setup:demo-roles": "tsx src/scripts/setupDemoRoles.ts",
     "test": "cross-env NODE_ENV=test tsx test/policyEngine.test.ts && cross-env NODE_ENV=test tsx test/env.test.ts && cross-env NODE_ENV=test tsx test/authRbac.test.ts && cross-env NODE_ENV=test tsx test/checkout.test.ts && cross-env NODE_ENV=test tsx test/geminiService.test.ts && cross-env NODE_ENV=test tsx test/persistence.test.ts && cross-env NODE_ENV=test tsx test/spendGuard.test.ts && cross-env NODE_ENV=test tsx test/securityAudit.test.ts && cross-env NODE_ENV=test tsx test/dataSourceFixes.test.ts && cross-env NODE_ENV=test tsx test/backendSyncAndAuditLog.test.ts"
   },
   "dependencies": {

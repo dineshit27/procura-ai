@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import type { NextFunction, Request, Response } from 'express';
-import { createRequireAuth, requirePermission, type AuthClients, type Permission, type UserRole } from '../src/middleware/auth.js';
+import { ROLES, canAccessRequest, createRequireAuth, requirePermission, type AuthClients, type Permission, type UserRole } from '../src/middleware/auth.js';
 import { assignInitialAdmin, InitialAdminSetupError } from '../src/services/initialAdminSetup.js';
+import { assignDemoRoles, DemoRoleSetupError, readDemoRoleAssignments } from '../src/services/demoRoleSetup.js';
 
 let passed = 0;
 let failed = 0;
@@ -50,6 +51,14 @@ await runTest('valid server-side role assignment authorizes the request', async 
   assert.equal(result.next, true);
 });
 
+await runTest('each trusted role assignment authorizes its verified Supabase user', async () => {
+  for (const role of ROLES) {
+    const result = await invoke(authClients({ role }, { id: `${role}-id`, email: `${role}@example.com` }), 'Bearer valid-token');
+    assert.equal(result.status, 200, `${role} should be authorized`);
+    assert.equal(result.next, true, `${role} should advance to the protected route`);
+  }
+});
+
 await runTest('an unrecognized stored role is forbidden', async () => {
   const result = await invoke(authClients({ role: 'superuser' }, { id: 'user-1' }), 'Bearer valid-token');
   assert.equal(result.status, 403);
@@ -78,6 +87,15 @@ await runTest('the requester role cannot approve requests', async () => {
   const res = { status: () => res, json: () => res } as unknown as Response;
   requirePermission('approve_requests')(req as never, res, (() => { advanced = true; }) as NextFunction);
   assert.equal(advanced, false);
+});
+
+await runTest('a requester demo session is isolated to requests it owns', async () => {
+  const requester = { auth: { userId: 'demo-requester', role: 'requester' as const } } as Request;
+  assert.equal(canAccessRequest(requester as never, 'demo-requester'), true);
+  assert.equal(canAccessRequest(requester as never, 'another-demo-user'), false);
+
+  const administrator = { auth: { userId: 'demo-admin', role: 'admin' as const } } as Request;
+  assert.equal(canAccessRequest(administrator as never, 'another-demo-user'), true);
 });
 
 await runTest('each supported role has only its intended permissions', async () => {
@@ -127,6 +145,43 @@ await runTest('initial admin setup does not assign a nonexistent user', async ()
     rpc: async () => { throw new Error('must not be called'); },
   };
   await assert.rejects(() => assignInitialAdmin(client as never, 'missing@example.com'), InitialAdminSetupError);
+});
+
+await runTest('demo role bootstrap writes only explicit verified Auth UUID assignments', async () => {
+  const assignments = [
+    { role: 'admin' as const, email: 'admin@example.com' },
+    { role: 'procurement_manager' as const, email: 'procurement@example.com' },
+    { role: 'finance_manager' as const, email: 'finance@example.com' },
+    { role: 'requester' as const, email: 'requester@example.com' },
+  ];
+  let written: Array<{ id: string; email: string; role: UserRole }> = [];
+  const client = {
+    auth: {
+      admin: {
+        listUsers: async () => ({
+          data: {
+            users: assignments.map(({ email, role }) => ({
+              id: `${role}-uuid`, email, email_confirmed_at: '2026-10-21T00:00:00Z',
+            })),
+          },
+          error: null,
+        }),
+      },
+    },
+    from: () => ({
+      upsert: (rows: Array<{ id: string; email: string; role: UserRole }>) => {
+        written = rows;
+        return { select: async () => ({ data: rows.map(({ id, role }) => ({ id, role })), error: null }) };
+      },
+    }),
+  };
+  const result = await assignDemoRoles(client as never, assignments);
+  assert.deepEqual(written, assignments.map(({ email, role }) => ({ id: `${role}-uuid`, email, role })));
+  assert.deepEqual(result, assignments.map(({ role }) => ({ id: `${role}-uuid`, role })));
+});
+
+await runTest('demo role bootstrap requires its explicit one-time confirmation', async () => {
+  assert.throws(() => readDemoRoleAssignments({}), DemoRoleSetupError);
 });
 
 console.log(`Auth/RBAC tests: ${passed} passed, ${failed} failed`);

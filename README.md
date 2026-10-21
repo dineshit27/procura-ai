@@ -1,74 +1,95 @@
+# Procura AI
+
+### Smarter purchasing. Controlled spending. Secure payment workflows.
+
+Procura AI is an AI-powered procurement platform that helps small businesses make smarter purchasing decisions without losing control of their budgets. It combines natural-language product recommendations, backend-enforced spending policies, human approvals, and PayPal Sandbox checkout in one workflow.
+
 <p align="center">
   <img
     src="Procura AI Banner.png"
-    alt="Procura AI | AI-powered procurement with intelligent spending controls"
+    alt="Procura AI — AI-powered procurement with intelligent spending controls"
     width="100%"
   />
 </p>
 
-# Procura AI
-### AI-powered procurement with intelligent spending controls.
+<p align="center">
+  <a href="https://procura-io.onrender.com">Live Demo</a> ·
+  <a href="https://github.com/dineshit27/procura-ai">Source Code</a> ·
+  <a href="https://procura-ai-f4eo.onrender.com/api/health">API Health</a>
+</p>
 
-Procura AI helps small businesses make smarter purchasing decisions by combining AI-assisted product recommendations, server-enforced spending policies, human approval, and PayPal checkout in one workflow.
-<br> 
-**🔗 Procura Live URL:** https://procura-io.onrender.com
-<br>
-**🔗 Procura Backend Health:** https://procura-ai-f4eo.onrender.com/api/health
+<p align="center">
+  <img src="https://img.shields.io/badge/React-TypeScript-61DAFB?logo=react&logoColor=black" alt="React and TypeScript" />
+  <img src="https://img.shields.io/badge/Backend-Node.js-339933?logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/AI-Google%20Gemini-4285F4?logo=googlegemini&logoColor=white" alt="Google Gemini" />
+  <img src="https://img.shields.io/badge/Payments-PayPal%20Sandbox-003087?logo=paypal&logoColor=white" alt="PayPal Sandbox" />
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License" />
+</p>
 
-**Built for the PayPal AI Hackathon**
+**Built for the PayPal AI Hackathon.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![React](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Node.js](https://img.shields.io/badge/Backend-Node.js-green?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![PayPal](https://img.shields.io/badge/Payments-PayPal%20Sandbox-003087?logo=paypal&logoColor=white)](https://developer.paypal.com/)
-[![Postman](https://img.shields.io/badge/API-Postman-FF6C37?logo=postman&logoColor=white)](https://www.postman.com/)
-[![Render](https://img.shields.io/badge/Hosting-Render-46E3B7?logo=render&logoColor=black)](https://render.com/)
-[![Zapier](https://img.shields.io/badge/Automation-Zapier-FF4A00?logo=zapier&logoColor=white)](https://zapier.com/)
-
-> **Demo notice:** Supplier catalogs and purchasing records are simulated. Payments use the PayPal Sandbox and do not represent real financial transactions.
+> **Demo notice:** Supplier catalogs and purchasing records are simulated demonstration data. Payments use PayPal Sandbox and do not move real money.
 
 ---
 
 ## The Problem
 
-Small businesses often manage purchasing across spreadsheets, supplier catalogs, approval messages, and disconnected payment workflows. This makes it difficult to control spending, enforce purchasing policies, and understand how much budget remains available.
+Small businesses often manage procurement through spreadsheets, disconnected supplier catalogs, manual approvals, and separate payment workflows.
+
+This makes it difficult to enforce purchasing policies, monitor cumulative spending, prevent overspending, and maintain visibility into purchase decisions.
 
 ## The Solution
 
-Procura AI connects purchasing decisions to financial controls.
+Procura AI connects purchasing intelligence with deterministic financial controls.
 
-- **AI-powered recommendations:** Translate natural-language purchasing needs into catalog-grounded recommendations using Google Gemini.
-- **SpendGuard AI:** Enforce order limits, approved-supplier rules, cumulative budgets, and approval thresholds on the backend.
-- **Human-in-the-loop approvals:** Flag purchases that require review before payment.
-- **PayPal checkout:** Create and capture PayPal Sandbox orders through a server-validated payment workflow.
-- **Spending visibility:** Track paid spending, reserved budgets, available headroom, policy violations, and purchase history.
+- **AI procurement recommendations:** Convert natural-language purchasing needs into catalog-grounded recommendations using Google Gemini.
+- **SpendGuard AI:** Enforce order limits, quantity restrictions, approved-supplier rules, cumulative budgets, and approval requirements on the backend.
+- **Human-in-the-loop approvals:** Route purchases requiring review through authorized approval workflows.
+- **PayPal Sandbox checkout:** Create and capture payment orders through a server-validated payment flow.
+- **Budget visibility:** Track completed spending, reserved amounts, available budget, and purchase history.
+- **Role-based access control:** Use Supabase authentication and server-verified roles for administrative, procurement, finance, and requester permissions.
 
-### What makes it different?
+### What makes Procura AI different?
 
-Procura AI doesn't rely on AI alone to authorize spending. AI assists with purchasing decisions, while a deterministic backend policy engine enforces financial limits. Approved purchases then follow a controlled payment workflow.
+**AI recommends; deterministic policy enforcement controls spending.**
+
+An AI-generated recommendation is not authorization to spend money. Procura AI evaluates purchasing requests against backend-enforced policies, preserves required human approval, and validates payment details before a purchase is completed.
+
+This separation between AI assistance and financial authorization is central to the product.
+
+---
 
 ## How It Works
 
 ```mermaid
 flowchart TD
-    A[Describe Purchasing Need] --> B[AI Recommendations]
-    B --> C[Catalog and Policy Validation]
-    C --> D{Policy Decision}
-    D -->|Blocked| E[Explain Violation]
-    D -->|Approval Required| F[Human Review]
-    D -->|Allowed| G[Payment Workflow]
+    A["Natural-Language Purchase Request"] --> B["Gemini Recommendations"]
+    B --> C["Catalog and Policy Validation"]
+    C --> D{"SpendGuard Decision"}
+    D -->|Blocked| E["Explain Policy Violation"]
+    D -->|Review Required| F["Authorized Human Approval"]
+    D -->|Allowed| G["Payment Workflow"]
     F -->|Approved| G
-    F -->|Rejected| H[Release Budget Reservation]
-    G --> I[PayPal Sandbox Checkout]
-    I --> J[Verify Payment Capture]
-    J --> K[Update Purchase and Spend Dashboard]
+    F -->|Rejected| H["Release Budget Reservation"]
+    G --> I["PayPal Sandbox Checkout"]
+    I --> J["Server-Validated Capture"]
+    J --> K["Update Purchase and Spending Dashboard"]
 ```
 
-## Key Feature: SpendGuard AI
+1. A user describes a purchasing requirement.
+2. Procura AI generates recommendations grounded in the available demonstration catalog.
+3. SpendGuard validates the request against configured policies.
+4. Requests requiring approval are routed to an authorized reviewer.
+5. Eligible purchases proceed through PayPal Sandbox checkout.
+6. The backend validates payment capture before updating purchase status and spending records.
 
-SpendGuard is a backend-enforced spending control system, not just a dashboard.
+---
 
-| Control | Default policy |
+## SpendGuard AI
+
+SpendGuard is a backend-enforced purchasing policy engine, not merely a dashboard or AI-generated warning.
+
+| Control | Demonstration default |
 |---|---:|
 | Maximum single order | $10,000 |
 | Maximum order quantity | 250 units |
@@ -77,14 +98,53 @@ SpendGuard is a backend-enforced spending control system, not just a dashboard.
 | Higher-value purchases | Manual approval required |
 | Supplier restrictions | Configurable allowlist |
 
-These are configurable demo defaults, not universal financial recommendations.
+These values are configurable demonstration defaults, not universal financial recommendations. Actual approval behavior depends on the configured policies and applicable workflow rules.
 
-**Budget accounting includes:**
-- Paid spend from completed purchases.
-- Reserved spend for approved purchases awaiting payment.
-- Available budget after accounting for paid and reserved amounts.
-- Reservation release when an approved purchase is cancelled or rejected.
-- Concurrency controls to prevent simultaneous requests from bypassing budget checks within a single server process.
+### Budget accounting
+
+SpendGuard tracks:
+
+- Completed purchases and paid spending.
+- Reserved budget for approved purchases awaiting payment.
+- Available budget after paid and reserved amounts.
+- Budget reservation release when applicable purchases are cancelled or rejected.
+- Concurrent requests within the limits of the current single-server implementation.
+
+Policy decisions are enforced by the backend. Client-side controls alone cannot authorize a purchase or override server-side spending limits.
+
+---
+
+## Authentication and Permissions
+
+Procura AI uses Supabase Auth for identity verification and resolves application roles from trusted server-side `public.profiles` records.
+
+| Role | Intended permissions |
+|---|---|
+| `admin` | Manage authorized users, roles, and permitted system settings |
+| `procurement_manager` | Review and perform authorized procurement approvals |
+| `finance_manager` | Access permitted finance and budget information |
+| `requester` | Create purchase requests and view permitted records |
+
+The backend verifies the authenticated user's access token and resolves the user's role independently. Client-supplied role values and forged role headers are not trusted.
+
+A successfully authenticated Supabase user must also have a valid application role assignment before accessing protected resources.
+
+### Judge demo access
+
+The Quick Demo Access cards select the configured demo account email. Judges must enter the corresponding temporary password to sign in.
+
+For a safe demonstration:
+
+- Use disposable demo accounts and temporary passwords.
+- Assign each account its intended role on the server.
+- Keep passwords and service-role keys out of frontend code and GitHub.
+- Provide judge credentials through the event's designated private instructions.
+- Use simulated procurement records and PayPal Sandbox.
+- Verify role permissions before sharing access.
+
+**Environment note:** A separate Supabase project and backend deployment containing only demonstration data is recommended for public judging. If the current deployment uses the same Supabase project as development, do not describe it as an isolated demo environment until the separation is completed and verified.
+
+---
 
 ## Technology Stack
 
@@ -92,44 +152,56 @@ These are configurable demo defaults, not universal financial recommendations.
 |---|---|
 | Frontend | React, TypeScript, Vite, Tailwind CSS |
 | Backend | Node.js, Express, TypeScript |
-| AI | Google Gemini API, deterministic rules-engine fallback |
-| Payments | PayPal JavaScript SDK, PayPal REST API v2 |
+| AI | Google Gemini API with deterministic fallback |
+| Authentication | Supabase Auth and server-side role checks |
+| Payments | PayPal JavaScript SDK and REST Orders API |
 | Validation | Zod |
+| Persistence | File-backed JSON storage |
 | Testing | Automated server tests |
-| Data persistence | File-backed JSON storage |
 | Deployment | Render |
-| Version Control | Git & GitHub |
+| Version control | Git and GitHub |
 
 ## Architecture
 
 ```text
-React + TypeScript Client
-          |
-          v
-    Express REST API
-          |
-    +-----+----------+
-    |        |       |
-    v        v       v
-   Gemini  SpendGuard PayPal REST API
-    AI     + Policies      |
-    |        |             v
-    +--------+        Order Capture
-             |
-             v
-      Purchase Store
+React + TypeScript Frontend
+            |
+            v
+      Express REST API
+            |
+     +------+-------+----------------+
+     |              |                |
+     v              v                v
+ Supabase Auth   SpendGuard       Gemini API
+ Role Lookup     Policy Engine    Recommendations
+     |              |
+     +------+-------+
+            |
+            v
+   Purchase Data Store
+            |
+            v
+     PayPal REST API
+            |
+            v
+   Order Capture and Validation
 ```
 
-The backend validates purchase policies and authoritative payment amounts. The PayPal client secret remains server-side and must never be exposed to the browser.
+The frontend handles user interaction and presentation. The backend remains responsible for authentication checks, role authorization, spending policies, authoritative order amounts, and payment validation.
+
+PayPal client secrets and Supabase service-role keys must remain exclusively on the server.
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18 or later
-- npm
-- Google Gemini API key
-- PayPal Developer account with Sandbox credentials
+- Node.js 18 or later, compatible with the dependencies in this repository.
+- npm.
+- A Google Gemini API key.
+- A Supabase project with the required authentication configuration.
+- A PayPal Developer account with Sandbox credentials.
 
 ### 1. Clone the repository
 
@@ -144,9 +216,9 @@ cd procura-ai
 npm run install:all
 ```
 
-Alternatively, install dependencies in the root, `server`, and `client` directories separately.
+If the root installation script is unavailable in your checkout, install dependencies separately in the root, `server`, and `client` directories.
 
-### 3. Configure environment variables
+### 3. Configure the backend
 
 Copy the server environment template:
 
@@ -154,7 +226,7 @@ Copy the server environment template:
 cp server/.env.example server/.env
 ```
 
-Configure the variables supported by the server template. The primary settings include:
+Configure the variables supported by `server/.env.example`. The primary settings include:
 
 ```env
 PORT=5000
@@ -162,172 +234,86 @@ NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
 GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=your_supported_gemini_model
+
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
 
 PAYPAL_CLIENT_ID=your_sandbox_client_id
 PAYPAL_CLIENT_SECRET=your_sandbox_client_secret
 PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
 ```
 
-Configure `PAYPAL_PAYEE_EMAIL` if required by your Sandbox setup. Use the exact variable names and defaults documented in `server/.env.example`.
+Use the exact environment-variable names and supported defaults in the checked-in template. Configure `PAYPAL_PAYEE_EMAIL` only if required by your Sandbox setup.
 
-Optionally, configure `client/.env`:
+Never commit populated `.env` files, API keys, service-role keys, or payment secrets.
+
+### 4. Configure the frontend
+
+Create `client/.env.local`:
 
 ```env
 VITE_API_URL=http://localhost:5000
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+VITE_DEMO_ADMIN_EMAIL=demo-admin@example.com
+VITE_DEMO_PROCUREMENT_EMAIL=demo-procurement@example.com
+VITE_DEMO_FINANCE_EMAIL=demo-finance@example.com
+VITE_DEMO_REQUESTER_EMAIL=demo-requester@example.com
 ```
 
-**Never commit real API keys, PayPal secrets, or populated environment files.**
+Replace the example email addresses with the actual disposable Supabase Auth users configured for your environment.
 
-### Supabase authentication and initial administrator
+The `VITE_*` values are embedded in the frontend build and are not secret storage. Never put passwords or `SUPABASE_SERVICE_ROLE_KEY` in frontend variables.
 
-Procura verifies the Supabase access token on the API server and obtains the
-application role only from `public.profiles`. A Supabase Auth user is **not**
-automatically authorized: the signed-in user must have a valid `profiles` row.
+### 5. Configure Supabase
 
-1. In the Supabase SQL Editor, run these files in order:
-   - `supabase/migrations/20261020_auth_rbac.sql`
-   - `supabase/migrations/20261020_initial_admin_setup.sql`
-2. Create and verify the first user's email in Supabase Auth.
-3. Set these server-only values locally or in the Render **backend service**:
+Review the existing migrations before applying them:
 
-   ```env
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_ANON_KEY=your_publishable_or_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   INITIAL_ADMIN_EMAIL=verified.admin@example.com
-   INITIAL_ADMIN_SETUP_CONFIRM=assign-initial-admin
-   ```
+- `supabase/migrations/20261020_auth_rbac.sql`
+- `supabase/migrations/20261020_initial_admin_setup.sql`
 
-   Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_API_URL` in the
-   frontend build environment. Never put `SUPABASE_SERVICE_ROLE_KEY` or either
-   `INITIAL_ADMIN_*` variable in the frontend.
-4. From a trusted machine with the server environment loaded, run:
+Apply each migration in the intended Supabase project, following the repository's setup instructions. Do not rerun setup commands blindly against a populated database.
 
-   ```bash
-   npm --prefix server run setup:initial-admin
-   ```
+Create or confirm the required Auth users and ensure their UUIDs match their trusted `public.profiles` role assignments.
 
-   The command finds the verified user by email, then calls a database function
-   executable only by `service_role`. It is not an HTTP endpoint and cannot
-   accept browser credentials or a browser-selected role. It only succeeds if
-   no administrator exists. Remove `INITIAL_ADMIN_EMAIL` and
-   `INITIAL_ADMIN_SETUP_CONFIRM` immediately afterward.
+For initial administrator setup, use the documented server-only setup command and its required confirmation variables:
 
-For Render, set `CLIENT_URL` to the exact deployed frontend URL and set the
-three `SUPABASE_*` values on the backend service. Rebuild the frontend after
-setting its `VITE_*` values, because Vite embeds them at build time. Configure
-the same frontend URL in Supabase Auth's Site URL and Redirect URLs.
+```bash
+npm --prefix server run setup:initial-admin
+```
 
-### Roles and demo accounts
+For the four demo-role assignments, use the repository's documented `setup:demo-roles` procedure if it is present in your current checkout. Verify the command's preconditions and the existing role mappings before execution.
 
-`ROLE_NOT_ASSIGNED` means authentication succeeded but the authenticated
-Supabase user ID has no valid row in `public.profiles`. It is not a client-side
-role error and cannot be fixed with an HTTP header. First assign the initial
-administrator as above. That administrator can then use the protected
-`POST /api/users/invite` endpoint with `{ "email", "role" }` to invite a user
-and create its server-side profile in one operation. `PATCH /api/users/:id/role`
-with `{ "role" }` changes an existing profile; both endpoints require a
-verified bearer token belonging to an `admin` profile. Never expose the
-service-role key to perform these operations from a browser.
+Remove temporary setup confirmation variables immediately after successful setup. Never expose the service-role key or role-assignment operations through the browser.
 
-For a judge-facing demo, create four separate, disposable Supabase Auth users
-and invite/assign them as `admin`, `procurement_manager`, `finance_manager`,
-and `requester`. Put only their email identifiers in the frontend build
-environment using the `VITE_DEMO_*_EMAIL` variables documented in
-`client/.env.example`. The Quick Demo Access cards remain disabled until each
-identifier is configured. Selecting a configured card fills its email and
-focuses the password field. Supply that temporary password to judges only in
-their event packet or another out-of-band channel; the normal email/password
-form remains the only browser sign-in path. Do not define
-`VITE_DEMO_*_PASSWORD`: every `VITE_*` value is embedded in the frontend
-bundle. Rebuild the client after changing any `VITE_*` variable.
+### 6. Run the application
 
-Supabase magic links, email OTP, recovery links, and email invitations all
-prove control of an inbox, so none meets an inbox-free demo requirement.
-OAuth or passkeys only work if every judge has a pre-enrolled identity or
-device. For a public hackathon, the safest practical option is therefore four
-temporary demo passwords shared out of band and rotated or deleted after
-judging. Use a separate Supabase project and backend deployment containing
-only disposable demo accounts and data; never point these accounts at
-production records. An `admin` demo user is an administrator of that isolated
-demo environment only. Create the four users and their `profiles` rows before
-the demo (using the protected admin invite endpoint after the initial admin
-exists, or the Supabase Dashboard with an equivalent server-side role
-assignment). Verify each role before sharing the judge packet. This preserves
-Supabase authentication and the server-side role check, but the passwords are
-shared demo credentials—not a suitable production access model.
-
-#### Required configuration for an inbox-free judge demo
-
-The current repository cannot securely make a dedicated pre-provisioned
-identity passwordless without a factor controlled by that identity. Do not
-replace the password form with anonymous sign-in, a client-supplied role, a
-public token, or an endpoint that issues a session. Each would let a visitor
-choose an account or role without proving that identity.
-
-For the supported isolated demo setup:
-
-1. Create a separate Supabase project for the hackathon. Run
-   `20261020_auth_rbac.sql` and `20261020_initial_admin_setup.sql` there only.
-2. In Supabase Auth, enable Email/password and create four disposable,
-   confirmed users. Assign their profiles server-side as `admin`,
-   `procurement_manager`, `finance_manager`, and `requester`; do not grant
-   browser clients write access to `profiles`.
-3. In `client/.env.local`, set `VITE_SUPABASE_URL`,
-   `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL`, and the four
-   `VITE_DEMO_*_EMAIL` values. These email identifiers are public; passwords
-   and service keys must not be present.
-4. In `server/.env`, set the matching `SUPABASE_URL`,
-   `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`, plus
-   `CLIENT_URL=http://localhost:5173`. Keep the service-role key server-only.
-   Configure only PayPal Sandbox credentials (`PAYPAL_BASE_URL` must remain
-   `https://api-m.sandbox.paypal.com`).
-5. Give each judge the short-lived demo password outside the application,
-   rotate or delete the accounts after judging, and never reuse the demo
-   Supabase project, PayPal sandbox credentials, or server deployment for
-   real business data.
-
-For local testing, start the API with `npm run dev:server` and the client with
-`npm run dev:client`, then use each Quick Demo card to select its email and
-sign in with its externally supplied password. Verify requester ownership
-boundaries, denied manager/admin actions for lower roles, and PayPal Sandbox
-checkout with a demo purchase request. The API independently validates the
-Supabase access token and looks up the role from `profiles` on every protected
-request.
-
-For local development, add the four email variables to `client/.env.local`
-(or `client/.env`) alongside `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
-and `VITE_API_URL`. Keep `SUPABASE_SERVICE_ROLE_KEY`, `INITIAL_ADMIN_*`, and
-all demo passwords out of the client. The repository identifies Render as the
-hosting provider but does not contain a Render blueprint or frontend service
-name; in the Render dashboard, add the same `VITE_*` values to the environment
-for the service that builds the `client` directory, then trigger a deploy.
-
-To verify a role assignment, sign in as that user and request `GET
-/api/requests` with the session bearer token. A valid role returns authorized
-data; a missing profile returns `403 ROLE_NOT_ASSIGNED`; missing or invalid
-tokens return `401 UNAUTHENTICATED`. A role lookup outage is returned as `503
-ROLE_LOOKUP_UNAVAILABLE` and should be retried after checking the backend's
-Supabase server configuration.
-
-### 4. Run the application
+Use the development scripts supported by your checkout:
 
 ```bash
 npm run dev
 ```
 
-Default local URLs:
+The default local addresses are:
 
 | Service | URL |
 |---|---|
-| Frontend | http://localhost:5173 |
-| Backend | http://localhost:5000 |
-| Health check | http://localhost:5000/api/health |
+| Frontend | `http://localhost:5173` |
+| Backend | `http://localhost:5000` |
+| API health | `http://localhost:5000/api/health` |
+
+If the root development script does not start both services, use the separate client and server scripts documented in the package files.
+
+---
 
 ## Testing and Build
 
-Run the available validation commands from the repository root:
+The repository includes automated tests covering areas such as policy evaluation, authentication and authorization, PayPal checkout, AI fallback behavior, persistence, and spending controls.
+
+Run the available checks from the repository root:
 
 ```bash
 npm test
@@ -335,31 +321,47 @@ npm run typecheck
 npm run build
 ```
 
-The test suite covers policy evaluation, environment validation, PayPal checkout, AI fallback behavior, persistence, spending controls, and security-related scenarios.
+Run the current suite after changes and report the actual result. Do not rely on historical test counts as proof that the latest code passes.
 
-The latest reported validation completed with **95 tests passing and zero failures**. Re-run the tests after changes to verify the current result.
+### Manual verification checklist
 
-## Security and Limitations
-
-- **Authentication and authorization:** Protected API routes verify the current Supabase access token and resolve roles from server-side `profiles` data. A missing role returns an actionable `ROLE_NOT_ASSIGNED` response; it is not treated as live data. The service-role key stays exclusively on the backend.
-- **Simulated data:** Suppliers, catalog entries, and preloaded purchase history are demo data, not live supplier integrations.
-- **AI reliability:** Gemini output assists purchasing decisions; deterministic backend rules enforce spending policies. AI recommendations are not guaranteed to be correct.
-- **Payment environment:** Checkout uses PayPal Sandbox. Live payments require appropriate production credentials, configuration, security controls, and testing.
-- **Persistence and scaling:** JSON storage and in-process concurrency controls are intended for the prototype. Production deployment should use a suitable database and distributed concurrency controls for multiple server instances.
-- **Payment reconciliation:** Capture confirmation is handled synchronously; a PayPal webhook integration is not currently implemented.
-
-## Future Scope
-
-- Verified Google and email/password authentication with role-based access control.
-- Live supplier and inventory integrations.
-- Database-backed multi-business workspaces.
-- PayPal webhook-based payment reconciliation.
-- Advanced procurement analytics and configurable approval workflows.
-
-## License
-
-Released under the [MIT License](./LICENSE).
+- Sign in with each of the four demo roles.
+- Verify that each role receives only its permitted data and actions.
+- Confirm that missing or invalid tokens cannot access protected endpoints.
+- Confirm that forged role headers cannot grant privileges.
+- Test policy blocks, approval requirements, and budget reservation behavior.
+- Complete a PayPal Sandbox checkout.
+- Confirm that payment failures do not incorrectly mark purchases as paid.
+- Test the deployed frontend and backend, not just the local development environment.
 
 ---
 
-**Procura AI | Smarter purchasing. Controlled spending. Secure payment workflows.**
+## Security and Limitations
+
+- **Role enforcement:** The backend verifies Supabase access tokens and resolves application roles from trusted server-side records.
+- **Simulated suppliers:** Supplier catalogs, company departments, and preloaded purchase records are demonstration entities, not live supplier integrations.
+- **AI reliability:** Gemini assists with recommendations. Its output is not guaranteed to be correct and does not independently authorize spending.
+- **Payment environment:** PayPal Sandbox is used for demonstration transactions. Production payments would require separate configuration, security review, and testing.
+- **Persistence:** JSON-based storage and in-process concurrency controls are suitable for a prototype but are not a substitute for a production database and distributed coordination.
+- **Payment reconciliation:** The current implementation does not include a complete PayPal webhook-based reconciliation workflow.
+- **Demo credentials:** Shared temporary passwords are for controlled judging only, not a production authentication model.
+
+## Future Scope
+
+- Live supplier catalog and inventory integrations.
+- Database-backed multi-business workspaces.
+- PayPal webhook-based payment reconciliation.
+- More configurable approval workflows and procurement analytics.
+- Production-grade persistence, monitoring, and distributed concurrency controls.
+- Additional authentication options where appropriate for the deployment.
+
+## License
+
+This project is released under the [MIT License](./LICENSE).
+
+---
+
+<p align="center">
+  <strong>Procura AI</strong><br />
+  Smarter purchasing. Controlled spending. Secure payment workflows.
+</p>

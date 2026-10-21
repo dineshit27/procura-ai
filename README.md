@@ -234,10 +234,19 @@ and invite/assign them as `admin`, `procurement_manager`, `finance_manager`,
 and `requester`. Put only their email identifiers in the frontend build
 environment using the `VITE_DEMO_*_EMAIL` variables documented in
 `client/.env.example`. The Quick Demo Access cards remain disabled until each
-identifier is configured. A `VITE_DEMO_*_PASSWORD` may be used only for an
-isolated, intentionally public demo tenant; Vite exposes it to every visitor,
-so it must never be a real user or production credential. Rebuild the client
-after changing any `VITE_*` variable.
+identifier is configured. Selecting a configured card fills its email only;
+the judge enters the dedicated account's password through the existing
+Supabase password form. Do not define `VITE_DEMO_*_PASSWORD`: every `VITE_*`
+value is embedded in the frontend bundle. Rebuild the client after changing
+any `VITE_*` variable.
+
+For local development, add the four email variables to `client/.env.local`
+(or `client/.env`) alongside `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
+and `VITE_API_URL`. Keep `SUPABASE_SERVICE_ROLE_KEY`, `INITIAL_ADMIN_*`, and
+all demo passwords out of the client. The repository identifies Render as the
+hosting provider but does not contain a Render blueprint or frontend service
+name; in the Render dashboard, add the same `VITE_*` values to the environment
+for the service that builds the `client` directory, then trigger a deploy.
 
 To verify a role assignment, sign in as that user and request `GET
 /api/requests` with the session bearer token. A valid role returns authorized

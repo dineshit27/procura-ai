@@ -12,6 +12,8 @@
 Procura AI helps small businesses make smarter purchasing decisions by combining AI-assisted product recommendations, server-enforced spending policies, human approval, and PayPal checkout in one workflow.
 <br> 
 **🔗 Procura Live URL:** https://procura-io.onrender.com
+<br>
+**🔗 Procura Backend Health:** https://procura-ai-f4eo.onrender.com/api/health
 
 **Built for the PayPal AI Hackathon**
 

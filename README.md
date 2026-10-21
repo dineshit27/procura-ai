@@ -217,6 +217,35 @@ three `SUPABASE_*` values on the backend service. Rebuild the frontend after
 setting its `VITE_*` values, because Vite embeds them at build time. Configure
 the same frontend URL in Supabase Auth's Site URL and Redirect URLs.
 
+### Roles and demo accounts
+
+`ROLE_NOT_ASSIGNED` means authentication succeeded but the authenticated
+Supabase user ID has no valid row in `public.profiles`. It is not a client-side
+role error and cannot be fixed with an HTTP header. First assign the initial
+administrator as above. That administrator can then use the protected
+`POST /api/users/invite` endpoint with `{ "email", "role" }` to invite a user
+and create its server-side profile in one operation. `PATCH /api/users/:id/role`
+with `{ "role" }` changes an existing profile; both endpoints require a
+verified bearer token belonging to an `admin` profile. Never expose the
+service-role key to perform these operations from a browser.
+
+For a judge-facing demo, create four separate, disposable Supabase Auth users
+and invite/assign them as `admin`, `procurement_manager`, `finance_manager`,
+and `requester`. Put only their email identifiers in the frontend build
+environment using the `VITE_DEMO_*_EMAIL` variables documented in
+`client/.env.example`. The Quick Demo Access cards remain disabled until each
+identifier is configured. A `VITE_DEMO_*_PASSWORD` may be used only for an
+isolated, intentionally public demo tenant; Vite exposes it to every visitor,
+so it must never be a real user or production credential. Rebuild the client
+after changing any `VITE_*` variable.
+
+To verify a role assignment, sign in as that user and request `GET
+/api/requests` with the session bearer token. A valid role returns authorized
+data; a missing profile returns `403 ROLE_NOT_ASSIGNED`; missing or invalid
+tokens return `401 UNAUTHENTICATED`. A role lookup outage is returned as `503
+ROLE_LOOKUP_UNAVAILABLE` and should be retried after checking the backend's
+Supabase server configuration.
+
 ### 4. Run the application
 
 ```bash

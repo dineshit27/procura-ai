@@ -5,7 +5,7 @@ import {
   INITIAL_ACTIVITY_ITEMS,
   INITIAL_SETTINGS,
 } from '../data/demoData';
-import { checkBackendHealth, fetchPurchaseRequests, HealthCheckResult, isAuthorizationError } from '../services/api';
+import { checkBackendHealth, fetchPurchaseRequests, HealthCheckResult, isAuthorizationError, isUnauthenticatedError } from '../services/api';
 import { Navigation } from '../components/Navigation';
 import { Header } from '../components/Header';
 import { OverviewView } from '../views/OverviewView';
@@ -49,6 +49,7 @@ export const DashboardPage: React.FC = () => {
   const [requestsError, setRequestsError] = useState<string | null>(null);
   const [isUsingDemoFallback, setIsUsingDemoFallback] = useState<boolean>(false);
   const [authorizationError, setAuthorizationError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [activity, setActivity] = useState(INITIAL_ACTIVITY_ITEMS);
   const [settings, setSettings] = useState<ProcurementSettings>(INITIAL_SETTINGS);
 
@@ -77,6 +78,7 @@ export const DashboardPage: React.FC = () => {
         setRequests([]);
         setIsUsingDemoFallback(false);
         setAuthorizationError(msg);
+        setSessionExpired(isUnauthenticatedError(err));
         setRequestsError(null);
         return [];
       }
@@ -86,6 +88,7 @@ export const DashboardPage: React.FC = () => {
       setRequests((prev) => (prev.length === 0 ? INITIAL_PURCHASE_REQUESTS : prev));
       setIsUsingDemoFallback(true);
       setAuthorizationError(null);
+      setSessionExpired(false);
       setRequestsError(msg);
     } finally {
       setRequestsLoading(false);
@@ -339,15 +342,15 @@ export const DashboardPage: React.FC = () => {
                 <span className="w-fit px-2 py-0.5 bg-red-200 border border-red-700 font-bold uppercase text-[10px]">
                   Authorization Required
                 </span>
-                <span className="font-semibold">Live procurement records are unavailable until your Procura role is assigned.</span>
+                <span className="font-semibold">{sessionExpired ? 'Your session is missing or expired. Sign in again to access live procurement records.' : 'Live procurement records are unavailable until your Procura role is assigned.'}</span>
                 <p className="text-[11px] text-red-900/80 break-words">Connection detail: {authorizationError}</p>
               </div>
               <button
-                onClick={() => refreshRequests()}
+                onClick={() => { if (sessionExpired) void signOut(); else void refreshRequests(); }}
                 disabled={requestsLoading}
                 className="self-start sm:self-auto px-3 py-1 bg-white border-2 border-neutral-900 text-neutral-900 font-bold text-xs hover:bg-neutral-100 shadow-brutal-xs cursor-pointer disabled:opacity-50"
               >
-                {requestsLoading ? 'Checking Access...' : 'Retry Access Check'}
+                {sessionExpired ? 'Sign In Again' : requestsLoading ? 'Checking Access...' : 'Retry Access Check'}
               </button>
             </div>
           )}

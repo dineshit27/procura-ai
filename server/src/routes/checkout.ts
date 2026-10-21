@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { env, getPayPalConfig } from '../config/env.js';
-import { requireAuth } from '../middleware/auth.js';
+import { AuthedRequest, canAccessRequest, requireAuth, requirePermission } from '../middleware/auth.js';
 import {
   createOrderRequestSchema,
   captureOrderRequestSchema,
@@ -20,7 +20,7 @@ import {
 } from '../services/paypalService.js';
 
 export const checkoutRouter = Router();
-checkoutRouter.use(requireAuth);
+checkoutRouter.use(requireAuth, requirePermission('checkout'));
 
 // In-flight capture locks to strictly prevent concurrent duplicate captures
 const inFlightCaptures = new Set<string>();
@@ -47,7 +47,7 @@ checkoutRouter.get('/config', (_req: Request, res: Response) => {
  * Authoritatively validates purchase request and policy rules, recalculates total,
  * and creates a PayPal order with intent: CAPTURE.
  */
-checkoutRouter.post('/create-order', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+checkoutRouter.post('/create-order', async (req: AuthedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const config = getPayPalConfig();
     if (!config.checkoutEnabled) {
@@ -81,6 +81,10 @@ checkoutRouter.post('/create-order', async (req: Request, res: Response, next: N
         error: 'NOT_FOUND',
         message: `Purchase request "${purchaseRequestId}" was not found in authoritative records.`,
       });
+      return;
+    }
+    if (!canAccessRequest(req, purchase.ownerId)) {
+      res.status(403).json({ success: false, error: 'FORBIDDEN', message: 'You cannot check out this purchase request.' });
       return;
     }
 
@@ -254,7 +258,7 @@ checkoutRouter.post('/create-order', async (req: Request, res: Response, next: N
  * Captures an approved PayPal order, verifying amount, currency, and purchaseRequestId,
  * with concurrent/duplicate capture prevention.
  */
-checkoutRouter.post('/capture-order', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, next: NextFunction): Promise<void> => {
   let lockKey: string | null = null;
   try {
     const config = getPayPalConfig();
@@ -300,6 +304,10 @@ checkoutRouter.post('/capture-order', async (req: Request, res: Response, next: 
         error: 'NOT_FOUND',
         message: `Purchase request "${purchaseRequestId}" was not found.`,
       });
+      return;
+    }
+    if (!canAccessRequest(req, purchase.ownerId)) {
+      res.status(403).json({ success: false, error: 'FORBIDDEN', message: 'You cannot capture payment for this purchase request.' });
       return;
     }
 

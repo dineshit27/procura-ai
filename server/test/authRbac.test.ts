@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { NextFunction, Request, Response } from 'express';
-import { createRequireAuth, type AuthClients } from '../src/middleware/auth.js';
+import { createRequireAuth, requirePermission, type AuthClients } from '../src/middleware/auth.js';
 import { assignInitialAdmin, InitialAdminSetupError } from '../src/services/initialAdminSetup.js';
 
 let passed = 0;
@@ -62,6 +62,22 @@ await runTest('missing or invalid access tokens are unauthorized', async () => {
   assert.equal(missing.status, 401);
   const invalid = await invoke(authClients({ role: 'admin' }, null, { message: 'invalid' }), 'Bearer invalid-token');
   assert.equal(invalid.status, 401);
+});
+
+await runTest('a forged x-user-role header cannot add an admin permission', async () => {
+  let advanced = false;
+  const req = { auth: { userId: 'requester-1', role: 'requester' }, headers: { 'x-user-role': 'admin' } } as unknown as Request;
+  const res = { status: () => res, json: () => res } as unknown as Response;
+  requirePermission('manage_users')(req as never, res, (() => { advanced = true; }) as NextFunction);
+  assert.equal(advanced, false);
+});
+
+await runTest('the requester role cannot approve requests', async () => {
+  let advanced = false;
+  const req = { auth: { userId: 'requester-1', role: 'requester' } } as unknown as Request;
+  const res = { status: () => res, json: () => res } as unknown as Response;
+  requirePermission('approve_requests')(req as never, res, (() => { advanced = true; }) as NextFunction);
+  assert.equal(advanced, false);
 });
 
 await runTest('initial admin setup requires a verified existing user and calls only the service RPC', async () => {

@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { analyzePurchasingRequest, chatWithAssistant } from '../services/geminiService.js';
+import { requireAuth, requirePermission } from '../middleware/auth.js';
 
 export const aiRouter = Router();
 
@@ -47,6 +48,8 @@ const assistantChatSchema = z.object({
  */
 aiRouter.post(
   '/analyze-purchase',
+  requireAuth,
+  requirePermission('create_requests'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const parseResult = analyzePurchaseSchema.safeParse(req.body);

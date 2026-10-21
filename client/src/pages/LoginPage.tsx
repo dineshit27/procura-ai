@@ -4,6 +4,7 @@ import { ArrowLeft, LockKeyhole } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { authConfigurationError, supabase } from '../auth/supabase';
 import { useAuth } from '../auth/AuthContext';
+import { demoAccounts, type DemoRole } from '../auth/demoAccounts';
 
 const container: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: .1 } } };
 const item: Variants = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } };
@@ -15,16 +16,27 @@ export const LoginPage: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedDemo, setSelectedDemo] = useState<DemoRole | null>(null);
   if (user) return <Navigate to="/app" replace />;
 
   const signInWithCredentials = async () => {
     if (!supabase) return;
+    if (!email || !password) { setMessage('Enter both email and password to sign in.'); return; }
     setBusy(true);
     setMessage(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) setMessage(error.message);
     else navigate('/app');
+  };
+
+  const selectDemo = (role: DemoRole) => {
+    const account = demoAccounts.find((item) => item.role === role)!;
+    if (!account.email || busy) return;
+    setSelectedDemo(role);
+    setEmail(account.email);
+    if (account.password) setPassword(account.password);
+    setMessage(account.password ? `${account.label} selected. Ready to sign in.` : `${account.label} selected. Enter its configured demo password to continue.`);
   };
 
   return <main className="flex min-h-screen flex-col bg-[#FBF9F5] text-[#111827] lg:flex-row">
@@ -43,6 +55,21 @@ export const LoginPage: React.FC = () => {
           <motion.button variants={item} type="submit" disabled={busy} className="w-full border-2 border-[#111827] bg-[#2457E6] px-5 py-4 text-left font-black text-white shadow-[5px_5px_0_#111827] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[3px_3px_0_#111827] disabled:cursor-not-allowed disabled:opacity-60"><span className="block text-base">{busy ? 'Signing in…' : 'Sign in'}</span><span className="mt-1 block text-xs font-medium text-white/80">Use your Procura AI workspace account</span></motion.button>
           {message && <motion.p variants={item} role="status" className="border-2 border-[#2457E6] bg-[#E6EEFE] p-3 text-sm font-bold text-[#111827]">{message}</motion.p>}
         </form>}
+        <motion.section variants={item} aria-labelledby="quick-demo-access" className="mt-8 border-t-2 border-[#111827] pt-6">
+          <h3 id="quick-demo-access" className="font-mono text-sm font-black uppercase tracking-wider text-[#2457E6]">Quick Demo Access</h3>
+          <p className="mt-1 text-sm font-medium text-neutral-600">Explore Procura AI using dedicated demo accounts.</p>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {demoAccounts.map((account) => {
+              const configured = Boolean(account.email);
+              const selected = selectedDemo === account.role;
+              return <button key={account.role} type="button" disabled={!configured || busy} onClick={() => selectDemo(account.role)} className={`border-2 border-[#111827] p-3 text-left shadow-[3px_3px_0_#111827] transition-all disabled:cursor-not-allowed disabled:opacity-45 ${selected ? 'bg-[#E6EEFE] ring-2 ring-[#2457E6]' : 'bg-white hover:bg-[#FBF9F5]'}`}>
+                <span className="block text-sm font-black">{account.label}</span>
+                <span className="mt-1 block text-xs font-medium leading-snug text-neutral-600">{configured ? account.description : 'Demo account needs configuration.'}</span>
+              </button>;
+            })}
+          </div>
+          {!demoAccounts.some((account) => account.email) && <p className="mt-3 text-xs font-medium text-neutral-600">Demo access is not configured. Set the documented <code>VITE_DEMO_*_EMAIL</code> values for disposable demo users.</p>}
+        </motion.section>
         <motion.p variants={item} className="mt-10 border-t-2 border-[#111827] pt-4 text-[13px] font-medium text-neutral-600">Need access? Ask your Procura AI administrator for an invitation.</motion.p>
       </motion.div>
     </section>

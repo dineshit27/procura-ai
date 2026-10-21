@@ -34,7 +34,7 @@ export function createServer(): Application {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-user-role'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     })
   );
   app.use(express.json());

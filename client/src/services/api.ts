@@ -48,6 +48,10 @@ export function isAuthorizationError(error: unknown): boolean {
   return error instanceof ApiRequestError && (error.status === 401 || error.status === 403);
 }
 
+export function isUnauthenticatedError(error: unknown): boolean {
+  return error instanceof ApiRequestError && error.status === 401;
+}
+
 /**
  * Resolves the backend origin for Procura AI API calls:
  * 1. Checks VITE_API_URL (set at build-time or in local .env).

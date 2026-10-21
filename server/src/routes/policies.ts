@@ -73,9 +73,7 @@ policiesRouter.get('/current', requireAuth, (_req: Request, res: Response): void
  * PUT /api/policies/current
  * Updates the active procurement spending policies.
  *
- * Access control: requireAdminRole middleware — see middleware/adminAuth.ts for
- * a full security notice explaining that x-user-role header authorization is
- * NOT cryptographically verified and must be replaced before production.
+ * Access control is enforced from the verified server-side profile role.
  */
 policiesRouter.put(
   '/current',
@@ -116,7 +114,7 @@ policiesRouter.put(
  * POST /api/policies/reset
  * Resets procurement policies back to default settings.
  *
- * Access control: requireAdminRole middleware — see middleware/adminAuth.ts.
+ * Access control is enforced from the verified server-side profile role.
  */
 policiesRouter.post(
   '/reset',

@@ -4,6 +4,7 @@ import {
   getSpendGuardSummary,
   canCommitSpend,
 } from '../services/spendGuardService.js';
+import { requireAuth, requirePermission } from '../middleware/auth.js';
 
 export const spendGuardRouter = Router();
 
@@ -20,7 +21,7 @@ export const spendGuardRouter = Router();
  * - recent spending activity
  * - live deterministic financial alerts
  */
-spendGuardRouter.get('/summary', (_req: Request, res: Response) => {
+spendGuardRouter.get('/summary', requireAuth, requirePermission('read_financials'), (_req: Request, res: Response) => {
   const summary = getSpendGuardSummary();
   res.status(200).json({
     success: true,
@@ -33,7 +34,7 @@ spendGuardRouter.get('/summary', (_req: Request, res: Response) => {
  * GET /api/spendguard/alerts
  * Active financial alerts derived deterministically from authoritative records.
  */
-spendGuardRouter.get('/alerts', (_req: Request, res: Response) => {
+spendGuardRouter.get('/alerts', requireAuth, requirePermission('read_financials'), (_req: Request, res: Response) => {
   const summary = getSpendGuardSummary();
   res.status(200).json({
     success: true,
@@ -51,7 +52,7 @@ const checkBudgetSchema = z.object({
  * POST /api/spendguard/check-budget
  * Dry-run evaluation of whether a proposed spending amount fits within remaining budget.
  */
-spendGuardRouter.post('/check-budget', (req: Request, res: Response) => {
+spendGuardRouter.post('/check-budget', requireAuth, requirePermission('create_requests'), (req: Request, res: Response) => {
   const parseResult = checkBudgetSchema.safeParse(req.body);
   if (!parseResult.success) {
     res.status(400).json({

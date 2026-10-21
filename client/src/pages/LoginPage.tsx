@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, type Variants } from 'motion/react';
 import { ArrowLeft, LockKeyhole } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
@@ -17,31 +17,44 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [selectedDemo, setSelectedDemo] = useState<DemoRole | null>(null);
+  const authInFlight = useRef(false);
+  const passwordInput = useRef<HTMLInputElement>(null);
   if (user) return <Navigate to="/app" replace />;
 
   const signInWithCredentials = async () => {
-    if (!supabase) return;
+    if (!supabase || authInFlight.current) return;
     if (!email || !password) {
       setMessage(selectedDemo && !password
         ? 'Enter the password for the selected demo account. Demo passwords are never stored in the app.'
         : 'Enter both email and password to sign in.');
       return;
     }
+    authInFlight.current = true;
     setBusy(true);
     setMessage(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) setMessage(error.message);
-    else navigate('/app');
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setMessage(error.message);
+      else {
+        setMessage('Signed in successfully. Opening your workspace…');
+        navigate('/app');
+      }
+    } catch {
+      setMessage('Unable to sign in right now. Please try again.');
+    } finally {
+      authInFlight.current = false;
+      setBusy(false);
+    }
   };
 
   const selectDemo = (role: DemoRole) => {
     const account = demoAccounts.find((item) => item.role === role)!;
-    if (!account.email || busy) return;
+    if (!account.email || authInFlight.current) return;
     setSelectedDemo(role);
     setEmail(account.email);
     setPassword('');
-    setMessage(`${account.label} selected. Enter the password supplied for this dedicated demo account, then sign in.`);
+    setMessage(`${account.label} selected. Enter the temporary demo password provided in the judge packet.`);
+    window.requestAnimationFrame(() => passwordInput.current?.focus());
   };
 
   return <main className="flex min-h-screen flex-col bg-[#FBF9F5] text-[#111827] lg:flex-row">
@@ -56,9 +69,9 @@ export const LoginPage: React.FC = () => {
         <motion.div variants={item} className="mb-8 border-l-4 border-[#2457E6] pl-4"><p className="mb-2 font-mono text-xs font-black tracking-widest text-[#2457E6]">PROCURA AI / ACCESS</p><h2 className="mb-2 text-4xl font-black tracking-tight text-[#111827]">Welcome back.</h2><p className="text-[15px] font-medium leading-relaxed text-neutral-600">Sign in with your assigned Procura AI account.</p></motion.div>
         {authConfigurationError ? <p className="border-2 border-red-700 bg-red-50 p-4 text-sm font-bold text-red-800 shadow-[4px_4px_0_#991B1B]">{authConfigurationError}</p> : <form className="flex flex-col gap-4" onSubmit={(event) => { event.preventDefault(); void signInWithCredentials(); }}>
           <label className="text-sm font-bold">Email<input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full border-2 border-neutral-900 px-3 py-2 font-normal" /></label>
-          <label className="text-sm font-bold">Password<input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder={selectedDemo ? 'Enter the demo account password' : undefined} className="mt-1 w-full border-2 border-neutral-900 px-3 py-2 font-normal" /></label>
+          <label className="text-sm font-bold">Password<input ref={passwordInput} type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder={selectedDemo ? 'Enter the demo account password' : undefined} className="mt-1 w-full border-2 border-neutral-900 px-3 py-2 font-normal" /></label>
           <motion.button variants={item} type="submit" disabled={busy} className="w-full border-2 border-[#111827] bg-[#2457E6] px-5 py-4 text-left font-black text-white shadow-[5px_5px_0_#111827] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[3px_3px_0_#111827] disabled:cursor-not-allowed disabled:opacity-60"><span className="block text-base">{busy ? 'Signing in…' : 'Sign in'}</span><span className="mt-1 block text-xs font-medium text-white/80">Use your Procura AI workspace account</span></motion.button>
-          {message && <motion.p variants={item} role="status" className="border-2 border-[#2457E6] bg-[#E6EEFE] p-3 text-sm font-bold text-[#111827]">{message}</motion.p>}
+          {message && <motion.p variants={item} role="status" aria-live="polite" className="border-2 border-[#2457E6] bg-[#E6EEFE] p-3 text-sm font-bold text-[#111827]">{message}</motion.p>}
         </form>}
         <motion.section variants={item} aria-labelledby="quick-demo-access" className="mt-8 border-t-2 border-[#111827] pt-6">
           <h3 id="quick-demo-access" className="font-mono text-sm font-black uppercase tracking-wider text-[#2457E6]">Quick Demo Access</h3>
@@ -73,7 +86,7 @@ export const LoginPage: React.FC = () => {
               </button>;
             })}
           </div>
-          {!demoAccounts.some((account) => account.email) && <p className="mt-3 text-xs font-medium text-neutral-600">Demo access is not configured. Set the documented <code>VITE_DEMO_*_EMAIL</code> values for disposable demo users, rebuild the frontend, and provide their passwords outside the application.</p>}
+          {!demoAccounts.some((account) => account.email) && <p className="mt-3 text-xs font-medium text-neutral-600">Demo access is not configured. Set the documented <code>VITE_DEMO_*_EMAIL</code> values for disposable demo users and rebuild the frontend.</p>}
         </motion.section>
         <motion.p variants={item} className="mt-10 border-t-2 border-[#111827] pt-4 text-[13px] font-medium text-neutral-600">Need access? Ask your Procura AI administrator for an invitation.</motion.p>
       </motion.div>

@@ -234,11 +234,27 @@ and invite/assign them as `admin`, `procurement_manager`, `finance_manager`,
 and `requester`. Put only their email identifiers in the frontend build
 environment using the `VITE_DEMO_*_EMAIL` variables documented in
 `client/.env.example`. The Quick Demo Access cards remain disabled until each
-identifier is configured. Selecting a configured card fills its email only;
-the judge enters the dedicated account's password through the existing
-Supabase password form. Do not define `VITE_DEMO_*_PASSWORD`: every `VITE_*`
-value is embedded in the frontend bundle. Rebuild the client after changing
-any `VITE_*` variable.
+identifier is configured. Selecting a configured card fills its email and
+focuses the password field. Supply that temporary password to judges only in
+their event packet or another out-of-band channel; the normal email/password
+form remains the only browser sign-in path. Do not define
+`VITE_DEMO_*_PASSWORD`: every `VITE_*` value is embedded in the frontend
+bundle. Rebuild the client after changing any `VITE_*` variable.
+
+Supabase magic links, email OTP, recovery links, and email invitations all
+prove control of an inbox, so none meets an inbox-free demo requirement.
+OAuth or passkeys only work if every judge has a pre-enrolled identity or
+device. For a public hackathon, the safest practical option is therefore four
+temporary demo passwords shared out of band and rotated or deleted after
+judging. Use a separate Supabase project and backend deployment containing
+only disposable demo accounts and data; never point these accounts at
+production records. An `admin` demo user is an administrator of that isolated
+demo environment only. Create the four users and their `profiles` rows before
+the demo (using the protected admin invite endpoint after the initial admin
+exists, or the Supabase Dashboard with an equivalent server-side role
+assignment). Verify each role before sharing the judge packet. This preserves
+Supabase authentication and the server-side role check, but the passwords are
+shared demo credentials—not a suitable production access model.
 
 For local development, add the four email variables to `client/.env.local`
 (or `client/.env`) alongside `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,

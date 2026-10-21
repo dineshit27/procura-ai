@@ -23,6 +23,7 @@ import {
 } from '../src/services/paypalService.js';
 import { resetPurchaseRequests } from '../src/data/purchaseRequests.js';
 import { Server } from 'node:http';
+import { setAuthClientsForTests, type AuthClients } from '../src/middleware/auth.js';
 
 console.log('[Persistence Test Suite] Starting Request Persistence & Checkout Routing Tests...\n');
 
@@ -44,6 +45,26 @@ async function runTest(name: string, fn: () => Promise<void>): Promise<void> {
 const app = createServer();
 let server: Server;
 let baseUrl: string;
+
+// Tests use the same verified-token and server-side role-resolution seam as
+// production. This injection is rejected outside NODE_ENV=test.
+setAuthClientsForTests(() => ({
+  publicClient: {
+    auth: { getUser: async () => ({ data: { user: { id: 'persistence-admin', email: 'admin@example.com' } }, error: null }) },
+  } as AuthClients['publicClient'],
+  adminClient: {
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: 'admin' }, error: null }) }) }) }),
+  } as AuthClients['adminClient'],
+}));
+
+const nativeFetch = globalThis.fetch;
+globalThis.fetch = (input, init) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (!baseUrl || !url.startsWith(baseUrl)) return nativeFetch(input, init);
+  const headers = new Headers(init?.headers);
+  headers.set('Authorization', 'Bearer persistence-test-access-token');
+  return nativeFetch(input, { ...init, headers });
+};
 
 async function startServer(): Promise<void> {
   return new Promise((resolve) => {

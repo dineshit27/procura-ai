@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { NextFunction, Request, Response } from 'express';
-import { createRequireAuth, requirePermission, type AuthClients } from '../src/middleware/auth.js';
+import { createRequireAuth, requirePermission, type AuthClients, type Permission, type UserRole } from '../src/middleware/auth.js';
 import { assignInitialAdmin, InitialAdminSetupError } from '../src/services/initialAdminSetup.js';
 
 let passed = 0;
@@ -78,6 +78,26 @@ await runTest('the requester role cannot approve requests', async () => {
   const res = { status: () => res, json: () => res } as unknown as Response;
   requirePermission('approve_requests')(req as never, res, (() => { advanced = true; }) as NextFunction);
   assert.equal(advanced, false);
+});
+
+await runTest('each supported role has only its intended permissions', async () => {
+  const expected: Record<UserRole, Permission[]> = {
+    admin: ['manage_users', 'manage_policies', 'read_financials', 'approve_requests', 'create_requests', 'read_requests', 'checkout'],
+    procurement_manager: ['approve_requests', 'create_requests', 'read_requests', 'checkout'],
+    finance_manager: ['read_financials', 'approve_requests', 'read_requests', 'checkout'],
+    requester: ['create_requests', 'read_requests', 'checkout'],
+  };
+  const permissions: Permission[] = ['manage_users', 'manage_policies', 'read_financials', 'approve_requests', 'create_requests', 'read_requests', 'checkout'];
+
+  for (const [role, allowed] of Object.entries(expected) as [UserRole, Permission[]][]) {
+    for (const permission of permissions) {
+      let advanced = false;
+      const req = { auth: { userId: `${role}-1`, role } } as unknown as Request;
+      const res = { status: () => res, json: () => res } as unknown as Response;
+      requirePermission(permission)(req as never, res, (() => { advanced = true; }) as NextFunction);
+      assert.equal(advanced, allowed.includes(permission), `${role} ${permission}`);
+    }
+  }
 });
 
 await runTest('initial admin setup requires a verified existing user and calls only the service RPC', async () => {

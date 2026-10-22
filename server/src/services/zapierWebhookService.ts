@@ -79,8 +79,14 @@ export async function emitZapierWebhook(
   dedupeKey?: string
 ): Promise<void> {
   const webhookUrl = webhookUrlForTests === null ? env.ZAPIER_WEBHOOK_URL : webhookUrlForTests;
+  const payload = buildZapierWebhookPayload(event, request);
   if (!webhookUrl) {
-    console.info('[Zapier Webhook] Delivery skipped: ZAPIER_WEBHOOK_URL is not configured.');
+    console.info('[Zapier Webhook] Delivery skipped.', {
+      event,
+      eventId: payload.eventId,
+      httpStatus: null,
+      deliveryOutcome: 'skipped_unconfigured',
+    });
     return;
   }
   if (dedupeKey) {
@@ -90,7 +96,6 @@ export async function emitZapierWebhook(
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
-  const payload = buildZapierWebhookPayload(event, request);
   try {
     const response = await webhookFetch(webhookUrl, {
       method: 'POST',
@@ -99,13 +104,29 @@ export async function emitZapierWebhook(
       signal: controller.signal,
     });
     if (!response.ok) {
-      console.warn('[Zapier Webhook] Delivery failed.', { event, eventId: payload.eventId, status: response.status });
+      console.warn('[Zapier Webhook] Delivery failed.', {
+        event,
+        eventId: payload.eventId,
+        httpStatus: response.status,
+        deliveryOutcome: 'http_error',
+      });
       return;
     }
-    console.info('[Zapier Webhook] Delivery succeeded.', { event, eventId: payload.eventId, requestId: request.id });
+    console.info('[Zapier Webhook] Delivery succeeded.', {
+      event,
+      eventId: payload.eventId,
+      requestId: request.id,
+      httpStatus: response.status,
+      deliveryOutcome: 'delivered',
+    });
   } catch (error) {
     const reason = error instanceof Error && error.name === 'AbortError' ? 'timeout' : 'network_error';
-    console.warn('[Zapier Webhook] Delivery failed.', { event, eventId: payload.eventId, requestId: request.id, reason });
+    console.warn('[Zapier Webhook] Delivery failed.', {
+      event,
+      eventId: payload.eventId,
+      requestId: request.id,
+      deliveryOutcome: reason,
+    });
   } finally {
     clearTimeout(timeout);
   }

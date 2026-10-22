@@ -52,6 +52,8 @@ export const envSchema = z
     GEMINI_MODEL: z
       .string()
       .default('gemini-3.8-flash'),
+    // Server-only Zapier Catch Hook. This is deliberately not a VITE_* variable.
+    ZAPIER_WEBHOOK_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
     PAYPAL_CLIENT_ID: z
       .preprocess(
         emptyToUndefined,

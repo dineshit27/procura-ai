@@ -10,6 +10,7 @@ import { CATALOG_ITEMS } from '../data/catalog.js';
 import { evaluatePurchasingPolicy } from '../services/policyEngine.js';
 import { atomicApproveRequest, canCommitSpend, withStoreLock } from '../services/spendGuardService.js';
 import { AuthedRequest, canAccessRequest, requireAuth, requirePermission } from '../middleware/auth.js';
+import { emitZapierWebhook } from '../services/zapierWebhookService.js';
 
 export const requestsRouter = Router();
 
@@ -142,6 +143,10 @@ requestsRouter.post('/', requireAuth, requirePermission('create_requests'), asyn
     success: true,
     data: newRecord,
   });
+
+  if (newRecord.policyDecision === 'BLOCKED' || newRecord.policyDecision === 'NEEDS_APPROVAL') {
+    void emitZapierWebhook('spendguard.policy_alert', newRecord, `policy:${newRecord.id}:${newRecord.policyDecision}`);
+  }
 });
 
 /**
@@ -208,6 +213,10 @@ requestsRouter.patch('/:id/status', requireAuth, async (req: AuthedRequest, res:
       return;
     }
 
+    if (result.request && existingForAccess.status !== result.request.status) {
+      void emitZapierWebhook('purchase_request.updated', result.request);
+    }
+
     res.status(200).json({
       success: true,
       data: result.request,
@@ -234,5 +243,8 @@ requestsRouter.patch('/:id/status', requireAuth, async (req: AuthedRequest, res:
     success: true,
     data: updated,
   });
+  if (updated && existing.status !== updated.status) {
+    void emitZapierWebhook('purchase_request.updated', updated);
+  }
 });
 

@@ -341,6 +341,16 @@ npm --prefix server run setup:initial-admin
 
 For the four demo-role assignments, use the repository's documented `setup:demo-roles` procedure if it is present in your current checkout. Verify the command's preconditions and the existing role mappings before execution.
 
+### Zapier webhook
+
+Create a Zapier Catch Hook, then add its URL as `ZAPIER_WEBHOOK_URL` in the
+Render **backend service** environment settings. Do not add it to the frontend
+service or any `VITE_*` variable. Procura sends best-effort, server-side JSON
+events after successful request status and payment updates; delivery failures
+do not affect procurement or PayPal capture.
+
+### Roles and demo accounts
+
 Remove temporary setup confirmation variables immediately after successful setup. Never expose the service-role key or role-assignment operations through the browser.
 
 ### 6. Run the application

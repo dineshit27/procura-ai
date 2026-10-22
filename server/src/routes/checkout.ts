@@ -18,12 +18,23 @@ import {
   getPayPalOrderDetails,
   PayPalError,
 } from '../services/paypalService.js';
+import { emitZapierWebhook } from '../services/zapierWebhookService.js';
+import { ServerPurchaseRequest } from '../types/checkout.js';
 
 export const checkoutRouter = Router();
 checkoutRouter.use(requireAuth, requirePermission('checkout'));
 
 // In-flight capture locks to strictly prevent concurrent duplicate captures
 const inFlightCaptures = new Set<string>();
+
+function emitPaymentUpdateIfStatusChanged(
+  previous: ServerPurchaseRequest,
+  updated: ServerPurchaseRequest | undefined
+): void {
+  if (updated && previous.paymentDetails?.status !== updated.paymentDetails?.status) {
+    void emitZapierWebhook('purchase_request.payment_updated', updated);
+  }
+}
 
 /**
  * GET /api/checkout/config
@@ -208,7 +219,7 @@ checkoutRouter.post('/create-order', async (req: AuthedRequest, res: Response, n
     });
 
     // Record paypalOrderId and set payment pending
-    updatePurchaseRequestStatus(purchase.id, 'approved', {
+    const paymentUpdated = updatePurchaseRequestStatus(purchase.id, 'approved', {
       paypalOrderId: paypalOrder.orderId,
       authoritativeUnitPrice,
       authoritativeTotal,
@@ -221,6 +232,7 @@ checkoutRouter.post('/create-order', async (req: AuthedRequest, res: Response, n
         isSandbox: true,
       },
     });
+    emitPaymentUpdateIfStatusChanged(purchase, paymentUpdated);
 
     res.status(200).json({
       success: true,
@@ -369,7 +381,7 @@ checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, 
     // Verify capture response
     if (captureResult.status !== 'COMPLETED') {
       // Payment was not completed
-      updatePurchaseRequestStatus(purchase.id, purchase.status, {
+      const paymentUpdated = updatePurchaseRequestStatus(purchase.id, purchase.status, {
         paymentDetails: {
           paypalOrderId: orderId,
           status: 'FAILED',
@@ -379,6 +391,7 @@ checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, 
           notes: `PayPal capture status: ${captureResult.status}`,
         },
       });
+      emitPaymentUpdateIfStatusChanged(purchase, paymentUpdated);
 
       res.status(422).json({
         success: false,
@@ -392,7 +405,7 @@ checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, 
     const capturedCurrency = captureResult.currency;
     const authoritativeCurrency = (purchase.currency || 'USD').toUpperCase();
     if (!capturedCurrency || capturedCurrency.toUpperCase() !== authoritativeCurrency) {
-      updatePurchaseRequestStatus(purchase.id, purchase.status, {
+      const paymentUpdated = updatePurchaseRequestStatus(purchase.id, purchase.status, {
         paymentDetails: {
           paypalOrderId: orderId,
           status: 'FAILED',
@@ -402,6 +415,7 @@ checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, 
           notes: `Currency mismatch. Captured: ${capturedCurrency ?? 'none'}, Authoritative: ${authoritativeCurrency}.`,
         },
       });
+      emitPaymentUpdateIfStatusChanged(purchase, paymentUpdated);
 
       res.status(422).json({
         success: false,
@@ -416,7 +430,7 @@ checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, 
     // Verify captured amount matches authoritative total
     const capturedAmount = captureResult.capturedAmount;
     if (capturedAmount === undefined || Math.abs(capturedAmount - purchase.authoritativeTotal) > 0.01) {
-      updatePurchaseRequestStatus(purchase.id, purchase.status, {
+      const paymentUpdated = updatePurchaseRequestStatus(purchase.id, purchase.status, {
         paymentDetails: {
           paypalOrderId: orderId,
           status: 'FAILED',
@@ -426,6 +440,7 @@ checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, 
           notes: `Amount mismatch. Captured: $${capturedAmount}, Authoritative Total: $${purchase.authoritativeTotal}`,
         },
       });
+      emitPaymentUpdateIfStatusChanged(purchase, paymentUpdated);
 
       res.status(422).json({
         success: false,
@@ -449,6 +464,7 @@ checkoutRouter.post('/capture-order', async (req: AuthedRequest, res: Response, 
         isSandbox: true,
       },
     });
+    emitPaymentUpdateIfStatusChanged(purchase, updated);
 
     res.status(200).json({
       success: true,
@@ -578,7 +594,7 @@ checkoutRouter.post('/cancel-order', (req: Request, res: Response) => {
   }
 
   // Record cancellation in payment details, keep purchase in approved state
-  updatePurchaseRequestStatus(purchase.id, purchase.status, {
+  const paymentUpdated = updatePurchaseRequestStatus(purchase.id, purchase.status, {
     paymentDetails: {
       paypalOrderId: orderId || purchase.paypalOrderId || 'CANCELLED',
       status: 'CANCELLED',
@@ -588,6 +604,7 @@ checkoutRouter.post('/cancel-order', (req: Request, res: Response) => {
       notes: reason || 'User cancelled checkout in PayPal approval window.',
     },
   });
+  emitPaymentUpdateIfStatusChanged(purchase, paymentUpdated);
 
   res.status(200).json({
     success: true,

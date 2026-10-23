@@ -546,6 +546,76 @@ This table is a guide, not a replacement for the actual environment templates. V
 
 ---
 
+## Zapier Setup & Automation
+
+Procura AI integrates with **Zapier Webhooks** to trigger automated email notifications when important procurement and payment events occur. This helps teams monitor purchase requests, approval decisions, payment outcomes, and policy violations without constantly checking the dashboard.
+
+### Automation Workflow
+
+```mermaid
+flowchart TD
+    A[Procura AI Backend] --> B[Zapier Catch Hook]
+    B --> C{Evaluate Event and Conditions}
+    C --> D[Path A: Approval Required]
+    C --> E[Path B: Request Approved]
+    C --> F[Path C: Request Cancelled]
+    C --> G[Path D: Payment Completed]
+    C --> H[Path E: Payment Follow-up]
+    C --> I[Path F: SpendGuard Alert]
+    D --> J[Automated Gmail Notification]
+    E --> J
+    F --> J
+    G --> J
+    H --> J
+    I --> J
+```
+
+### Configured Automation Paths
+
+| Path | Trigger condition | Action |
+|---|---|---|
+| A — Approval Required | `purchase_request.updated` with status `pending_approval` | Notify the relevant team that approval is required |
+| B — Request Approved | `purchase_request.updated` with status `approved` | Send an approval confirmation |
+| C — Request Cancelled | `purchase_request.updated` with status `cancelled` | Notify the team of the cancellation |
+| D — Payment Completed | `purchase_request.payment_updated`, request status `paid`, and payment status `COMPLETED` | Send a payment confirmation |
+| E — Payment Follow-up | `purchase_request.payment_updated` with payment status `PENDING` or `FAILED` | Notify the team that payment needs attention |
+| F — SpendGuard Alert | `spendguard.policy_alert` with policy decision `BLOCKED` or `NEEDS_APPROVAL` | Send a policy alert for review |
+
+### Setup Instructions
+
+1. Create a Zap in [Zapier](https://zapier.com/).
+2. Select **Webhooks by Zapier** as the trigger app and choose **Catch Hook**.
+3. Copy the generated Catch Hook URL.
+4. Add the URL to the backend environment variables as `ZAPIER_WEBHOOK_URL`.
+5. Publish or turn on the Zap.
+6. Configure Paths using the event names and conditions listed above.
+7. Add Gmail actions to the paths and map the relevant request, amount, status, and policy fields.
+8. Test the workflow using real procurement status changes and PayPal Sandbox payment events.
+
+### Backend Configuration
+
+Add this variable to the backend environment:
+
+```env
+ZAPIER_WEBHOOK_URL=your_zapier_catch_hook_url
+```
+
+**Security:** Keep the webhook URL on the server only. Never expose it through frontend environment variables, client-side code, screenshots, or public repositories. Use a placeholder in `.env.example`.
+
+### Verification
+
+Verify each path using its corresponding event from the running application. Gmail action tests alone do not prove that the complete application-to-Zapier workflow works.
+
+- Confirm the backend delivers the expected event.
+- Check the Zap's task history for a successful run.
+- Confirm the correct Path was selected.
+- Verify the resulting email and its mapped fields.
+- Test payment completion only after a successful, verified PayPal Sandbox capture.
+
+**Note:** The table documents the intended automation rules. Actual end-to-end operation depends on the deployed backend configuration and the published Zap. Include sanitized screenshots of the Zap's Paths and successful task history as supporting evidence for reviewers. Never include webhook URLs, credentials, or other secrets.
+
+---
+
 ## Testing and Build
 
 The repository includes automated tests for areas such as policy evaluation, authentication and authorization, payment checkout, AI fallback behavior, persistence, and spending controls.

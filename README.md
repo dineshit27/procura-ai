@@ -25,6 +25,7 @@ Procura AI is an AI-powered procurement platform that helps small businesses mak
   <img src="https://img.shields.io/badge/AI-Google%20Gemini-4285F4?logo=googlegemini&logoColor=white" alt="Google Gemini" />
   <img src="https://img.shields.io/badge/Payments-PayPal%20Sandbox-003087?logo=paypal&logoColor=white" alt="PayPal Sandbox" />
   <img src="https://img.shields.io/badge/Automation-Zapier-FF4A00?logo=zapier&logoColor=white" alt="Zapier" />
+  <img src="https://img.shields.io/badge/API-Postman-FF6C37?logo=postman&logoColor=white" alt="Postman" />
   <img src="https://img.shields.io/badge/Hosting-Render-46E3B7?logo=render&logoColor=black" alt="Render" />
 </p>
 

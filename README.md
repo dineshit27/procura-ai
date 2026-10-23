@@ -50,7 +50,7 @@ Procura AI is an AI-powered procurement platform that helps small businesses mak
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
 - [Environment Configuration](#environment-configuration)
-- [Zapier Setup](#zapier-setup-&-automation)
+- [Zapier Setup](#zapier-setup-and-automation)
 - [Testing and Build](#testing-and-build)
 - [Deployment](#deployment)
 - [Security and Limitations](#security-and-limitations)
@@ -545,7 +545,7 @@ This table is a guide, not a replacement for the actual environment templates. V
 
 ---
 
-## Zapier Setup & Automation
+## Zapier Setup and Automation
 
 Procura AI integrates with **Zapier Webhooks** to trigger automated email notifications when important procurement and payment events occur. This helps teams monitor purchase requests, approval decisions, payment outcomes, and policy violations without constantly checking the dashboard.
 

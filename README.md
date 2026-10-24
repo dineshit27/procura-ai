@@ -111,23 +111,18 @@ This separation between AI assistance and financial authorization is central to 
 Explore Procura AI's intelligent procurement workflow, spending controls, payment integration, and API automation.
 
 ### 1. Dashboard
-<!-- Save your actual screenshot as docs/screenshots/dashboard.png -->
-![Procura AI Dashboard](screenshots/Procura-Dashboard.jpeg)
+![Procura AI Dashboard](docs/docs/screenshots/Procura-Dashboard.jpeg)
 
 ### 2. AI-Powered Purchase Recommendations
-<!-- Save your actual screenshot as docs/screenshots/ai-recommendations.png -->
 ![AI Purchase Recommendations](docs/docs/screenshots/Procura-AI-Product-Suggestion.jpeg)
 
 ### 3. SpendGuard Policy Engine
-<!-- Save your actual screenshot as docs/screenshots/spendguard.png -->
 ![SpendGuard Policy Engine](docs/docs/screenshots/Spendguard-engine.jpeg)
 
 ### 4. PayPal Sandbox Payment
-<!-- Save your actual screenshot as docs/screenshots/paypal-payment.png -->
 ![PayPal Sandbox Payment](docs/docs/screenshots/Procura-Paypal-Gateway.jpeg)
 
 ### 5. API Testing with Postman
-<!-- Save your actual screenshot as docs/screenshots/postman-api.png -->
 ![Procura AI API Testing with Postman](docs/screenshots/Procura-Postman.jpeg)
 
 ---

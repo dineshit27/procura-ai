@@ -6,7 +6,7 @@ Procura AI is an AI-powered procurement platform that helps small businesses mak
 
 <p align="center">
   <img
-    src="Procura AI Banner.png"
+    src="docs/docs/screenshots/Procura AI Banner.png"
     alt="Procura AI — AI-powered procurement with intelligent spending controls"
     width="100%"
   />

@@ -78,6 +78,14 @@ Procura AI brings these activities into a unified procurement workflow.
 
 Procura AI connects AI-assisted purchasing with deterministic financial controls and payment processing.
 
+<p align="center">
+  <img
+    src="Procura Home.png"
+    alt="Procura AI | Home Page"
+    width="100%"
+  />
+</p>
+
 ### Core Features
 
 - **AI Procurement Recommendations:** Convert natural-language purchasing requirements into catalog-grounded recommendations using Google Gemini, with deterministic fallback behavior where configured.

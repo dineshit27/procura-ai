@@ -80,7 +80,7 @@ Procura AI connects AI-assisted purchasing with deterministic financial controls
 
 <p align="center">
   <img
-    src="Procura Home.png"
+    src="Procura Home.jpeg"
     alt="Procura AI | Home Page"
     width="100%"
   />

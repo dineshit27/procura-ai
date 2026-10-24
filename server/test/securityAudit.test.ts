@@ -36,6 +36,7 @@ import {
   atomicApproveRequest,
 } from '../src/services/spendGuardService.js';
 import { Server } from 'node:http';
+import { setAuthClientsForTests, type AuthClients } from '../src/middleware/auth.js';
 
 console.log('🔐  Starting Procura AI Security & Concurrency Audit Test Suite...\n');
 
@@ -57,6 +58,37 @@ async function runTest(name: string, fn: () => Promise<void> | void): Promise<vo
 const app = createServer();
 let server: Server;
 let baseUrl: string;
+
+// Helper to build a mock AuthClients for a given role.
+function mockClients(role: string, userId = 'audit-user'): AuthClients {
+  return {
+    publicClient: {
+      auth: { getUser: async () => ({ data: { user: { id: userId, email: `${role}@example.com` } }, error: null }) },
+    } as AuthClients['publicClient'],
+    adminClient: {
+      from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role }, error: null }) }) }) }),
+    } as AuthClients['adminClient'],
+  };
+}
+
+// Default: inject an admin client so most HTTP-level tests can reach business
+// logic without hitting 401.  Individual tests that need a different role
+// call setAuthClientsForTests inline and restore afterward.
+setAuthClientsForTests(() => mockClients('admin', 'audit-admin'));
+
+// Transparently attach a Bearer token to every request aimed at the test server.
+const nativeFetch = globalThis.fetch;
+globalThis.fetch = (input, init) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (!baseUrl || !url.startsWith(baseUrl)) return nativeFetch(input, init);
+  const headers = new Headers(init?.headers);
+  // Only set Authorization if the individual test has not already set it.
+  // Tests checking 401 (no token) must explicitly pass an empty Authorization.
+  if (!headers.has('Authorization')) {
+    headers.set('Authorization', 'Bearer audit-test-access-token');
+  }
+  return nativeFetch(input, { ...init, headers });
+};
 
 async function startServer(): Promise<void> {
   return new Promise((resolve) => {
@@ -130,87 +162,72 @@ async function runAllTests(): Promise<void> {
 
   try {
     // -----------------------------------------------------------------------
-    // Test 1: Spoofed x-user-role header (unknown role) → 403
+    // Test 1: No bearer token → 401 UNAUTHENTICATED
+    // (The old x-user-role header system is gone; missing token = 401, not 403)
     // -----------------------------------------------------------------------
-    await runTest('Test 1: Unknown/spoofed x-user-role header is rejected with 403', async () => {
-      const roles = ['hacker', 'superuser', 'god', 'administrator', 'ADMIN', 'Admin', ''];
-      for (const role of roles) {
-        const res = await fetch(`${baseUrl}/api/policies/current`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'x-user-role': role },
-          body: JSON.stringify({ cumulativeBudgetLimit: 9999999 }),
-        });
-        assert.equal(res.status, 403,
-          `Expected 403 for role "${role}" but got ${res.status}`);
-        const data = await res.json() as { error: string };
-        assert.equal(data.error, 'FORBIDDEN',
-          `Expected FORBIDDEN for role "${role}" but got "${data.error}"`);
-      }
+    await runTest('Test 1: Missing bearer token returns 401 UNAUTHENTICATED', async () => {
+      // Bypass the fetch shim by sending Authorization: '' (empty)
+      const res = await nativeFetch(`${baseUrl}/api/policies/current`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cumulativeBudgetLimit: 9999999 }),
+      });
+      assert.equal(res.status, 401,
+        `Expected 401 for request with no bearer token but got ${res.status}`);
+      const data = await res.json() as { error: string };
+      assert.equal(data.error, 'UNAUTHENTICATED');
     });
 
     // -----------------------------------------------------------------------
-    // Test 2: Missing x-user-role header → 403
+    // Test 2: Requester role cannot update policy → 403 FORBIDDEN
+    // (Server-side role check: requester lacks manage_policies permission)
     // -----------------------------------------------------------------------
-    await runTest('Test 2: Missing x-user-role header is rejected with 403', async () => {
+    await runTest('Test 2: Requester role cannot update spending policy (server-side RBAC)', async () => {
+      setAuthClientsForTests(() => mockClients('requester', 'audit-requester'));
       const res = await fetch(`${baseUrl}/api/policies/current`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cumulativeBudgetLimit: 9999999 }),
       });
+      setAuthClientsForTests(() => mockClients('admin', 'audit-admin'));
       assert.equal(res.status, 403);
       const data = await res.json() as { error: string };
       assert.equal(data.error, 'FORBIDDEN');
     });
 
     // -----------------------------------------------------------------------
-    // Test 3: Known privileged roles are accepted (allowlist)
+    // Test 3: Admin role with valid token can update policy → 200
     // -----------------------------------------------------------------------
-    await runTest('Test 3: Known admin roles are accepted by allowlist', async () => {
-      const privilegedRoles = ['admin', 'finance_manager', 'finance-manager', 'procurement_manager'];
-      for (const role of privilegedRoles) {
-        const res = await fetch(`${baseUrl}/api/policies/current`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'x-user-role': role },
-          body: JSON.stringify({ departmentName: `Test by ${role}` }),
-        });
-        assert.equal(res.status, 200,
-          `Expected 200 for privileged role "${role}" but got ${res.status}`);
-      }
+    await runTest('Test 3: Admin role with valid bearer token can update policy (200)', async () => {
+      setAuthClientsForTests(() => mockClients('admin', 'audit-admin'));
+      const res = await fetch(`${baseUrl}/api/policies/current`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ departmentName: 'Security Audit Test Dept' }),
+      });
+      assert.equal(res.status, 200,
+        `Expected 200 for admin PUT but got ${res.status}`);
       resetPolicyToDefault();
     });
 
     // -----------------------------------------------------------------------
-    // Test 4: Production must not accept spoofable role headers
+    // Test 4: x-user-role header is completely ignored by the server — role
+    // always comes from the Supabase profiles table, never from a client header
     // -----------------------------------------------------------------------
-    await runTest('Test 4: Production rejects x-user-role authorization on policy mutations', async () => {
-      const originalNodeEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
-
-      try {
-        const updateRes = await fetch(`${baseUrl}/api/policies/current`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin' },
-          body: JSON.stringify({ departmentName: 'Should remain unchanged' }),
-        });
-        assert.equal(updateRes.status, 403);
-        const updateData = await updateRes.json() as { error: string; authNote: string };
-        assert.equal(updateData.error, 'FORBIDDEN');
-        assert.match(updateData.authNote, /never accepted as authentication/i);
-
-        const resetRes = await fetch(`${baseUrl}/api/policies/reset`, {
-          method: 'POST',
-          headers: { 'x-user-role': 'admin' },
-        });
-        assert.equal(resetRes.status, 403);
-        const resetData = await resetRes.json() as { error: string };
-        assert.equal(resetData.error, 'FORBIDDEN');
-      } finally {
-        if (originalNodeEnv === undefined) {
-          delete process.env.NODE_ENV;
-        } else {
-          process.env.NODE_ENV = originalNodeEnv;
-        }
-      }
+    await runTest('Test 4: x-user-role header is ignored; role is always resolved server-side', async () => {
+      // Inject a requester profile but send x-user-role: admin — must still get 403
+      setAuthClientsForTests(() => mockClients('requester', 'audit-requester'));
+      const res = await fetch(`${baseUrl}/api/policies/current`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin' },
+        body: JSON.stringify({ departmentName: 'Should remain unchanged' }),
+      });
+      setAuthClientsForTests(() => mockClients('admin', 'audit-admin'));
+      // x-user-role: admin MUST be ignored; only the profiles table role counts
+      assert.equal(res.status, 403,
+        `x-user-role: admin header must not elevate permissions (got ${res.status})`);
+      const data = await res.json() as { error: string };
+      assert.equal(data.error, 'FORBIDDEN');
     });
 
     // -----------------------------------------------------------------------

@@ -67,6 +67,23 @@ await run('deduplicates a SpendGuard alert for the same policy outcome', async (
   assert.equal(calls, 1);
 });
 
+await run('posts the event envelope to the configured Catch Hook', async () => {
+  setZapierWebhookUrlForTests('https://hooks.zapier.com/hooks/catch/test/test/');
+  let sent: { url: string; body?: string } | undefined;
+  setZapierWebhookFetchForTests(async (url, init) => {
+    sent = { url, body: init.body as string };
+    return { ok: true, status: 202 };
+  });
+  await emitZapierWebhook('purchase_request.payment_updated', request);
+  assert.equal(sent?.url, 'https://hooks.zapier.com/hooks/catch/test/test/');
+  const payload = JSON.parse(sent?.body || '{}');
+  assert.equal(payload.event, 'purchase_request.payment_updated');
+  assert.match(payload.eventId, /^[0-9a-f-]{36}$/i);
+  assert.match(payload.occurredAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(payload.data.requestId, request.id);
+  assert.equal(payload.data.status, 'paid');
+});
+
 console.log(`Zapier webhook tests: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
 }

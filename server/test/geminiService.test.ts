@@ -245,6 +245,101 @@ async function runAllTests(): Promise<void> {
     }
   });
 
+  // ---- NEW TESTS FOR OPTIMIZATION CHANGES ----
+
+  // 17. Rules-engine fallback is fast (< 50 ms)
+  await runTest('Test 17: runRulesEngineAnalysis completes in under 50 ms (fast deterministic fallback)', () => {
+    const t0 = performance.now();
+    const r = runRulesEngineAnalysis(VALID_REQUEST, 'perf-test');
+    const elapsed = performance.now() - t0;
+    assert.ok(elapsed < 50, `Expected < 50 ms but took ${elapsed.toFixed(1)} ms`);
+    assert.equal(r.provider, 'rules-engine');
+    console.log(`    ⏱ rules-engine elapsed: ${elapsed.toFixed(2)} ms`);
+  });
+
+  // 18. Timeout / quota exhaustion fallback: simulate a transient error reason
+  await runTest('Test 18: Timeout/quota error notice is surfaced in fallback summary', () => {
+    const reason = 'AI analysis timed out or failed (AbortError: The operation was aborted); fallback engine activated';
+    const r = runRulesEngineAnalysis(VALID_REQUEST, reason);
+    assert.equal(r.provider, 'rules-engine');
+    assert.ok(r.summary.includes('AbortError') || r.summary.includes('timed out') || r.summary.includes(reason.slice(0, 30)),
+      'Timeout reason must appear in fallback summary: ' + r.summary);
+  });
+
+  // 19. Invalid model output fallback: labelled correctly
+  await runTest('Test 19: Invalid Gemini output reason is passed into fallback summary', () => {
+    const reason = 'Invalid response structure: rankedOptions array missing or empty';
+    const r = runRulesEngineAnalysis(VALID_REQUEST, reason);
+    assert.equal(r.provider, 'rules-engine');
+    assert.ok(r.summary.includes('rankedOptions') || r.summary.includes(reason.slice(0, 30)),
+      'Parse error reason must appear in fallback summary: ' + r.summary);
+  });
+
+  // 20. Missing API key produces rules-engine fallback (not Gemini provider)
+  await runTest('Test 20: Missing API key fallback returns rules-engine (not gemini) provider', () => {
+    const notice = 'Gemini API key not configured on server; using local purchasing engine';
+    const r = runRulesEngineAnalysis(VALID_REQUEST, notice);
+    assert.equal(r.provider, 'rules-engine', 'provider must be rules-engine, not gemini');
+    assert.notEqual(r.model, 'gemini-2.5-flash', 'rules-engine fallback must never report Gemini model');
+    assert.equal(r.model, 'local-deterministic-v1');
+  });
+
+  // 21. Authoritative prices: estimatedTotal uses catalog price, not budget
+  await runTest('Test 21: SpendGuard/catalog authoritative prices: estimatedTotal = catalog unitPrice * qty (never budget)', () => {
+    const overBudgetReq = { ...VALID_REQUEST, budget: 1, quantity: 2 };
+    const r = runRulesEngineAnalysis(overBudgetReq);
+    for (const opt of r.options) {
+      const expected = Number((opt.catalogItem.price * 2).toFixed(2));
+      assert.equal(opt.estimatedTotal, expected,
+        `estimatedTotal must use catalog price. Expected ${expected}, got ${opt.estimatedTotal} for ${opt.catalogItem.id}`);
+      // Must not be set to the budget amount
+      assert.notEqual(opt.estimatedTotal, 1,
+        'estimatedTotal must never be truncated to the user-specified budget');
+    }
+  });
+
+  // 22. Recommended option is always the first, with highest or tied matchScore
+  await runTest('Test 22: Recommended option is always index 0 and has highest matchScore', () => {
+    const r = runRulesEngineAnalysis(VALID_REQUEST);
+    const recommended = r.options.find((o) => o.isRecommended);
+    assert.ok(recommended, 'At least one option must be isRecommended');
+    assert.equal(r.options.indexOf(recommended!), 0, 'isRecommended option must be at index 0');
+    const topScore = r.options[0]!.matchScore;
+    for (const opt of r.options.slice(1)) {
+      assert.ok(topScore >= opt.matchScore,
+        `First option matchScore (${topScore}) must be >= subsequent (${opt.matchScore})`);
+    }
+  });
+
+  // 23. Env model name is correct — gemini-3.8-flash does not exist
+  await runTest('Test 23: GEMINI_MODEL default is gemini-2.5-flash (not the wrong gemini-3.8-flash)', async () => {
+    const { envSchema } = await import('../src/config/env.js');
+    const parsed = envSchema.safeParse({ PORT: '5000', NODE_ENV: 'test' });
+    assert.ok(parsed.success, 'envSchema must parse successfully with minimal env');
+    const modelDefault = parsed.data.GEMINI_MODEL;
+    assert.notEqual(modelDefault, 'gemini-3.8-flash',
+      'gemini-3.8-flash does not exist and must not be the default. Got: ' + modelDefault);
+    assert.equal(modelDefault, 'gemini-2.5-flash',
+      'Default model must be gemini-2.5-flash. Got: ' + modelDefault);
+  });
+
+  // 24. Timeout config: GEMINI_TIMEOUT_MS parses correctly and is bounded
+  await runTest('Test 24: GEMINI_TIMEOUT_MS is bounded to [3000, 60000] and defaults to 10000', async () => {
+    const { envSchema } = await import('../src/config/env.js');
+
+    const defaultParsed = envSchema.safeParse({ PORT: '5000', NODE_ENV: 'test' });
+    assert.ok(defaultParsed.success);
+    assert.equal(defaultParsed.data.GEMINI_TIMEOUT_MS, 10000, 'Default timeout must be 10000 ms');
+
+    const tooLow = envSchema.safeParse({ PORT: '5000', NODE_ENV: 'test', GEMINI_TIMEOUT_MS: '100' });
+    assert.ok(tooLow.success);
+    assert.equal(tooLow.data.GEMINI_TIMEOUT_MS, 3000, 'Too-low timeout must be clamped to 3000');
+
+    const tooHigh = envSchema.safeParse({ PORT: '5000', NODE_ENV: 'test', GEMINI_TIMEOUT_MS: '999999' });
+    assert.ok(tooHigh.success);
+    assert.equal(tooHigh.data.GEMINI_TIMEOUT_MS, 60000, 'Too-high timeout must be clamped to 60000');
+  });
+
   console.log('\n========================================');
   console.log('Gemini Integration Test Results: ' + passed + ' passed, ' + failed + ' failed');
   console.log('========================================\n');

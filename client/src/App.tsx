@@ -7,6 +7,8 @@ import SmoothCursor from './components/lightswind/smooth-cursor';
 import CinematicScroll from './components/lightswind/cinematic-scroll';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { LoginPage } from './pages/LoginPage';
+import { CreateAccountPage } from './pages/CreateAccountPage';
+import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordRecoveryPage';
 
 function isPayPalReturnSearch(search: string): boolean {
   const params = new URLSearchParams(search);
@@ -22,9 +24,11 @@ function RootEntry() {
 }
 
 function ProtectedDashboard() {
-  const { user, loading } = useAuth();
+  const { user, role, loading, roleLoading } = useAuth();
   if (loading) return <div className="min-h-screen grid place-items-center bg-[#FBF9F5] font-mono">Restoring secure session…</div>;
-  return user ? <DashboardPage /> : <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (roleLoading) return <div className="min-h-screen grid place-items-center bg-[#FBF9F5] font-mono">Verifying workspace access...</div>;
+  return role ? <DashboardPage /> : <Navigate to="/login" replace />;
 }
 
 export const App: React.FC = () => {
@@ -51,7 +55,10 @@ export const App: React.FC = () => {
           <Route path="/" element={<RootEntry />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/setup-password" element={<LoginPage />} />
+          <Route path="/create-account" element={<CreateAccountPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/setup-password" element={<ResetPasswordPage />} />
           <Route path="/app" element={<ProtectedDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

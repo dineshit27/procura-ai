@@ -90,7 +90,16 @@ export async function emitZapierWebhook(
     return;
   }
   if (dedupeKey) {
-    if (deliveredEventKeys.has(dedupeKey)) return;
+    if (deliveredEventKeys.has(dedupeKey)) {
+      console.info('[Zapier Webhook] Delivery skipped.', {
+        event,
+        eventId: payload.eventId,
+        requestId: request.id,
+        httpStatus: null,
+        deliveryOutcome: 'skipped_duplicate',
+      });
+      return;
+    }
     deliveredEventKeys.add(dedupeKey);
   }
 
@@ -125,6 +134,7 @@ export async function emitZapierWebhook(
       event,
       eventId: payload.eventId,
       requestId: request.id,
+      httpStatus: null,
       deliveryOutcome: reason,
     });
   } finally {

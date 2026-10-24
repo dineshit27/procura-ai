@@ -1,0 +1,24 @@
+import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { authConfigurationError, supabase } from '../auth/supabase';
+
+const Field = ({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) => <label className="block text-sm font-bold">{label}<input {...props} className="mt-1 w-full border-2 border-black p-3 font-normal"/></label>;
+function passwordStrength(value: string): { label: 'Easy' | 'Medium' | 'Hard'; color: string; width: string } | null {
+  if (!value) return null;
+  let score = value.length >= 8 ? 1 : 0;
+  if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+  if (/\d/.test(value)) score++;
+  if (/[^A-Za-z0-9]/.test(value)) score++;
+  if (value.length >= 12) score++;
+  if (score >= 4) return { label: 'Hard', color: 'bg-emerald-600', width: 'w-full' };
+  if (score >= 2) return { label: 'Medium', color: 'bg-amber-500', width: 'w-2/3' };
+  return { label: 'Easy', color: 'bg-red-600', width: 'w-1/3' };
+}
+
+export const CreateAccountPage: React.FC = () => {
+  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState(''); const [showPassword, setShowPassword] = useState(false); const [message, setMessage] = useState<string | null>(null); const [busy, setBusy] = useState(false);
+  const strength = passwordStrength(password);
+  async function submit(event: React.FormEvent) { event.preventDefault(); if (!supabase || busy) return; setMessage(null); if (!name.trim()) return setMessage('Enter your full name.'); if (password.length < 8) return setMessage('Use a password with at least 8 characters.'); if (password !== confirmation) return setMessage('Passwords do not match.'); setBusy(true); try { const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/login` } }); setMessage(error ? 'Unable to create the account. Please review your details and try again.' : data.session ? 'Account created as a Requester. You can now sign in.' : 'Check your email to confirm your account, then return here to sign in.'); } catch { setMessage('Unable to create the account right now. Please try again.'); } finally { setBusy(false); } }
+  return <main className="grid min-h-screen place-items-center bg-[#fbf9f5] p-5"><div className="w-full max-w-md border-2 border-[#111827] bg-white p-6 shadow-[6px_6px_0_#2457e6]"><p className="font-mono text-xs font-black tracking-widest text-[#2457e6]">PROCURA AI / NEW ACCOUNT</p><h1 className="mt-2 text-3xl font-black">Create requester access.</h1><p className="mt-2 text-sm text-neutral-600">Public accounts are always created with the Requester role. An administrator must assign any other role.</p>{authConfigurationError ? <p className="mt-5 font-bold text-red-700">{authConfigurationError}</p> : <form className="mt-5 space-y-4" onSubmit={submit}><Field label="Full name" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)}/><Field label="Email" required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}/><label className="block text-sm font-bold">Password<span className="relative mt-1 block"><input required type={showPassword ? 'text' : 'password'} minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border-2 border-black p-3 pr-12 font-normal"/><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3" aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}>{showPassword ? <EyeOff className="size-5"/> : <Eye className="size-5"/>}</button></span></label>{strength && <div aria-live="polite" className="-mt-2"><div className="flex items-center justify-between text-xs font-bold"><span>Password strength</span><span>{strength.label}</span></div><div className="mt-1 h-2 border border-black bg-neutral-100"><div className={`h-full ${strength.width} ${strength.color}`} /></div></div>}<Field label="Confirm password" required type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={confirmation} onChange={(e) => setConfirmation(e.target.value)}/><button disabled={busy} className="w-full border-2 border-black bg-[#2457e6] p-3 font-black text-white shadow-[4px_4px_0_#111827] disabled:opacity-60">{busy ? 'Creating account...' : 'Create account'}</button>{message && <p role="status" className="border-2 border-[#2457e6] bg-[#e6eefe] p-3 text-sm font-bold">{message}</p>}</form>}<Link to="/login" className="mt-5 inline-block text-sm font-bold text-[#2457e6] underline">Back to sign in</Link></div></main>;
+};

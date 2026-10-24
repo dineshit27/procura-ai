@@ -12,6 +12,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from '../src/server.js';
 import { Server } from 'node:http';
+import { setAuthClientsForTests, type AuthClients } from '../src/middleware/auth.js';
 
 console.log('🔄 Starting Procura AI Backend Sync & Audit Log Test Suite...\n');
 
@@ -45,6 +46,25 @@ function sanitizeResponsePreview(text: string, maxLength = 120): string {
 const app = createServer();
 let server: Server;
 let baseUrl: string;
+
+// Inject a mock admin Supabase client for HTTP-level tests.
+setAuthClientsForTests(() => ({
+  publicClient: {
+    auth: { getUser: async () => ({ data: { user: { id: 'backendsync-admin', email: 'admin@example.com' } }, error: null }) },
+  } as AuthClients['publicClient'],
+  adminClient: {
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: 'admin' }, error: null }) }) }) }),
+  } as AuthClients['adminClient'],
+}));
+
+const nativeFetch = globalThis.fetch;
+globalThis.fetch = (input, init) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (!baseUrl || !url.startsWith(baseUrl)) return nativeFetch(input, init);
+  const headers = new Headers(init?.headers);
+  headers.set('Authorization', 'Bearer backendsync-test-access-token');
+  return nativeFetch(input, { ...init, headers });
+};
 
 async function startServer(): Promise<void> {
   return new Promise((resolve) => {

@@ -14,8 +14,8 @@ const CONTACT_LINKS = [
   {
     icon: Mail,
     tag: 'Inquiries',
-    label: 'm.dinesh.it27@gmail.com',
-    href: 'mailto:m.dinesh.it27@gmail.com',
+    label: 'procuraadmin@gmail.com',
+    href: 'mailto:procuraadmin@gmail.com',
     subtext: 'Replies within 24h',
   },
   {

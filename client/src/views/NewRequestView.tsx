@@ -61,6 +61,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
   const [analysisResult, setAnalysisResult] = useState<ComparisonOption[] | null>(null);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(0);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [analysisStage, setAnalysisStage] = useState<string>('');
   const [aiSummary, setAiSummary] = useState<string>('');
   const [aiProvider, setAiProvider] = useState<'gemini' | 'rules-engine'>('gemini');
   const [aiModel, setAiModel] = useState<string>('gemini-2.5-flash');
@@ -129,14 +130,19 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
 
   const handleRunAnalysis = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return; // duplicate-submission guard
     if (!validateForm()) return;
 
     setSubmitting(true);
+    setAnalysisStage('Analyzing your request…');
     setAiNotice(null);
 
     const budgetNum = parseFloat(budget);
 
     try {
+      // Immediately show that we are contacting the AI
+      setAnalysisStage('Contacting Gemini AI…');
+
       const response = await analyzePurchase({
         prompt: prompt.trim(),
         budget: budgetNum,
@@ -147,6 +153,8 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
         constraints: constraints || undefined,
       });
 
+      setAnalysisStage('Ranking catalog options…');
+
       if (response.data && response.data.options.length > 0) {
         setAnalysisResult(response.data.options);
         setAiSummary(response.data.summary);
@@ -154,8 +162,12 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
         setAiModel(response.data.model);
         setAnalysisLatency(response.latencyMs);
         setSelectedOptionIndex(0);
+        // If the server fell back to the rules engine, surface why
+        if (response.data.provider === 'rules-engine' && response.data.summary.includes('fallback')) {
+          setAiNotice('AI timed out or was unavailable — showing rule-based catalog evaluation instead.');
+        }
       } else {
-        // Fallback to local evaluation
+        // Backend returned empty options — use client-side deterministic fallback
         const fallbackResults = generateDemoAnalysis(
           prompt,
           budgetNum,
@@ -189,6 +201,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
       setSelectedOptionIndex(0);
       setAiNotice('Unable to reach backend API. Switched to offline deterministic evaluation.');
     } finally {
+      setAnalysisStage('');
       setSubmitting(false);
     }
   };
@@ -547,7 +560,7 @@ export const NewRequestView: React.FC<NewRequestViewProps> = ({
                 id="btn-evaluate-catalog-options"
               >
                 <Sparkles className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
-                <span>{submitting ? 'Analyzing with Gemini AI...' : 'Evaluate with Gemini AI'}</span>
+                <span>{submitting ? (analysisStage || 'Analyzing your request…') : 'Evaluate with Gemini AI'}</span>
               </button>
             </div>
           </form>

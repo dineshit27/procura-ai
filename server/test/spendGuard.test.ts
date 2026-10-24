@@ -29,6 +29,7 @@ import {
 } from '../src/services/spendGuardService.js';
 import { evaluatePurchasingPolicy } from '../src/services/policyEngine.js';
 import { Server } from 'node:http';
+import { setAuthClientsForTests, type AuthClients } from '../src/middleware/auth.js';
 
 console.log('🛡️  Starting Procura AI SpendGuard Comprehensive Test Suite...\n');
 
@@ -50,6 +51,28 @@ async function runTest(name: string, fn: () => Promise<void> | void): Promise<vo
 const app = createServer();
 let server: Server;
 let baseUrl: string;
+
+// Inject a mock Supabase admin client so HTTP-level tests pass requireAuth
+// without a live Supabase project.  This seam is only available in NODE_ENV=test.
+setAuthClientsForTests(() => ({
+  publicClient: {
+    auth: { getUser: async () => ({ data: { user: { id: 'spendguard-admin', email: 'admin@example.com' } }, error: null }) },
+  } as AuthClients['publicClient'],
+  adminClient: {
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: 'admin' }, error: null }) }) }) }),
+  } as AuthClients['adminClient'],
+}));
+
+// Transparently attach a Bearer token to every request aimed at the test
+// server so requireAuth can extract and verify it via the mock above.
+const nativeFetch = globalThis.fetch;
+globalThis.fetch = (input, init) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (!baseUrl || !url.startsWith(baseUrl)) return nativeFetch(input, init);
+  const headers = new Headers(init?.headers);
+  headers.set('Authorization', 'Bearer spendguard-test-access-token');
+  return nativeFetch(input, { ...init, headers });
+};
 
 async function startServer(): Promise<void> {
   return new Promise((resolve) => {
@@ -513,14 +536,33 @@ async function runAllTests(): Promise<void> {
     // Test 14: Security — Unauthorized users cannot modify policy settings
     // -------------------------------------------------------------------------
     await runTest('Test 14: Unauthorized requester role cannot update spending policy (HTTP 403)', async () => {
+      // Re-inject a requester-role client for this request only.
+      // The route uses requirePermission('manage_policies') which is not
+      // granted to requester, so the server must return 403 FORBIDDEN.
+      setAuthClientsForTests(() => ({
+        publicClient: {
+          auth: { getUser: async () => ({ data: { user: { id: 'spendguard-requester', email: 'requester@example.com' } }, error: null }) },
+        } as AuthClients['publicClient'],
+        adminClient: {
+          from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: 'requester' }, error: null }) }) }) }),
+        } as AuthClients['adminClient'],
+      }));
+
       const res = await fetch(`${baseUrl}/api/policies/current`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-role': 'employee',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cumulativeBudgetLimit: 999999 }),
       });
+
+      // Restore admin client for subsequent tests
+      setAuthClientsForTests(() => ({
+        publicClient: {
+          auth: { getUser: async () => ({ data: { user: { id: 'spendguard-admin', email: 'admin@example.com' } }, error: null }) },
+        } as AuthClients['publicClient'],
+        adminClient: {
+          from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: 'admin' }, error: null }) }) }) }),
+        } as AuthClients['adminClient'],
+      }));
 
       assert.equal(res.status, 403);
       const data = await res.json() as { error: string };

@@ -393,7 +393,7 @@ export const LandingFaq: React.FC = () => {
             )}
 
             <a
-              href="mailto:m.dinesh.it27@gmail.com?subject=Procura%20support"
+              href="mailto:procuraadmin@gmail.com?subject=Procura%20support"
               className="landing-pill landing-pill--purple mt-8 w-fit"
             >
               <Mail className="size-4" />

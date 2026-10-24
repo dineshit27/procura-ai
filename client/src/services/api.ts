@@ -118,46 +118,96 @@ export function sanitizeResponsePreview(text: string, maxLength = 120): string {
 }
 
 /**
+ * Returns the current valid access token, refreshing the session if the stored
+ * token is expired or about to expire.  Uses getUser() (server-validated) as
+ * the primary path so the token is always confirmed live by Supabase before it
+ * is sent to the API server.
+ *
+ * Security contract:
+ * - Only the access_token from the verified session is ever attached.
+ * - The refresh_token, service-role key, and anon key are never sent as the
+ *   bearer credential.
+ * - Concurrent callers share a single in-flight refresh promise to prevent
+ *   duplicate refresh races.
+ */
+let _refreshPromise: Promise<string | null> | null = null;
+
+async function getFreshAccessToken(): Promise<string | null> {
+  const { supabase } = await import('../auth/supabase');
+  if (!supabase) return null;
+
+  // getUser() makes a lightweight server round-trip that also triggers
+  // auto-refresh when the stored token is within the refresh window.
+  // If successful, retrieve the (now-refreshed) session from local storage.
+  const { error: userError } = await supabase.auth.getUser();
+  if (!userError) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) return session.access_token;
+  }
+
+  // Token could not be verified — attempt an explicit refresh once.
+  // Guard against concurrent callers issuing parallel refreshes.
+  if (!_refreshPromise) {
+    _refreshPromise = supabase.auth
+      .refreshSession()
+      .then(({ data }) => data.session?.access_token ?? null)
+      .catch(() => null)
+      .finally(() => { _refreshPromise = null; });
+  }
+  return _refreshPromise;
+}
+
+/**
  * Safe fetch wrapper that:
  * 1. Resolves target backend origin using buildApiUrl(path).
- * 2. Checks HTTP status and Content-Type header before attempting JSON parsing.
- * 3. If the server returned HTML (e.g. Render SPA fallback on the frontend host),
+ * 2. Attaches a verified, fresh Supabase access token via Authorization: Bearer.
+ * 3. On 401 response, attempts one session refresh and retries the request.
+ * 4. Checks HTTP status and Content-Type header before attempting JSON parsing.
+ * 5. If the server returned HTML (e.g. Render SPA fallback on the frontend host),
  *    logs a structured warning with the requested URL, status, and sanitized preview
  *    (without leaking credentials or tokens), and throws a descriptive error.
- * 4. Parses error JSON safely to extract backend error messages.
+ * 6. Parses error JSON safely to extract backend error messages.
  */
+async function executeRequest(fullUrl: string, init: RequestInit | undefined, accessToken: string | null): Promise<Response> {
+  const headers = new Headers(init?.headers);
+  // Supabase access tokens are the sole credential accepted by the API.
+  // Roles are resolved server-side; callers never send a role header.
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+  if (!headers.has('Accept')) headers.set('Accept', 'application/json');
+  if (init?.body && typeof init.body === 'string' && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  try {
+    return await fetch(fullUrl, { ...init, headers });
+  } catch (networkErr) {
+    const errorMsg = networkErr instanceof Error ? networkErr.message : 'Network request failed';
+    console.warn(`[API] Network failure connecting to backend:`, { url: fullUrl, error: errorMsg });
+    throw new Error(`Unable to connect to backend at ${fullUrl}: ${errorMsg}`);
+  }
+}
+
 export async function safeRequestJson<T>(
   path: string,
   init?: RequestInit
 ): Promise<T> {
   const fullUrl = buildApiUrl(path);
 
-  const headers = new Headers(init?.headers);
-  // Supabase access tokens are the sole credential accepted by the API.
-  // Roles are resolved server-side; callers never send a role header.
-  const { supabase } = await import('../auth/supabase');
-  const session = supabase ? (await supabase.auth.getSession()).data.session : null;
-  if (session?.access_token) headers.set('Authorization', `Bearer ${session.access_token}`);
-  if (!headers.has('Accept')) {
-    headers.set('Accept', 'application/json');
-  }
-  if (init?.body && typeof init.body === 'string' && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
+  // Obtain a verified, fresh access token before the first attempt.
+  let accessToken = await getFreshAccessToken();
+  let response = await executeRequest(fullUrl, init, accessToken);
 
-  let response: Response;
-  try {
-    response = await fetch(fullUrl, {
-      ...init,
-      headers,
-    });
-  } catch (networkErr) {
-    const errorMsg = networkErr instanceof Error ? networkErr.message : 'Network request failed';
-    console.warn(`[API] Network failure connecting to backend:`, {
-      url: fullUrl,
-      error: errorMsg,
-    });
-    throw new Error(`Unable to connect to backend at ${fullUrl}: ${errorMsg}`);
+  // On 401, attempt one silent session refresh and retry the original request.
+  // This recovers from tokens that expired between page load and the API call.
+  if (response.status === 401 && accessToken !== null) {
+    const { supabase } = await import('../auth/supabase');
+    if (supabase) {
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      const freshToken = refreshData.session?.access_token ?? null;
+      if (freshToken && freshToken !== accessToken) {
+        accessToken = freshToken;
+        response = await executeRequest(fullUrl, init, accessToken);
+      }
+    }
   }
 
   const contentType = response.headers.get('content-type') || '';

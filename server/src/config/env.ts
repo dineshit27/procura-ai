@@ -51,7 +51,22 @@ export const envSchema = z
       .optional(),
     GEMINI_MODEL: z
       .string()
-      .default('gemini-3.8-flash'),
+      // gemini-2.5-flash is the correct production model name (gemini-3.8-flash does not exist).
+      .default('gemini-2.5-flash'),
+    GEMINI_TIMEOUT_MS: z
+      .string()
+      .default('10000')
+      .transform((val) => {
+        const parsed = parseInt(val, 10);
+        return isNaN(parsed) || parsed <= 0 ? 10000 : Math.max(3000, Math.min(60000, parsed));
+      }),
+    GEMINI_MAX_RETRIES: z
+      .string()
+      .default('1')
+      .transform((val) => {
+        const parsed = parseInt(val, 10);
+        return isNaN(parsed) || parsed < 0 ? 1 : Math.min(parsed, 3);
+      }),
     // Server-only Zapier Catch Hook. This is deliberately not a VITE_* variable.
     ZAPIER_WEBHOOK_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
     PAYPAL_CLIENT_ID: z

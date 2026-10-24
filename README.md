@@ -112,7 +112,7 @@ Explore Procura AI's intelligent procurement workflow, spending controls, paymen
 
 ### 1. Dashboard
 <!-- Save your actual screenshot as docs/screenshots/dashboard.png -->
-![Procura AI Dashboard](docs/docs/screenshots/Procura-Dashboard.jpeg)
+![Procura AI Dashboard](screenshots/Procura-Dashboard.jpeg)
 
 ### 2. AI-Powered Purchase Recommendations
 <!-- Save your actual screenshot as docs/screenshots/ai-recommendations.png -->

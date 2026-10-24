@@ -80,7 +80,7 @@ Procura AI connects AI-assisted purchasing with deterministic financial controls
 
 <p align="center">
   <img
-    src="Procura Home.jpeg"
+    src="docs/docs/screenshots/Procura Home.jpeg"
     alt="Procura AI | Home Page"
     width="100%"
   />
@@ -103,6 +103,32 @@ Procura AI connects AI-assisted purchasing with deterministic financial controls
 An AI-generated recommendation is not authorization to spend money. Procura AI separates recommendation generation from financial authorization, evaluates requests through backend policy rules, preserves required human approval, and validates payment information before marking a purchase as paid.
 
 This separation between AI assistance and financial authorization is central to the product.
+
+---
+
+## Screenshots
+
+Explore Procura AI's intelligent procurement workflow, spending controls, payment integration, and API automation.
+
+### 1. Dashboard
+<!-- Save your actual screenshot as docs/screenshots/dashboard.png -->
+![Procura AI Dashboard](docs/docs/screenshots/Procura-Dashboard.jpeg)
+
+### 2. AI-Powered Purchase Recommendations
+<!-- Save your actual screenshot as docs/screenshots/ai-recommendations.png -->
+![AI Purchase Recommendations](docs/docs/screenshots/Procura-AI-Product-Suggestion.jpeg)
+
+### 3. SpendGuard Policy Engine
+<!-- Save your actual screenshot as docs/screenshots/spendguard.png -->
+![SpendGuard Policy Engine](docs/docs/screenshots/Spendguard-engine.jpeg)
+
+### 4. PayPal Sandbox Payment
+<!-- Save your actual screenshot as docs/screenshots/paypal-payment.png -->
+![PayPal Sandbox Payment](docs/docs/screenshots/Procura-Paypal-Gateway.jpeg)
+
+### 5. API Testing with Postman
+<!-- Save your actual screenshot as docs/screenshots/postman-api.png -->
+![Procura AI API Testing with Postman](docs/screenshots/Procura-Postman.jpeg)
 
 ---
 
@@ -199,6 +225,8 @@ The exact behavior depends on the current configuration and the availability of 
 
 SpendGuard is a backend-enforced purchasing policy engine. It is designed to evaluate purchasing requests against deterministic rules rather than relying solely on an AI-generated decision or a client-side warning.
 
+![SpendGuard](docs/screenshots/Spendguard-engine.jpeg)
+
 ### Demonstration Policy Defaults
 
 | Control | Demonstration Default |
@@ -239,6 +267,8 @@ The prototype's file-backed persistence and in-process coordination have limitat
 Procura AI integrates with Zapier to support event-driven email notifications for important procurement and payment events.
 
 The integration uses a server-side Zapier Catch Hook and configured Paths that evaluate event fields before invoking their associated Gmail actions.
+
+![Procura AI Workflow Automation with Zapier](docs/screenshots/Procura-Zapier-Automation.jpeg)
 
 ### Configured Automation Paths
 

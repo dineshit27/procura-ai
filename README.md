@@ -123,7 +123,7 @@ Explore Procura AI's intelligent procurement workflow, spending controls, paymen
 ![PayPal Sandbox Payment](docs/docs/screenshots/Procura-Paypal-Gateway.jpeg)
 
 ### 5. API Testing with Postman
-![Procura AI API Testing with Postman](docs/screenshots/Procura-Postman.jpeg)
+![Procura AI API Testing with Postman](docs/docs/screenshots/Procura-Postman.jpeg)
 
 ---
 
@@ -220,7 +220,7 @@ The exact behavior depends on the current configuration and the availability of 
 
 SpendGuard is a backend-enforced purchasing policy engine. It is designed to evaluate purchasing requests against deterministic rules rather than relying solely on an AI-generated decision or a client-side warning.
 
-![SpendGuard](docs/screenshots/Spendguard-engine.jpeg)
+![SpendGuard](docs/docs/screenshots/Spendguard-engine.jpeg)
 
 ### Demonstration Policy Defaults
 
@@ -263,7 +263,7 @@ Procura AI integrates with Zapier to support event-driven email notifications fo
 
 The integration uses a server-side Zapier Catch Hook and configured Paths that evaluate event fields before invoking their associated Gmail actions.
 
-![Procura AI Workflow Automation with Zapier](docs/screenshots/Procura-Zapier-Automation.jpeg)
+![Procura AI Workflow Automation with Zapier](docs/docs/screenshots/Procura-Zapier-Automation.jpeg)
 
 ### Configured Automation Paths
 

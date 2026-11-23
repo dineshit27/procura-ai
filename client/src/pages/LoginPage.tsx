@@ -14,7 +14,7 @@ const roles: Array<{ value: WorkspaceRole; label: string; description: string; i
 const displayRole = (role: WorkspaceRole) => roles.find((item) => item.value === role)?.label ?? role;
 
 export const LoginPage: React.FC = () => {
-  const { user, role, roleLoading, refreshRole, signOut } = useAuth();
+  const { user, role, loading, roleLoading, refreshRole, signOut } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,20 +24,37 @@ export const LoginPage: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const passwordInput = useRef<HTMLInputElement>(null);
-  if (user && role && !roleLoading) return <Navigate to="/app" replace />;
+
+  if (!loading && !roleLoading && user && role) {
+    return <Navigate to="/app" replace />;
+  }
 
   async function signIn() {
     if (!supabase || busy) return;
-    setMessage(null); setBusy(true);
+    setMessage(null);
+    setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) { setMessage('Unable to sign in with those credentials. Check them and try again.'); return; }
-      const actualRole = await refreshRole();
-      if (!actualRole) { await signOut(); setMessage('Your account has no authorized workspace role. Contact an administrator.'); return; }
-      if (actualRole !== selectedRole) { await signOut(); setMessage(`Your account does not have access to the selected workspace. Choose ${displayRole(actualRole)} or contact an administrator.`); return; }
-      navigate('/app');
-    } catch { setMessage('Unable to sign in right now. Please try again.'); }
-    finally { setBusy(false); }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error || !data.user) {
+        setMessage('Unable to sign in with those credentials. Check them and try again.');
+        return;
+      }
+      const actualRole = await refreshRole(data.user.id);
+      if (!actualRole) {
+        await signOut();
+        setMessage('Your account has no authorized workspace role. Contact an administrator.');
+        return;
+      }
+      setSelectedRole(actualRole);
+      navigate('/app', { replace: true });
+    } catch {
+      setMessage('Unable to sign in right now. Please try again.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   function selectDemo(demoRole: WorkspaceRole) {

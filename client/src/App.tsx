@@ -24,11 +24,37 @@ function RootEntry() {
 }
 
 function ProtectedDashboard() {
-  const { user, role, loading, roleLoading } = useAuth();
-  if (loading) return <div className="min-h-screen grid place-items-center bg-[#FBF9F5] font-mono">Restoring secure session…</div>;
+  const { user, role, loading, roleLoading, signOut } = useAuth();
+  if (loading || roleLoading) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-[#FBF9F5] font-mono text-sm">
+        Verifying secure workspace access…
+      </div>
+    );
+  }
   if (!user) return <Navigate to="/login" replace />;
-  if (roleLoading) return <div className="min-h-screen grid place-items-center bg-[#FBF9F5] font-mono">Verifying workspace access...</div>;
-  return role ? <DashboardPage /> : <Navigate to="/login" replace />;
+  if (!role) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-[#FBF9F5] p-5 font-mono">
+        <div className="max-w-md w-full bg-white border-2 border-[#111827] p-6 shadow-[5px_5px_0_#111827] text-center space-y-4">
+          <div className="inline-block px-2 py-0.5 bg-amber-100 border border-amber-800 text-amber-900 font-bold text-xs uppercase">
+            Workspace Role Required
+          </div>
+          <h2 className="text-xl font-black text-neutral-900">No Assigned Role</h2>
+          <p className="text-xs text-neutral-600 leading-relaxed">
+            Your account ({user.email}) is authenticated, but no authorized workspace role was found in Procura. Contact an administrator to assign your role.
+          </p>
+          <button
+            onClick={() => void signOut()}
+            className="w-full border-2 border-black bg-[#2457e6] p-2.5 font-black text-white shadow-[3px_3px_0_#111827] hover:bg-[#1d4ed8]"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return <DashboardPage />;
 }
 
 export const App: React.FC = () => {

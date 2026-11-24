@@ -19,15 +19,16 @@ Procura AI is an AI-powered procurement platform that helps small businesses mak
 </p>
 
 
+
 <p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License" />
-  <img src="https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-61DAFB?logo=react&logoColor=black" alt="React and TypeScript" />
-  <img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-green?logo=nodedotjs&logoColor=white" alt="Node.js and Express" />
-  <img src="https://img.shields.io/badge/AI-Google%20Gemini-4285F4?logo=googlegemini&logoColor=white" alt="Google Gemini" />
-  <img src="https://img.shields.io/badge/Payments-PayPal%20Sandbox-003087?logo=paypal&logoColor=white" alt="PayPal Sandbox" />
-  <img src="https://img.shields.io/badge/Automation-Zapier-FF4A00?logo=zapier&logoColor=white" alt="Zapier" />
-  <img src="https://img.shields.io/badge/API-Postman-FF6C37?logo=postman&logoColor=white" alt="Postman" />
-  <img src="https://img.shields.io/badge/Hosting-Render-46E3B7?logo=render&logoColor=black" alt="Render" />
+  <img src="https://img.shields.io/badge/License-MIT-blue" alt="MIT License">
+  <img src="https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-61DAFB" alt="React and TypeScript">
+  <img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933" alt="Node.js and Express">
+  <img src="https://img.shields.io/badge/AI-Google%20Gemini-4285F4" alt="Google Gemini">
+  <img src="https://img.shields.io/badge/Payments-PayPal%20Sandbox-003087" alt="PayPal Sandbox">
+  <img src="https://img.shields.io/badge/Automation-Zapier-FF4A00" alt="Zapier">
+  <img src="https://img.shields.io/badge/API-Postman-FF6C37" alt="Postman">
+  <img src="https://img.shields.io/badge/Hosting-Render-46E3B7" alt="Render">
 </p>
 
 **Built for the PayPal AI Hackathon.**

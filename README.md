@@ -18,6 +18,7 @@ Procura AI is an AI-powered procurement platform that helps small businesses mak
   <a href="https://procura-ai-f4eo.onrender.com/api/health">API Health</a>
 </p>
 
+
 <p align="center">
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License" />
   <img src="https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-61DAFB?logo=react&logoColor=black" alt="React and TypeScript" />

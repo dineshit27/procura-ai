@@ -2,8 +2,18 @@ import assert from 'node:assert/strict';
 import { evaluatePurchasingPolicy } from '../src/services/policyEngine.js';
 import { DEFAULT_PROCUREMENT_POLICY, ServerProcurementPolicy } from '../src/config/policySettings.js';
 import { policyEvaluationRequestSchema } from '../src/types/policy.js';
+import { setAuthClientsForTests, type AuthClients } from '../src/middleware/auth.js';
 
 console.log('🧪 Starting Procura AI Policy Engine Test Suite...\n');
+
+setAuthClientsForTests(() => ({
+  publicClient: {
+    auth: { getUser: async () => ({ data: { user: { id: 'policy-admin', email: 'admin@example.com' } }, error: null }) },
+  } as AuthClients['publicClient'],
+  adminClient: {
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: 'admin' }, error: null }) }) }) }),
+  } as AuthClients['adminClient'],
+}));
 
 let testsPassed = 0;
 let testsFailed = 0;

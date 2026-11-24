@@ -14,6 +14,10 @@ import { evaluatePurchasingPolicy } from '../services/policyEngine.js';
  */
 
 function buildInitialRequests(): ServerPurchaseRequest[] {
+  const now = new Date();
+  const seedDate = (day: number, hour: number, minute: number = 0) =>
+    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), day, hour, minute)).toISOString();
+
   const initialData: Omit<ServerPurchaseRequest, 'authoritativeUnitPrice' | 'authoritativeTotal' | 'currency' | 'policyDecision' | 'policyResult'>[] = [
     {
       id: 'REQ-2026-081',
@@ -24,7 +28,7 @@ function buildInitialRequests(): ServerPurchaseRequest[] {
       quantity: 2,
       catalogItemId: 'CAT-101',
       preferredSupplier: 'Apex Business Hardware (Demo Supplier)',
-      createdAt: '2026-10-12T14:32:00Z',
+      createdAt: seedDate(12, 14, 32),
       status: 'approved',
       selectedSupplier: 'Apex Business Hardware (Demo Supplier)',
       selectedItemName: 'Dell UltraSharp 27" 4K USB-C Hub Monitor (U2723QE)',
@@ -40,7 +44,7 @@ function buildInitialRequests(): ServerPurchaseRequest[] {
       quantity: 1,
       catalogItemId: 'CAT-105',
       preferredSupplier: 'Kinetic Workspaces Ltd. (Demo Supplier)',
-      createdAt: '2026-10-11T09:15:00Z',
+      createdAt: seedDate(11, 9, 15),
       status: 'pending_approval',
       selectedSupplier: 'Kinetic Workspaces Ltd. (Demo Supplier)',
       selectedItemName: 'Steelcase Gesture Ergonomic Office Task Chair',
@@ -56,7 +60,7 @@ function buildInitialRequests(): ServerPurchaseRequest[] {
       quantity: 5,
       catalogItemId: 'CAT-107',
       preferredSupplier: 'CloudScale Distribution (Demo Supplier)',
-      createdAt: '2026-10-09T11:20:00Z',
+      createdAt: seedDate(9, 11, 20),
       status: 'paid',
       selectedSupplier: 'CloudScale Distribution (Demo Supplier)',
       selectedItemName: 'GitHub Enterprise Cloud (Annual Organization Seat)',
@@ -68,7 +72,7 @@ function buildInitialRequests(): ServerPurchaseRequest[] {
         status: 'COMPLETED',
         amount: 1260.0,
         currency: 'USD',
-        capturedAt: '2026-10-09T11:25:00Z',
+        capturedAt: seedDate(9, 11, 25),
         isSandbox: true,
       },
     },
@@ -81,7 +85,7 @@ function buildInitialRequests(): ServerPurchaseRequest[] {
       quantity: 2,
       catalogItemId: 'CAT-103',
       preferredSupplier: 'Kinetic Workspaces Ltd. (Demo Supplier)',
-      createdAt: '2026-10-05T16:45:00Z',
+      createdAt: seedDate(5, 16, 45),
       status: 'draft',
       selectedSupplier: 'Kinetic Workspaces Ltd. (Demo Supplier)',
       selectedItemName: 'ErgoPro Electric Height-Adjustable Standing Desk (60" x 30")',
@@ -97,7 +101,7 @@ function buildInitialRequests(): ServerPurchaseRequest[] {
       quantity: 10,
       catalogItemId: 'CAT-104',
       preferredSupplier: 'Kinetic Workspaces Ltd. (Demo Supplier)',
-      createdAt: '2026-10-13T10:00:00Z',
+      createdAt: seedDate(13, 10),
       status: 'draft',
       selectedSupplier: 'Kinetic Workspaces Ltd. (Demo Supplier)',
       selectedItemName: 'Herman Miller Aeron Chair (Size B - Fully Loaded)',
